@@ -19,4 +19,20 @@ async function fetchNavData() {
   return results;
 }
 
-module.exports = { fetchNavData };
+async function fetchThemesData() {
+  const uri = process.env.MONGO_URI;
+  const client = new MongoClient(uri);
+  let results = [];
+  try {
+    await client.connect();
+    const cursor = await client.db(process.env.EXCH_DB).collection(process.env.THEME_COLLECTION).find({});
+    results = await cursor.toArray();
+  } catch (err) {
+    logger.error(err);
+  } finally {
+    await client.close();
+  }
+  return results;
+}
+
+module.exports = { fetchNavData, fetchThemesData };
