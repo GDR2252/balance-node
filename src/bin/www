@@ -6,6 +6,7 @@
 const http = require('http');
 const log4js = require('log4js');
 const path = require('path');
+const mongoose = require('mongoose');
 const { logConfig } = require('../config/log4js-config').log4js;
 const app = require('../app');
 
@@ -89,6 +90,9 @@ function onListening() {
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
+mongoose.connection.once('open', () => {
+  logger.info('Connected to MongoDB');
+  server.listen(port);
+});
 server.on('error', onError);
 server.on('listening', onListening);
