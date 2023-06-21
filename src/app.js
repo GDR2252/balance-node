@@ -25,7 +25,7 @@ app.use('/auth', authRouter);
 // custom 404
 // eslint-disable-next-line no-unused-vars
 app.use((req, res, next) => {
-  res.status(404).send("Sorry can't find that!");
+  res.status(404).send("You're Beyond The Borders!");
 });
 
 // custom error handler
