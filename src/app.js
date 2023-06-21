@@ -1,3 +1,4 @@
+const actuator = require('express-actuator');
 const express = require('express');
 const helmet = require('helmet');
 const path = require('path');
@@ -13,6 +14,7 @@ const app = express();
 connectDB();
 app.use(helmet());
 app.disable('x-powered-by');
+app.use(actuator());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
