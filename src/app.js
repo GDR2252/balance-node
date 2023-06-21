@@ -1,5 +1,6 @@
 const actuator = require('express-actuator');
 const compression = require('compression');
+const cors = require('cors');
 const express = require('express');
 const helmet = require('helmet');
 const path = require('path');
@@ -19,6 +20,7 @@ app.use(compression());
 app.use(actuator());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cors());
 
 app.use('/navigation', navigationRouter);
 app.use('/getnavdata', fetchNavDataRouter);
