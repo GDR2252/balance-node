@@ -8,7 +8,8 @@ async function storenavdata(navdata) {
   const client = new MongoClient(uri);
   try {
     await client.connect();
-    const result = await client.db(process.env.EXCH_DB).collection(process.env.NAV_COLLECTION).insertMany(navdata);
+    const result = await client.db(process.env.EXCH_DB).collection(process.env.NAV_COLLECTION)
+      .insertMany(navdata);
     logger.info(`${result.insertedCount} new listings created with the following ids:`);
     logger.info(result.insertedIds);
   } catch (err) {

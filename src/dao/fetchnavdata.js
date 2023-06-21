@@ -9,7 +9,8 @@ async function fetchNavData() {
   let results = [];
   try {
     await client.connect();
-    const cursor = await client.db(process.env.EXCH_DB).collection(process.env.NAV_COLLECTION).find({});
+    const cursor = await client.db(process.env.EXCH_DB).collection(process.env.NAV_COLLECTION)
+      .find({});
     results = await cursor.toArray();
   } catch (err) {
     logger.error(err);
@@ -25,7 +26,8 @@ async function fetchThemesData() {
   let results = [];
   try {
     await client.connect();
-    const cursor = await client.db(process.env.EXCH_DB).collection(process.env.THEME_COLLECTION).find({});
+    const cursor = await client.db(process.env.EXCH_DB).collection(process.env.THEME_COLLECTION)
+      .find({});
     results = await cursor.toArray();
   } catch (err) {
     logger.error(err);

@@ -8,7 +8,8 @@ async function deleteNavData() {
   const client = new MongoClient(uri);
   try {
     await client.connect();
-    const result = await client.db(process.env.EXCH_DB).collection(process.env.NAV_COLLECTION).deleteMany({});
+    const result = await client.db(process.env.EXCH_DB).collection(process.env.NAV_COLLECTION)
+      .deleteMany({});
     logger.info(`Deleted ${result.deletedCount} documents`);
   } catch (err) {
     logger.error(err);
