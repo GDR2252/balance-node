@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const connectDB = require('./config/dbConn');
+const { authenticate } = require('./config/authentication');
 const navigationRouter = require('./routes/navigation');
 const fetchNavDataRouter = require('./routes/getnavdata');
 const fetchThemesRouter = require('./routes/getthemes');
@@ -21,6 +22,15 @@ app.use(actuator());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
+app.use((req, res, next) => {
+  const result = authenticate(req);
+  if (result) {
+    logger.info('Access Verified!');
+    next();
+  } else {
+    res.status(401).json({ message: 'not authorized' });
+  }
+});
 
 app.use('/navigation', navigationRouter);
 app.use('/getnavdata', fetchNavDataRouter);
