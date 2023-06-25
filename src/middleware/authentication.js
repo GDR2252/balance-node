@@ -29,4 +29,14 @@ const authenticate = (request) => {
   return returnflag;
 };
 
-module.exports = { authenticate };
+const auth = (req, res, next) => {
+  const result = authenticate(req);
+  if (result) {
+    logger.info('Access Verified!');
+    next();
+  } else {
+    res.status(401).json({ message: 'not authorized' });
+  }
+};
+
+module.exports = { auth };

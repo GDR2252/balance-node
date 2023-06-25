@@ -7,7 +7,6 @@ const path = require('path');
 const xss = require('xss-clean');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const connectDB = require('./config/dbConn');
-const { authenticate } = require('./middleware/authentication');
 const verifyJWT = require('./middleware/verifyJWT');
 const navigationRouter = require('./routes/navigation');
 const fetchNavDataRouter = require('./routes/getnavdata');
@@ -25,15 +24,7 @@ app.use(actuator());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
-/* app.use((req, res, next) => {
-  const result = authenticate(req);
-  if (result) {
-    logger.info('Access Verified!');
-    next();
-  } else {
-    res.status(401).json({ message: 'not authorized' });
-  }
-}); */
+
 app.use('/register', registerRouter);
 app.use('/auth', authRouter);
 app.use(verifyJWT);
