@@ -4,7 +4,7 @@ const logger = require('log4js').getLogger(path.parse(__filename).name);
 const User = require('../model/User');
 
 const handleNewUser = async (req, res) => {
-  const { user, pwd } = req.body;
+  const { user, pwd, roles } = req.body;
   if (!user || !pwd) return res.status(400).json({ message: 'Username and password are required.' });
 
   const duplicate = await User.findOne({ username: user }).exec();
@@ -15,6 +15,7 @@ const handleNewUser = async (req, res) => {
     const result = await User.create({
       username: user,
       password: hashedPwd,
+      roles,
     });
     logger.debug(result);
     res.status(201).json({ success: `New user ${user} created!` });

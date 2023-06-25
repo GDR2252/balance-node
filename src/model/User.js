@@ -16,14 +16,10 @@ const userSchema = new Schema({
   mobile: {
     type: Number,
   },
-  roles: {
-    Admin: String,
-    WhiteLabel: String,
-    Super: String,
-    Master: String,
-    Agent: String,
-    User: String,
-  },
+  roles: [{
+    type: String,
+    enum: ['Admin', 'WhiteLabel', 'Super', 'Master', 'Agent', 'User'],
+  }],
   balance: {
     type: mongoose.Types.Decimal128,
   },
