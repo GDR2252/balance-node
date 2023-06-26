@@ -5,6 +5,7 @@ const express = require('express');
 const helmet = require('helmet');
 const path = require('path');
 const xss = require('xss-clean');
+const cookieParser = require('cookie-parser');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const connectDB = require('./config/dbConn');
 const verifyJWT = require('./middleware/verifyJWT');
@@ -13,6 +14,9 @@ const fetchNavDataRouter = require('./routes/getnavdata');
 const fetchThemesRouter = require('./routes/getthemes');
 const registerRouter = require('./routes/register');
 const authRouter = require('./routes/auth');
+const refreshRouter = require('./routes/refresh');
+const logoutRouter = require('./routes/logout');
+const sportsRouter = require('./routes/sports');
 
 const app = express();
 connectDB();
@@ -22,15 +26,19 @@ app.use(compression());
 app.use(xss());
 app.use(actuator());
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 
 app.use('/register', registerRouter);
 app.use('/auth', authRouter);
+app.use('/refresh', refreshRouter);
+app.use('/logout', logoutRouter);
 app.use(verifyJWT);
 app.use('/navigation', navigationRouter);
 app.use('/getnavdata', fetchNavDataRouter);
 app.use('/getthemes', fetchThemesRouter);
+app.use('/sports', sportsRouter);
 
 // custom 404
 // eslint-disable-next-line no-unused-vars
