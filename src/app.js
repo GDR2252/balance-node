@@ -20,6 +20,7 @@ const sportsRouter = require('./routes/sports');
 const tournamentsRouter = require('./routes/tournament');
 const eventsRouter = require('./routes/events');
 const marketsRouter = require('./routes/markets');
+const betlimitRouter = require('./routes/betlimit');
 
 const app = express();
 connectDB();
@@ -45,6 +46,7 @@ app.use('/sports', sportsRouter);
 app.use('/tournaments', tournamentsRouter);
 app.use('/events', eventsRouter);
 app.use('/markets', marketsRouter);
+app.use('/betlimits', betlimitRouter);
 
 // custom 404
 // eslint-disable-next-line no-unused-vars
