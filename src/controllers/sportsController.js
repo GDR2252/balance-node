@@ -12,10 +12,10 @@ async function addSports(req, res) {
     const result = await Sport.create({
       sportId: body.sportId,
       sportName: body.sportName,
-      highlight: body.highlight,
-      popular: body.popular,
-      other: body.other,
-      status: body.status,
+      highlight: body.highlight || false,
+      popular: body.popular || false,
+      other: body.other || false,
+      status: body.status || false,
       sequence: body.sequence,
     });
     logger.debug(result);
@@ -51,8 +51,8 @@ async function updateSports(req, res) {
       status: body.status,
       sequence: body.sequence,
     });
-    logger.debug(result);
-    res.status(201).json({ success: `Sport ${body.sportName} updated!` });
+    logger.info(result);
+    res.status(201).json({ success: `Sport ${body.sportId} updated!` });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
