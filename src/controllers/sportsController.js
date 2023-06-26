@@ -7,7 +7,7 @@ async function addSports(req, res) {
   const { body } = req;
   logger.debug(body);
   const duplicate = await Sport.findOne({ sportId }).exec();
-  if (duplicate) return res.sendStatus(409);
+  if (duplicate) return res.status(409).json({ message: 'Cannot add sports. Sports already present.' });
   try {
     const result = await Sport.create({
       sportId: body.sportId,
@@ -40,7 +40,7 @@ async function updateSports(req, res) {
   const { body } = req;
   logger.debug(body);
   const data = await Sport.findOne({ sportId }).exec();
-  if (!data) return res.sendStatus(404);
+  if (!data) return res.status(404).json({ message: 'Cannot update sports. Sports not present.' });
   try {
     const filter = { sportId: body.sportId };
     const update = {
@@ -62,7 +62,7 @@ async function updateSports(req, res) {
 async function deleteSports(req, res) {
   const { sportId } = req.query;
   const data = await Sport.findOne({ sportId }).exec();
-  if (!data) return res.sendStatus(404);
+  if (!data) return res.status(404).json({ message: 'Cannot delete sports. Sports not present.' });
   try {
     const result = await Sport.deleteOne({
       sportId,
