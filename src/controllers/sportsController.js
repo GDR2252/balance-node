@@ -59,7 +59,7 @@ async function updateSports(req, res) {
 }
 
 async function deleteSports(req, res) {
-  const { sportId } = req.body;
+  const { sportId } = req.query;
   const data = await Sport.findOne({ sportId }).exec();
   if (!data) return res.sendStatus(404);
   try {

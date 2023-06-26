@@ -9,7 +9,6 @@ const sportSchema = new Schema({
   },
   sportName: {
     type: String,
-    required: true,
   },
   highlight: {
     type: Boolean,
