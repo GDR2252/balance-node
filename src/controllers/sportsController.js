@@ -42,14 +42,16 @@ async function updateSports(req, res) {
   const data = await Sport.findOne({ sportId }).exec();
   if (!data) return res.sendStatus(404);
   try {
-    const result = await Sport.updateOne({
+    const filter = { sportId: body.sportId };
+    const update = {
       sportName: body.sportName,
       highlight: body.highlight,
       popular: body.popular,
       other: body.other,
       status: body.status,
       sequence: body.sequence,
-    });
+    };
+    const result = await Sport.findOneAndUpdate(filter, update);
     logger.info(result);
     res.status(201).json({ success: `Sport ${body.sportId} updated!` });
   } catch (err) {
