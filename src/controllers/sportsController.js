@@ -43,7 +43,6 @@ async function updateSports(req, res) {
   if (!data) return res.sendStatus(404);
   try {
     const result = await Sport.updateOne({
-      sportId: body.sportId,
       sportName: body.sportName,
       highlight: body.highlight,
       popular: body.popular,
