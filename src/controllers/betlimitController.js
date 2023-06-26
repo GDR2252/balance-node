@@ -7,7 +7,7 @@ async function addBetlimit(req, res) {
   const duplicate = await Betlimit.findOne({ betlimit }).exec();
   if (duplicate) return res.status(409).json({ message: 'Cannot add betlimit. Betlimit already present.' });
   try {
-    const result = await betlimit.create({
+    const result = await Betlimit.create({
       betlimit,
     });
     logger.debug(result);
