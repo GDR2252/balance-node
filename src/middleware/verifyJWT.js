@@ -7,7 +7,7 @@ const verifyJWT = (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers.Authorization;
   if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ message: 'not authorized.' });
   const token = authHeader.split(' ')[1];
-  logger.info(token);
+  logger.debug(token);
   jwt.verify(
     token,
     process.env.ACCESS_TOKEN_SECRET,
