@@ -18,6 +18,7 @@ const refreshRouter = require('./routes/refresh');
 const logoutRouter = require('./routes/logout');
 const sportsRouter = require('./routes/sports');
 const tournamentsRouter = require('./routes/tournament');
+const eventsRouter = require('./routes/events');
 
 const app = express();
 connectDB();
@@ -41,6 +42,7 @@ app.use('/getnavdata', fetchNavDataRouter);
 app.use('/getthemes', fetchThemesRouter);
 app.use('/sports', sportsRouter);
 app.use('/tournaments', tournamentsRouter);
+app.use('/events', eventsRouter);
 
 // custom 404
 // eslint-disable-next-line no-unused-vars
