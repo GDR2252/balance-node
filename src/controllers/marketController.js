@@ -13,6 +13,13 @@ async function addMarkets(req, res) {
       marketId,
       marketName: body.marketName,
       betLimit: body.betLimit,
+      isFancy: body.isFancy || false,
+      isBookmakers: body.isBookmakers || false,
+      isStreaming: body.isStreaming || false,
+      isVirtual: body.isVirtual || false,
+      isSportsbook: body.isSportsbook || false,
+      isCasinoGame: body.isCasinoGame || false,
+      isPreBet: body.isPreBet || false,
     });
     logger.debug(result);
     res.status(201).json({ success: `New market ${marketId} created!` });
@@ -42,6 +49,13 @@ async function updateMarkets(req, res) {
     const update = {
       marketName: body.marketName,
       betLimit: body.betLimit,
+      isFancy: body.isFancy,
+      isBookmakers: body.isBookmakers,
+      isStreaming: body.isStreaming,
+      isVirtual: body.isVirtual,
+      isSportsbook: body.isSportsbook,
+      isCasinoGame: body.isCasinoGame,
+      isPreBet: body.isPreBet,
     };
     const result = await Market.findOneAndUpdate(filter, update);
     logger.info(result);
