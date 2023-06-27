@@ -7,6 +7,9 @@ const tournamentSchema = new Schema({
     type: String,
     required: true,
   },
+  sportId: {
+    type: String,
+  },
   tournamentName: {
     type: String,
   },

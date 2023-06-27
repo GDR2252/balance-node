@@ -11,6 +11,9 @@ async function addMarkets(req, res) {
   try {
     const result = await Market.create({
       marketId,
+      sportId: body.sportId,
+      tournamentsId: body.tournamentsId,
+      eventId: body.eventId,
       marketName: body.marketName,
       betLimit: body.betLimit,
       isFancy: body.isFancy || false,

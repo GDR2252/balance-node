@@ -11,6 +11,8 @@ async function addEvents(req, res) {
   try {
     const result = await Event.create({
       eventId,
+      sportId: body.sportId,
+      tournamentsId: body.tournamentsId,
       eventName: body.eventName,
       highlight: body.highlight || false,
       quicklink: body.quicklink || false,

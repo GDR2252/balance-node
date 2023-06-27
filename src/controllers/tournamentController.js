@@ -11,6 +11,7 @@ async function addTournaments(req, res) {
   try {
     const result = await Tournament.create({
       tournamentId,
+      sportId: body.sportId,
       tournamentName: body.tournamentName,
       highlight: body.highlight || false,
       quicklink: body.quicklink || false,

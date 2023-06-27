@@ -7,6 +7,15 @@ const marketSchema = new Schema({
     type: String,
     required: true,
   },
+  sportId: {
+    type: String,
+  },
+  tournamentsId: {
+    type: String,
+  },
+  eventId: {
+    type: String,
+  },
   marketName: {
     type: String,
   },
