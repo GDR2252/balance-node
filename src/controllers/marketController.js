@@ -35,9 +35,10 @@ async function fetchMarkets(req, res) {
   const { sportId } = req.query;
   const { tournamentsId } = req.query;
   const { eventId } = req.query;
+  logger.info(eventId);
   try {
     const result = await Market.find({ sportId, tournamentsId, eventId });
-    logger.info(result);
+    logger.debug(result);
     res.status(201).json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
