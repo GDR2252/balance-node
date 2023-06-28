@@ -32,8 +32,11 @@ async function addMarkets(req, res) {
 }
 
 async function fetchMarkets(req, res) {
+  const { sportId } = req.query;
+  const { tournamentsId } = req.query;
+  const { eventId } = req.query;
   try {
-    const result = await Market.find({});
+    const result = await Market.find({ sportId, tournamentsId, eventId });
     logger.debug(result);
     res.status(201).json(result);
   } catch (err) {

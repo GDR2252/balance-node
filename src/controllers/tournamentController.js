@@ -26,8 +26,9 @@ async function addTournaments(req, res) {
 }
 
 async function fetchTournaments(req, res) {
+  const { sportId } = req.query;
   try {
-    const result = await Tournament.find({});
+    const result = await Tournament.find({ sportId });
     logger.debug(result);
     res.status(201).json(result);
   } catch (err) {

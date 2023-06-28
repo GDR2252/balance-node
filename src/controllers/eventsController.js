@@ -26,8 +26,10 @@ async function addEvents(req, res) {
 }
 
 async function fetchEvents(req, res) {
+  const { sportId } = req.query;
+  const { tournamentsId } = req.query;
   try {
-    const result = await Event.find({});
+    const result = await Event.find({ sportId, tournamentsId });
     logger.debug(result);
     res.status(201).json(result);
   } catch (err) {
