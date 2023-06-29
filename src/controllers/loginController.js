@@ -1,13 +1,13 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const Trader = require('../model/Trader');
+const User = require('../model/User');
 require('dotenv').config();
 
 async function handleLogin(req, res) {
   const { user, pwd } = req.body;
   if (!user || !pwd) return res.status(400).json({ message: 'Username and password are required.' });
 
-  const foundUser = await Trader.findOne({ username: user }).exec();
+  const foundUser = await User.findOne({ username: user }).exec();
   if (!foundUser) return res.status(401).json({ message: 'The username or password is incorrect.' });
   const match = await bcrypt.compare(pwd, foundUser.password);
   if (match) {
@@ -17,7 +17,7 @@ async function handleLogin(req, res) {
         username: foundUser.username,
       },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: '60s' },
+      { expiresIn: '1d' },
     );
     const refreshToken = jwt.sign(
       { username: foundUser.username },

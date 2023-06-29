@@ -38,6 +38,9 @@ const userSchema = new Schema({
   origin: {
     type: String,
   },
+  ip: {
+    type: String,
+  },
   refreshToken: {
     type: String,
   },
