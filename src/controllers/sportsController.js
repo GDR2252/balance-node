@@ -17,6 +17,7 @@ async function addSports(req, res) {
       other: body.other || false,
       status: body.status || false,
       sequence: body.sequence,
+      iconUrl: '',
     });
     logger.debug(result);
     res.status(201).json({ success: `New sport ${sportId} created!` });

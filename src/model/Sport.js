@@ -25,6 +25,9 @@ const sportSchema = new Schema({
   sequence: {
     type: String,
   },
+  iconUrl: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model('Sport', sportSchema);

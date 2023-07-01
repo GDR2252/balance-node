@@ -22,6 +22,7 @@ const eventsRouter = require('./routes/events');
 const marketsRouter = require('./routes/markets');
 const betlimitRouter = require('./routes/betlimit');
 const changeauthRouter = require('./routes/changeauth');
+const list = require('./routes/list');
 
 const app = express();
 connectDB();
@@ -40,6 +41,7 @@ app.use('/auth', authRouter);
 app.use('/refresh', refreshRouter);
 app.use('/logout', logoutRouter);
 app.use('/navigation', navigationRouter);
+app.use('/list', list);
 app.use(verifyJWT);
 app.use('/getnavdata', fetchNavDataRouter);
 app.use('/getthemes', fetchThemesRouter);
