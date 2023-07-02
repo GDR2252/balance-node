@@ -18,6 +18,7 @@ async function addSports(req, res) {
       status: body.status || false,
       sequence: body.sequence,
       iconUrl: '',
+      url: '',
     });
     logger.debug(result);
     res.status(201).json({ success: `New sport ${sportId} created!` });
@@ -51,6 +52,8 @@ async function updateSports(req, res) {
       other: body.other,
       status: body.status,
       sequence: body.sequence,
+      url: body.url,
+      iconUrl: body.iconUrl,
     };
     const result = await Sport.findOneAndUpdate(filter, update);
     logger.info(result);
