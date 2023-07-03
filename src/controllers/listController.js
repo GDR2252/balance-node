@@ -33,12 +33,10 @@ async function sideMenuList(req, res) {
         sportName: 1,
       },
     }]);
-    const tournamentsList = [];
     for (let key = 0; key < sportsresult.length; key += 1) {
-      const copy = JSON.parse(JSON.stringify(sportsresult[key]));
       const tournaments = await Tournament.aggregate([{
         $match: {
-          sportId: copy.sportId,
+          sportId: sportsresult[key].sportId,
         },
       }, {
         $project: {
@@ -46,15 +44,12 @@ async function sideMenuList(req, res) {
           tournamentName: 1,
         },
       }]);
-      copy.tournaments = tournaments;
-      tournamentsList.push(copy);
+      sportsresult[key].tournaments = tournaments;
     }
-    for (let key = 0; key < tournamentsList.length; key += 1) {
-      const copy = JSON.parse(JSON.stringify(tournamentsList[key]));
-      const { tournaments } = copy;
+    for (let key = 0; key < sportsresult.length; key += 1) {
+      const { tournaments } = sportsresult[key];
       if (tournaments.length > 0) {
         for (let i = 0; i < tournaments.length; i += 1) {
-          logger.info(tournaments[i].tournamentId);
           const events = await Event.aggregate([{
             $match: {
               tournamentsId: tournaments[i].tournamentId,
@@ -65,12 +60,11 @@ async function sideMenuList(req, res) {
               eventName: 1,
             },
           }]);
-          tournamentsList[key].tournaments[i].events = events;
+          sportsresult[key].tournaments[i].events = events;
         }
       }
-      logger.info(tournamentsList[key]);
     }
-    res.status(200).json(tournamentsList);
+    res.status(200).json(sportsresult);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
