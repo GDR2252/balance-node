@@ -1,6 +1,7 @@
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const Event = require('../model/Event');
+const Market = require('../model/Market');
 
 async function addEvents(req, res) {
   const { eventId } = req.body;
@@ -63,6 +64,8 @@ async function deleteEvents(req, res) {
   const { eventId } = req.query;
   const data = await Event.findOne({ eventId }).exec();
   if (!data) return res.status(404).json({ message: 'Cannot delete event. Event not present.' });
+  const marketdata = await Market.findOne({ eventId }).exec();
+  if (marketdata) return res.status(409).json({ message: 'Cannot delete event. Associated market data present.' });
   try {
     const result = await Event.deleteOne({
       eventId,

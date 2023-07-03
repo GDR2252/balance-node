@@ -1,6 +1,7 @@
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const Sport = require('../model/Sport');
+const Tournament = require('../model/Tournament');
 
 async function addSports(req, res) {
   const { sportId } = req.body;
@@ -67,6 +68,8 @@ async function deleteSports(req, res) {
   const { sportId } = req.query;
   const data = await Sport.findOne({ sportId }).exec();
   if (!data) return res.status(404).json({ message: 'Cannot delete sports. Sports not present.' });
+  const tournamentdata = await Tournament.findOne({ sportId }).exec();
+  if (tournamentdata) return res.status(409).json({ message: 'Cannot delete sports. Associated tournaments data present.' });
   try {
     const result = await Sport.deleteOne({
       sportId,
