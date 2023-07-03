@@ -27,7 +27,7 @@ router.get('/', async (req, res, next) => {
       const resArray = response.data.children;
       for (let i = 0; i < resArray.length; i += 1) {
         const obj = resArray[i];
-        if (obj.id === '1' || obj.id === '2' || obj.id === '4' || obj.id === '7' || obj.id === '4339' || obj.id) {
+        if (obj.id === '1' || obj.id === '2' || obj.id === '4' || obj.id === '7' || obj.id === '4339') {
           responseData.push(obj);
         }
       }
