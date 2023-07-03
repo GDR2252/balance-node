@@ -5,6 +5,6 @@ const { auth } = require('../middleware/authentication');
 const listController = require('../controllers/listController');
 
 router.post('/sportsList', auth, listController.sportsList);
-router.get('/allEventsList', auth, listController.allEventsList);
+router.post('/sideMenuList', auth, listController.sideMenuList);
 
 module.exports = router;
