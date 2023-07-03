@@ -33,6 +33,7 @@ async function sideMenuList(req, res) {
         sportName: 1,
       },
     }]);
+    let sportscopy = JSON.parse(JSON.stringify(sportsresult));
     for (let key = 0; key < sportsresult.length; key += 1) {
       const tournaments = await Tournament.aggregate([{
         $match: {
@@ -44,11 +45,17 @@ async function sideMenuList(req, res) {
           tournamentName: 1,
         },
       }]);
-      sportsresult[key].tournaments = tournaments;
+      if (tournaments?.length > 0) {
+        sportscopy[key].tournaments = tournaments;
+      } else {
+        delete sportscopy[key];
+      }
     }
-    for (let key = 0; key < sportsresult.length; key += 1) {
-      const { tournaments } = sportsresult[key];
-      if (tournaments.length > 0) {
+    sportscopy = sportscopy.filter((value) => Object.keys(value).length !== 0);
+    logger.info(sportscopy.length);
+    for (let key = 0; key < sportscopy.length; key += 1) {
+      const { tournaments } = sportscopy[key];
+      if (tournaments?.length > 0) {
         for (let i = 0; i < tournaments.length; i += 1) {
           const events = await Event.aggregate([{
             $match: {
@@ -60,11 +67,19 @@ async function sideMenuList(req, res) {
               eventName: 1,
             },
           }]);
-          sportsresult[key].tournaments[i].events = events;
+          if (events?.length > 0) {
+            sportscopy[key].tournaments[i].events = events;
+          }
         }
       }
     }
-    res.status(200).json(sportsresult);
+    const retresult = [];
+    for (let result = 0; result < sportscopy.length; result += 1) {
+      if (sportscopy[result].tournaments?.length > 0) {
+        retresult.push(sportscopy[result]);
+      }
+    }
+    res.status(200).json(sportscopy);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
