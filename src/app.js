@@ -22,7 +22,8 @@ const eventsRouter = require('./routes/events');
 const marketsRouter = require('./routes/markets');
 const betlimitRouter = require('./routes/betlimit');
 const changeauthRouter = require('./routes/changeauth');
-const list = require('./routes/list');
+const listRouter = require('./routes/list');
+const loginRouter = require('./routes/userlogin');
 
 const app = express();
 connectDB();
@@ -38,10 +39,11 @@ app.use(cors());
 
 app.use('/register', registerRouter);
 app.use('/auth', authRouter);
+app.use('/login', loginRouter);
 app.use('/refresh', refreshRouter);
 app.use('/logout', logoutRouter);
 app.use('/navigation', navigationRouter);
-app.use('/list', list);
+app.use('/list', listRouter);
 app.use(verifyJWT);
 app.use('/getnavdata', fetchNavDataRouter);
 app.use('/getthemes', fetchThemesRouter);
