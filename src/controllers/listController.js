@@ -82,7 +82,15 @@ async function sideMenuList(req, res) {
         retresult.push(sportscopy[result]);
       }
     }
-    res.status(200).json(retresult);
+    let json = JSON.parse(JSON.stringify(retresult).split('"sportId":').join('"id":'));
+    json = JSON.parse(JSON.stringify(json).split('"sportName":').join('"name":'));
+    json = JSON.parse(JSON.stringify(json).split('"tournaments":').join('"children":'));
+    json = JSON.parse(JSON.stringify(json).split('"tournamentId":').join('"id":'));
+    json = JSON.parse(JSON.stringify(json).split('"tournamentName":').join('"name":'));
+    json = JSON.parse(JSON.stringify(json).split('"events":').join('"children":'));
+    json = JSON.parse(JSON.stringify(json).split('"eventId":').join('"id":'));
+    json = JSON.parse(JSON.stringify(json).split('"eventName":').join('"name":'));
+    res.status(200).json(json);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
