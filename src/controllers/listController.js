@@ -31,6 +31,7 @@ async function sideMenuList(req, res) {
       $project: {
         sportId: 1,
         sportName: 1,
+        iconUrl: 1,
       },
     }]);
     let sportscopy = JSON.parse(JSON.stringify(sportsresult));
