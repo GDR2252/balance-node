@@ -30,10 +30,18 @@ const handleNewUser = async (req, res) => {
 };
 
 const generateotp = async (req, res) => {
-  const { mobile } = req.body;
-  if (!mobile) return res.status(400).json({ message: 'Mobile number is required.' });
-  const duplicate = await User.findOne({ mobile }).exec();
-  if (duplicate) return res.status(409).json({ message: 'Mobile number already exists.' });
+  const { user, mobile } = req.body;
+  if (!user || !mobile) return res.status(400).json({ message: 'Username and mobile number are required.' });
+  const duplicate = await User.aggregate([{
+    $match: {
+      $or: [{
+        username: user,
+      }, {
+        mobile,
+      }],
+    },
+  }]);
+  if (duplicate) return res.status(409).json({ message: 'Username and mobile number already exists.' });
   try {
     const config = {
       method: 'get',
@@ -56,9 +64,11 @@ const generateotp = async (req, res) => {
   }
 };
 
-const verifyotp = (req, res) => {
-  const { mobile, otp } = req.body;
-  if (!mobile || !otp) return res.status(400).json({ message: 'Mobile number and OTP is required.' });
+const verifyotp = async (req, res) => {
+  const {
+    user, pwd, mobile, ip, otp,
+  } = req.body;
+  if (!user || !pwd || !mobile || !otp) return res.status(400).json({ message: 'Username, Password, Mobile number and OTP is required.' });
   try {
     const config = {
       method: 'get',
@@ -67,14 +77,20 @@ const verifyotp = (req, res) => {
       headers: { },
       maxRedirects: 0,
     };
-    axios.request(config)
-      .then((response) => {
-        res.status(200).json({ message: response.data });
-      })
-      .catch((error) => {
-        logger.info(error);
-        res.status(500).json({ message: 'Error while verifying OTP.' });
+    const response = axios.request(config);
+    if (response.data.Status === 'Error') {
+      res.status(400).json({ message: response.data });
+    } else {
+      const hashedPwd = await bcrypt.hash(pwd, 10);
+      await User.create({
+        username: user,
+        password: hashedPwd,
+        mobile,
+        ip,
+        origin: req.headers.origin,
       });
+      res.status(201).json({ success: `New user ${user} created!` });
+    }
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: 'Error while verifying OTP.' });
