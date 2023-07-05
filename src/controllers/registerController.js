@@ -69,6 +69,16 @@ const verifyotp = async (req, res) => {
     user, pwd, mobile, ip, otp,
   } = req.body;
   if (!user || !pwd || !mobile || !otp) return res.status(400).json({ message: 'Username, Password, Mobile number and OTP is required.' });
+  const duplicate = await User.aggregate([{
+    $match: {
+      $or: [{
+        username: user,
+      }, {
+        mobile,
+      }],
+    },
+  }]);
+  if (duplicate) return res.status(409).json({ message: 'Username and mobile number already exists.' });
   try {
     const config = {
       method: 'get',
@@ -77,7 +87,7 @@ const verifyotp = async (req, res) => {
       headers: { },
       maxRedirects: 0,
     };
-    const response = axios.request(config);
+    const response = await axios.request(config);
     if (response.data.Status === 'Error') {
       res.status(400).json({ message: response.data });
     } else {
