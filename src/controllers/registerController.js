@@ -1,4 +1,5 @@
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
@@ -30,7 +31,7 @@ const handleNewUser = async (req, res) => {
 };
 
 const generateotp = async (req, res) => {
-  const { user, mobile } = req.body;
+  const { user, mobile, ip } = req.body;
   if (!user || !mobile) return res.status(400).json({ message: 'Username and mobile number are required.' });
   const duplicate = await User.aggregate([{
     $match: {
@@ -99,7 +100,15 @@ const verifyotp = async (req, res) => {
         ip,
         origin: req.headers.origin,
       });
-      res.status(201).json({ success: `New user ${user} created!` });
+      const roles = ['User'];
+      const accessToken = jwt.sign(
+        {
+          username: user,
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: '1d' },
+      );
+      res.json({ roles, accessToken });
     }
   } catch (err) {
     logger.error(err);
