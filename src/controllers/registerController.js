@@ -41,6 +41,7 @@ const generateotp = async (req, res) => {
       }],
     },
   }]);
+  logger.info(`duplicate: ${duplicate}`);
   if (duplicate) return res.status(409).json({ message: 'Username or mobile number already exists.' });
   try {
     const config = {
