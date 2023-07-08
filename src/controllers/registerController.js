@@ -41,8 +41,7 @@ const generateotp = async (req, res) => {
       }],
     },
   }]);
-  logger.info(`duplicate: ${duplicate}`);
-  if (duplicate) return res.status(409).json({ message: 'Username or mobile number already exists.' });
+  if (duplicate.length > 0) return res.status(409).json({ message: 'Username or mobile number already exists.' });
   try {
     const config = {
       method: 'get',
@@ -79,7 +78,7 @@ const verifyotp = async (req, res) => {
       }],
     },
   }]);
-  if (duplicate) return res.status(409).json({ message: 'Username or mobile number already exists.' });
+  if (duplicate.length > 0) return res.status(409).json({ message: 'Username or mobile number already exists.' });
   try {
     const config = {
       method: 'get',
