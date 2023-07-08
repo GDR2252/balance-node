@@ -37,6 +37,8 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 
+app.use('/scrapdata', require('./routes/scrapdata'));
+app.use('/ssotoken', require('./routes/ssotoken'));
 app.use('/register', registerRouter);
 app.use('/auth', authRouter);
 app.use('/login', loginRouter);
