@@ -53,8 +53,7 @@ async function updateSports(req, res) {
       other: body.other,
       status: body.status,
       sequence: body.sequence,
-      url: body.url,
-      iconUrl: body.iconUrl,
+      iconUrl: body.url,
     };
     const result = await Sport.findOneAndUpdate(filter, update);
     logger.info(result);
