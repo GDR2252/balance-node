@@ -3,6 +3,7 @@ const axios = require('axios');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const Market = require('../model/Market');
+const { storemarketrates } = require('../dao/stormarketrates');
 require('dotenv').config();
 
 const router = express.Router();
@@ -32,12 +33,15 @@ router.get('/', async (req, res, next) => {
   };
   axios.request(config)
     .then(async (response) => {
-      res.json(response.data);
+      await storemarketrates([response.data]);
+      res.json({
+        message: 'data saved successfully',
+      });
     })
     .catch((error) => {
       logger.error(error);
       const resdata = {
-        message: 'error while fetching1 data. please check logs for full error.',
+        message: 'error while fetching data. please check logs for full error.',
       };
       res.json(resdata);
     });
