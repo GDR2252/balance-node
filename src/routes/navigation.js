@@ -11,14 +11,13 @@ const router = express.Router();
 
 // eslint-disable-next-line no-unused-vars
 router.get('/', async (req, res, next) => {
-  const ssotoken = await login();
   const config = {
     method: 'get',
     maxBodyLength: Infinity,
     url: process.env.NAV_DATA_API,
     headers: {
       'X-Application': process.env.NAV_API_KEY,
-      'X-Authentication': ssotoken,
+      'X-Authentication': process.env.SSO_TOKEN,
     },
   };
   axios.request(config)
