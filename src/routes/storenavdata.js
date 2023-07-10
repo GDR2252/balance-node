@@ -8,7 +8,7 @@ const { auth } = require('../middleware/authentication');
 const router = express.Router();
 
 // eslint-disable-next-line no-unused-vars
-router.get('/', auth, async (req, res, next) => {
+router.post('/', auth, async (req, res, next) => {
   const { data } = req.body;
   try {
     await deleteNavData();
