@@ -39,6 +39,8 @@ app.use(cors());
 
 app.use('/scrapdata', require('./routes/scrapdata'));
 app.use('/ssotoken', require('./routes/ssotoken'));
+app.use('/storenavdata', require('./routes/storenavdata'));
+
 app.use('/register', registerRouter);
 app.use('/auth', authRouter);
 app.use('/login', loginRouter);
