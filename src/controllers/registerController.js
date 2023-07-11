@@ -30,6 +30,17 @@ const handleNewUser = async (req, res) => {
   }
 };
 
+const smsSend = (mobile) => {
+  const config = {
+    method: 'get',
+    maxBodyLength: Infinity,
+    url: `https://2factor.in/API/V1/${process.env.SMS_API_KEY}/SMS/${mobile}/AUTOGEN/`,
+    headers: {},
+    maxRedirects: 0,
+  };
+  return config;
+};
+
 const generateotp = async (req, res) => {
   const { user, mobile, ip } = req.body;
   if (!user || !mobile) return res.status(400).json({ message: 'Username and mobile number are required.' });
@@ -44,13 +55,30 @@ const generateotp = async (req, res) => {
   }]);
   if (duplicate.length > 0) return res.status(409).json({ message: 'Username or mobile number already exists.' });
   try {
-    const config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: `https://2factor.in/API/V1/${process.env.SMS_API_KEY}/SMS/${mobile}/AUTOGEN/`,
-      headers: { },
-      maxRedirects: 0,
-    };
+    const config = smsSend(mobile);
+    axios.request(config)
+      .then((response) => {
+        res.status(200).json({ message: response.data });
+      })
+      .catch((error) => {
+        logger.info(error);
+        res.status(500).json({ message: 'Error while generating OTP.' });
+      });
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while generating OTP.' });
+  }
+};
+
+const resendOtp = async (req, res) => {
+  
+  const { mobile, ip } = req.body;
+  if (!mobile) return res.status(400).json({ message: 'Username and mobile number are required.' });
+  const data = await User.findOne({ mobile });
+  if (!data) return res.status(409).json({ message: 'mobile number not exist.' });
+  
+    try {
+    const config = smsSend(mobile);
     axios.request(config)
       .then((response) => {
         res.status(200).json({ message: response.data });
@@ -116,4 +144,4 @@ const verifyotp = async (req, res) => {
   }
 };
 
-module.exports = { handleNewUser, generateotp, verifyotp };
+module.exports = { handleNewUser, generateotp, verifyotp, resendOtp };
