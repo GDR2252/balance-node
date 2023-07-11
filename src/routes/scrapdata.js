@@ -25,6 +25,7 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   const { data } = req.body;
+  logger.info(data);
   try {
     await storemarketrates([data]);
     res.json({
