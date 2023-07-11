@@ -8,6 +8,8 @@ router.post('/', auth, registerController.handleNewUser);
 router.post('/generateotp', auth, registerController.generateotp);
 router.post('/verifyotp', auth, registerController.verifyotp);
 router.post('/resendotp', registerController.resendOtp);
-router.post('/changepassword', registerController.changePassword);
+router.post('/changepassword', auth, registerController.changePassword);
+router.post('/forgotpassword', registerController.forgotPassword);
+router.post('/verifyforgotpassword', registerController.verifyForgotPassword);
 
 module.exports = router;

@@ -166,4 +166,64 @@ const changePassword = async (req, res) => {
   }
 };
 
-module.exports = { handleNewUser, generateotp, verifyotp, resendOtp, changePassword };
+const forgotPassword = async (req, res) => {
+  const { mobile } = req.body;
+  if (!mobile) return res.status(400).json({ message: 'mobile number required.' });
+  const data = await User.findOne({ mobile });
+  if (!data) return res.status(409).json({ message: 'mobile number not exist.' });
+
+  try {
+    const config = smsSend(mobile);
+    axios.request(config)
+      .then((response) => {
+        res.status(200).json({ message: response.data });
+      })
+      .catch((error) => {
+        logger.info(error);
+        res.status(500).json({ message: 'Error while generating OTP.' });
+      });
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while generating OTP.' });
+  }
+};
+
+const verifyForgotPassword = async (req, res) => {
+  const {
+    pwd, mobile, ip, otp,
+  } = req.body;
+  if (!pwd || !mobile || !otp) return res.status(400).json({ message: 'Username, Password, Mobile number and OTP is required.' });
+  const exists = await User.findOne({ mobile });
+  if (!exists) return res.status(409).json({ message: 'mobile number not matched.' });
+  try {
+    const config = {
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: `https://2factor.in/API/V1/${process.env.SMS_API_KEY}/SMS/VERIFY3/${mobile}/${otp}`,
+      headers: {},
+      maxRedirects: 0,
+    };
+    const response = await axios.request(config);
+    if (response.data.Status === 'Error') {
+      res.status(400).json({ message: response.data });
+    } else {
+      const hashedPwd = await bcrypt.hash(pwd, 10);
+      exists.password = hashedPwd;
+      exists.save();
+      res.json({ message: 'Password update successful.' });
+    }
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while verifying OTP.' });
+  }
+};
+
+module.exports = {
+  handleNewUser,
+  generateotp,
+  verifyotp,
+  resendOtp,
+  changePassword,
+  forgotPassword,
+  verifyForgotPassword
+};
