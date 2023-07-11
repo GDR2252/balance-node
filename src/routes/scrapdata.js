@@ -27,7 +27,7 @@ router.post('/', async (req, res, next) => {
   const { data } = req.body;
   logger.info(data);
   try {
-    await storemarketrates([data]);
+    await storemarketrates(data);
     res.json({
       message: 'data saved successfully',
     });
