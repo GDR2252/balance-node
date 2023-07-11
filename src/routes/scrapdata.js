@@ -24,30 +24,17 @@ router.get('/', async (req, res, next) => {
 });
 
 router.post('/', async (req, res, next) => {
-  const {
-    currency, types, rollupLimit, rollupModel,
-  } = req.body;
-  const config = {
-    method: 'get',
-    maxBodyLength: Infinity,
-    url: `https://ero.betfair.com/www/sports/exchange/readonly/v1/bymarket?_ak=nzIFcwyWhrlwYMrh&alt=json&currencyCode=${currency}&locale=en_GB&marketIds=${ids}&rollupLimit=${rollupLimit}&rollupModel=${rollupModel}&types=${types}`,
-    headers: {
-      Cookie: `ssoid=${process.env.SSO_TOKEN}`,
-    },
-  };
-  axios.request(config)
-    .then(async (response) => {
-      await storemarketrates([response.data]);
-      res.json({
-        message: 'data saved successfully',
-      });
-    })
-    .catch((error) => {
-      logger.error(error);
-      const resdata = {
-        message: 'error while fetching data. please check logs for full error.',
-      };
-      res.json(resdata);
+  const { data } = req.body;
+  try {
+    await storemarketrates([data]);
+    res.json({
+      message: 'data saved successfully',
     });
+  } catch (error) {
+    logger.error(error);
+    res.json({
+      message: 'error while fetching data. please check logs for full error.',
+    });
+  }
 });
 module.exports = router;
