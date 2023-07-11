@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
@@ -8,11 +9,7 @@ require('dotenv').config();
 
 const router = express.Router();
 
-// eslint-disable-next-line no-unused-vars
 router.get('/', async (req, res, next) => {
-  const {
-    currency, types, rollupLimit, rollupModel,
-  } = req.body;
   const markets = await Market.aggregate([{
     $project: {
       marketId: 1,
@@ -23,6 +20,13 @@ router.get('/', async (req, res, next) => {
     ids = `${ids + markets[i].marketId},`;
   }
   ids = ids.replace(/,$/, '');
+  res.json({ ids });
+});
+
+router.post('/', async (req, res, next) => {
+  const {
+    currency, types, rollupLimit, rollupModel,
+  } = req.body;
   const config = {
     method: 'get',
     maxBodyLength: Infinity,
@@ -46,5 +50,4 @@ router.get('/', async (req, res, next) => {
       res.json(resdata);
     });
 });
-
 module.exports = router;
