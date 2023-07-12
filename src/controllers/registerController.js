@@ -30,6 +30,17 @@ const handleNewUser = async (req, res) => {
   }
 };
 
+const smsSend = (mobile) => {
+  const config = {
+    method: 'get',
+    maxBodyLength: Infinity,
+    url: `https://2factor.in/API/V1/${process.env.SMS_API_KEY}/SMS/${mobile}/AUTOGEN/`,
+    headers: {},
+    maxRedirects: 0,
+  };
+  return config;
+};
+
 const generateotp = async (req, res) => {
   const { user, mobile, ip } = req.body;
   if (!user || !mobile) return res.status(400).json({ message: 'Username and mobile number are required.' });
@@ -44,13 +55,7 @@ const generateotp = async (req, res) => {
   }]);
   if (duplicate.length > 0) return res.status(409).json({ message: 'Username or mobile number already exists.' });
   try {
-    const config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: `https://2factor.in/API/V1/${process.env.SMS_API_KEY}/SMS/${mobile}/AUTOGEN/`,
-      headers: { },
-      maxRedirects: 0,
-    };
+    const config = smsSend(mobile);
     axios.request(config)
       .then((response) => {
         res.status(200).json({ message: response.data });
@@ -85,7 +90,7 @@ const verifyotp = async (req, res) => {
       method: 'get',
       maxBodyLength: Infinity,
       url: `https://2factor.in/API/V1/${process.env.SMS_API_KEY}/SMS/VERIFY3/${mobile}/${otp}`,
-      headers: { },
+      headers: {},
       maxRedirects: 0,
     };
     const response = await axios.request(config);
@@ -93,14 +98,16 @@ const verifyotp = async (req, res) => {
       res.status(400).json({ message: response.data });
     } else {
       const hashedPwd = await bcrypt.hash(pwd, 10);
+      const roles = ['User'];
+
       await User.create({
         username: user,
         password: hashedPwd,
         mobile,
         ip,
         origin: req.headers.origin,
+        roles
       });
-      const roles = ['User'];
       const accessToken = jwt.sign(
         {
           username: user,
@@ -116,4 +123,109 @@ const verifyotp = async (req, res) => {
   }
 };
 
-module.exports = { handleNewUser, generateotp, verifyotp };
+const resendOtp = async (req, res) => {
+  const { mobile, ip } = req.body;
+  if (!mobile) return res.status(400).json({ message: 'mobile number required.' });
+  const data = await User.findOne({ mobile });
+  if (!data) return res.status(409).json({ message: 'mobile number not exist.' });
+
+  try {
+    const config = smsSend(mobile);
+    axios.request(config)
+      .then((response) => {
+        res.status(200).json({ message: response.data });
+      })
+      .catch((error) => {
+        logger.info(error);
+        res.status(500).json({ message: 'Error while generating OTP.' });
+      });
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while generating OTP.' });
+  }
+};
+
+const changePassword = async (req, res) => {
+  const { pwd, newpwd, user } = req.body;
+  if (!pwd || !newpwd) {
+    return res.status(400).json({ message: 'Password is required.' });
+  }
+  try {
+    const data = await User.findOne({ username: user }).select('password');
+    if (!data) {
+      return res.status(409).json({ message: 'User does not exist.' });
+    }
+    const passwordMatch = await bcrypt.compare(pwd, data.password);
+    if (!passwordMatch) {
+      return res.status(400).json({ message: 'Incorrect password.' });
+    }
+    const hashedPwd = await bcrypt.hash(newpwd, 10);
+    data.password = hashedPwd;
+    await data.save();
+    return res.status(200).json({ message: 'Password changed successfully.' });
+  } catch (error) {
+    return res.status(500).json({ message: 'An error occurred while changing the password.' });
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  const { mobile } = req.body;
+  if (!mobile) return res.status(400).json({ message: 'mobile number required.' });
+  const data = await User.findOne({ mobile });
+  if (!data) return res.status(409).json({ message: 'mobile number not exist.' });
+
+  try {
+    const config = smsSend(mobile);
+    axios.request(config)
+      .then((response) => {
+        res.status(200).json({ message: response.data });
+      })
+      .catch((error) => {
+        logger.info(error);
+        res.status(500).json({ message: 'Error while generating OTP.' });
+      });
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while generating OTP.' });
+  }
+};
+
+const verifyForgotPassword = async (req, res) => {
+  const {
+    pwd, mobile, ip, otp,
+  } = req.body;
+  if (!pwd || !mobile || !otp) return res.status(400).json({ message: 'Username, Password, Mobile number and OTP is required.' });
+  const exists = await User.findOne({ mobile });
+  if (!exists) return res.status(409).json({ message: 'mobile number not matched.' });
+  try {
+    const config = {
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: `https://2factor.in/API/V1/${process.env.SMS_API_KEY}/SMS/VERIFY3/${mobile}/${otp}`,
+      headers: {},
+      maxRedirects: 0,
+    };
+    const response = await axios.request(config);
+    if (response.data.Status === 'Error') {
+      res.status(400).json({ message: response.data });
+    } else {
+      const hashedPwd = await bcrypt.hash(pwd, 10);
+      exists.password = hashedPwd;
+      exists.save();
+      res.json({ message: 'Password update successful.' });
+    }
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while verifying OTP.' });
+  }
+};
+
+module.exports = {
+  handleNewUser,
+  generateotp,
+  verifyotp,
+  resendOtp,
+  changePassword,
+  forgotPassword,
+  verifyForgotPassword
+};
