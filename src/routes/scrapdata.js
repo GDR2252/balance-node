@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
@@ -8,11 +9,7 @@ require('dotenv').config();
 
 const router = express.Router();
 
-// eslint-disable-next-line no-unused-vars
 router.get('/', async (req, res, next) => {
-  const {
-    currency, types, rollupLimit, rollupModel,
-  } = req.body;
   const markets = await Market.aggregate([{
     $project: {
       marketId: 1,
@@ -23,28 +20,22 @@ router.get('/', async (req, res, next) => {
     ids = `${ids + markets[i].marketId},`;
   }
   ids = ids.replace(/,$/, '');
-  const config = {
-    method: 'get',
-    maxBodyLength: Infinity,
-    url: `https://ero.betfair.com/www/sports/exchange/readonly/v1/bymarket?_ak=nzIFcwyWhrlwYMrh&alt=json&currencyCode=${currency}&locale=en_GB&marketIds=${ids}&rollupLimit=${rollupLimit}&rollupModel=${rollupModel}&types=${types}`,
-    headers: {
-      Cookie: `ssoid=${process.env.SSO_TOKEN}`,
-    },
-  };
-  axios.request(config)
-    .then(async (response) => {
-      await storemarketrates([response.data]);
-      res.json({
-        message: 'data saved successfully',
-      });
-    })
-    .catch((error) => {
-      logger.error(error);
-      const resdata = {
-        message: 'error while fetching data. please check logs for full error.',
-      };
-      res.json(resdata);
-    });
+  res.json({ ids });
 });
 
+router.post('/', async (req, res, next) => {
+  const { data } = req.body;
+  logger.info(data);
+  try {
+    await storemarketrates(data);
+    res.json({
+      message: 'data saved successfully',
+    });
+  } catch (error) {
+    logger.error(error);
+    res.json({
+      message: 'error while fetching data. please check logs for full error.',
+    });
+  }
+});
 module.exports = router;
