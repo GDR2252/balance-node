@@ -12,7 +12,7 @@ async function storemarketrates(marketrates) {
       const filter = { marketId: element.marketId };
       const update = element;
       const result = await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
-        .findOneAndUpdate(filter, update, { upsert: true });
+        .findOneAndUpdate(filter, { $set: { update } }, { upsert: true });
       logger.info(`${result.insertedCount} new listings created with the following ids:`);
       logger.info(result.insertedIds);
     } catch (err) {
