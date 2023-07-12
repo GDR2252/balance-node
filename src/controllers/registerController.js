@@ -98,15 +98,16 @@ const verifyotp = async (req, res) => {
       res.status(400).json({ message: response.data });
     } else {
       const hashedPwd = await bcrypt.hash(pwd, 10);
+      const roles = ['User'];
+
       await User.create({
         username: user,
         password: hashedPwd,
         mobile,
         ip,
         origin: req.headers.origin,
-        roles: 'User'
+        roles
       });
-      const roles = ['User'];
       const accessToken = jwt.sign(
         {
           username: user,
