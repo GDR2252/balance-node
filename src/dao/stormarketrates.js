@@ -17,6 +17,7 @@ async function storemarketrates(marketrates) {
         isMarketDataVirtual: element.isMarketDataVirtual,
         isMarketDataDelayed: element.isMarketDataDelayed,
         highWaterMark: element.highWaterMark,
+        lastChanged: new Date().toISOString(),
       };
       const result = await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
         .findOneAndUpdate(filter, { $set: update }, { upsert: true });
