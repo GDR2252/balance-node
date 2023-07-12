@@ -19,10 +19,8 @@ async function storemarketrates(marketrates) {
         highWaterMark: element.highWaterMark,
         lastChanged: new Date().toISOString(),
       };
-      const result = await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
+      await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
         .findOneAndUpdate(filter, { $set: update }, { upsert: true });
-      logger.info(`${result.insertedCount} new listings created with the following ids:`);
-      logger.info(result.insertedIds);
     } catch (err) {
       logger.error(err);
     } finally {
