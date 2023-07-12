@@ -104,6 +104,7 @@ const verifyotp = async (req, res) => {
         mobile,
         ip,
         origin: req.headers.origin,
+        roles: 'User'
       });
       const roles = ['User'];
       const accessToken = jwt.sign(
