@@ -151,11 +151,11 @@ const changePassword = async (req, res) => {
     return res.status(400).json({ message: 'Password is required.' });
   }
   try {
-    const data = await User.findOne({ username: user }).select('+pwd');
+    const data = await User.findOne({ username: user }).select('password');
     if (!data) {
       return res.status(409).json({ message: 'User does not exist.' });
     }
-    const passwordMatch = await bcrypt.compare(pwd, data.pwd);
+    const passwordMatch = await bcrypt.compare(pwd, data.password);
     if (!passwordMatch) {
       return res.status(400).json({ message: 'Incorrect password.' });
     }
