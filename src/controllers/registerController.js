@@ -115,7 +115,9 @@ const verifyotp = async (req, res) => {
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: '1d' },
       );
-      res.json({ roles, accessToken });
+      res.json({
+        roles, username: user, mobile, accessToken,
+      });
     }
   } catch (err) {
     logger.error(err);
