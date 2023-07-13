@@ -2,6 +2,13 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
+function getBalance(value) {
+  if (typeof value !== 'undefined') {
+     return parseFloat(value.toString());
+  }
+  return value;
+}
+
 const userSchema = new Schema({
   firstName: {
     type: String,
@@ -21,15 +28,21 @@ const userSchema = new Schema({
     enum: ['Admin', 'WhiteLabel', 'Super', 'Master', 'Agent', 'User'],
   }],
   balance: {
-    type: mongoose.Types.Decimal128,
+    type: Schema.Types.Decimal128,
+    default: 0,
+    get: getBalance,
   },
   exposureLimit: {
     type: Number,
+    default: 0,
   },
   password: {
     type: String,
   },
-  parentId: {
+  parentId: [{
+    type: Number,
+  }],
+  level: {
     type: Number,
   },
   commision: {
