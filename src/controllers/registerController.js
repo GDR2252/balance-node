@@ -106,7 +106,7 @@ const verifyotp = async (req, res) => {
         mobile,
         ip,
         origin: req.headers.origin,
-        roles
+        roles,
       });
       const accessToken = jwt.sign(
         {
@@ -227,5 +227,5 @@ module.exports = {
   resendOtp,
   changePassword,
   forgotPassword,
-  verifyForgotPassword
+  verifyForgotPassword,
 };
