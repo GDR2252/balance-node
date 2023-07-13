@@ -24,7 +24,7 @@ const betlimitRouter = require('./routes/betlimit');
 const changeauthRouter = require('./routes/changeauth');
 const listRouter = require('./routes/list');
 const loginRouter = require('./routes/userlogin');
-const profileRouter = require('./routes/profile');
+const balanceRouter = require('./routes/balance');
 
 const app = express();
 connectDB();
@@ -59,7 +59,7 @@ app.use('/events', eventsRouter);
 app.use('/markets', marketsRouter);
 app.use('/betlimits', betlimitRouter);
 app.use('/changeauth', changeauthRouter);
-app.use('/profile', profileRouter);
+app.use('/getBalance', balanceRouter);
 
 // custom 404
 // eslint-disable-next-line no-unused-vars
