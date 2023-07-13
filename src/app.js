@@ -25,6 +25,7 @@ const changeauthRouter = require('./routes/changeauth');
 const listRouter = require('./routes/list');
 const loginRouter = require('./routes/userlogin');
 const balanceRouter = require('./routes/balance');
+const finduserRouter = require('./routes/finduser');
 
 const app = express();
 connectDB();
@@ -60,6 +61,7 @@ app.use('/markets', marketsRouter);
 app.use('/betlimits', betlimitRouter);
 app.use('/changeauth', changeauthRouter);
 app.use('/getBalance', balanceRouter);
+app.use('/finduser', finduserRouter);
 
 // custom 404
 // eslint-disable-next-line no-unused-vars
