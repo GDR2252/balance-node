@@ -50,6 +50,7 @@ app.use('/refresh', refreshRouter);
 app.use('/logout', logoutRouter);
 app.use('/navigation', navigationRouter);
 app.use('/list', listRouter);
+app.use('/finduser', finduserRouter);
 
 app.use(verifyJWT);
 app.use('/getnavdata', fetchNavDataRouter);
@@ -61,7 +62,6 @@ app.use('/markets', marketsRouter);
 app.use('/betlimits', betlimitRouter);
 app.use('/changeauth', changeauthRouter);
 app.use('/getBalance', balanceRouter);
-app.use('/finduser', finduserRouter);
 
 // custom 404
 // eslint-disable-next-line no-unused-vars
