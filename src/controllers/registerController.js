@@ -167,9 +167,9 @@ async function forgotpassword(req, res) {
 
 async function verifyforgotpassword(req, res) {
   const {
-    pwd, mobile, ip, otp,
+    mobile, ip, otp,
   } = req.body;
-  if (!pwd || !mobile || !otp) return res.status(400).json({ message: 'Password, Mobile number and OTP is required.' });
+  if (!mobile || !otp) return res.status(400).json({ message: 'Password, Mobile number and OTP is required.' });
   try {
     const config = {
       method: 'get',
@@ -182,15 +182,31 @@ async function verifyforgotpassword(req, res) {
     if (response.data.Status === 'Error') {
       res.status(400).json({ message: response.data.Details });
     } else {
-      const hashedPwd = await bcrypt.hash(pwd, 10);
-      const data = await User.findOne({ mobile }).exec();
-      data.password = hashedPwd;
-      await data.save();
-      res.status(201).json({ success: 'New password updated successfully!' });
+      res.status(200).json({ message: response.data.Details });
     }
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: 'Error while verifying OTP.' });
+  }
+}
+
+async function changeforgotpassword(req, res) {
+  const {
+    pwd, mobile, ip,
+  } = req.body;
+  if (!pwd || !mobile) return res.status(400).json({ message: 'Password, Mobile number is required.' });
+  const data = await User.findOne({ mobile }).exec();
+  if (!data) {
+    res.status(404).json({ message: 'Mobile Number does not exists!' });
+  }
+  try {
+    const hashedPwd = await bcrypt.hash(pwd, 10);
+    data.password = hashedPwd;
+    await data.save();
+    res.status(201).json({ success: 'New password updated successfully!' });
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while changing new password.' });
   }
 }
 
@@ -201,4 +217,5 @@ module.exports = {
   resendOtp,
   forgotpassword,
   verifyforgotpassword,
+  changeforgotpassword,
 };
