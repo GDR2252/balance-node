@@ -1,6 +1,9 @@
 const path = require('path');
+const axios = require('axios');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const Market = require('../model/Market');
+const Selection = require('../model/Selection');
+require('dotenv').config();
 
 async function addMarkets(req, res) {
   const { marketId } = req.body;
@@ -25,7 +28,41 @@ async function addMarkets(req, res) {
       isPreBet: body.isPreBet || false,
     });
     logger.debug(result);
-    res.status(201).json({ success: `New market ${marketId} created!` });
+
+    const data = JSON.stringify({
+      marketId,
+    });
+
+    const config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: process.env.HELPER_URL,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data,
+    };
+
+    const helperres = await axios.request(config);
+    const eventypes = helperres.data.eventTypes;
+    const sportsId = eventypes[0].eventTypeId;
+    const marketnodes = eventypes[0].eventNodes[0].marketNodes[0];
+    const { marketTime } = marketnodes.description;
+    const { runners } = marketnodes;
+
+    runners.forEach(async (element) => {
+      const { selectionId } = element;
+      const selectionName = element.description.runnerName;
+      const filter = { selectionId };
+      const update = {
+        selectionId,
+        selectionName,
+        sportsId,
+        marketTime,
+      };
+      await Selection.findOneAndUpdate(filter, { $set: update }, { upsert: true });
+    });
+    res.status(201).json({ message: `New market ${marketId} created!` });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
