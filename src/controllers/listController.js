@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-underscore-dangle */
 const path = require('path');
+const { MongoClient } = require('mongodb');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const Sport = require('../model/Sport');
 const Tournament = require('../model/Tournament');
@@ -97,4 +98,21 @@ async function sideMenuList(req, res) {
   }
 }
 
-module.exports = { sportsList, sideMenuList };
+async function getEventList(req, res) {
+  const uri = process.env.MONGO_URI;
+  const client = new MongoClient(uri);
+  let results = [];
+  try {
+    await client.connect();
+    const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
+      .find({});
+    results = await cursor.toArray();
+  } catch (err) {
+    logger.error(err);
+  } finally {
+    await client.close();
+  }
+  res.send(results);
+}
+
+module.exports = { sportsList, sideMenuList, getEventList };
