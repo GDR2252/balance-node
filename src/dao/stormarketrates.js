@@ -25,12 +25,11 @@ async function storemarketrates(marketrates) {
         .findOneAndUpdate(filter, { $set: update }, { upsert: true });
     } catch (err) {
       logger.error(err);
-    } finally {
-      setTimeout(async () => {
-        await client.close();
-      }, 5);
     }
   });
+  if (client) {
+    await client.close();
+  }
 }
 
 module.exports = { storemarketrates };
