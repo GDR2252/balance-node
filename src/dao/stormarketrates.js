@@ -26,7 +26,9 @@ async function storemarketrates(marketrates) {
     } catch (err) {
       logger.error(err);
     } finally {
-      await client.close();
+      setTimeout(async () => {
+        await client.close();
+      }, 5);
     }
   });
 }
