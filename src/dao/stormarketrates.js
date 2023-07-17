@@ -27,9 +27,6 @@ async function storemarketrates(marketrates) {
       logger.error(err);
     }
   });
-  if (client) {
-    await client.close();
-  }
 }
 
 module.exports = { storemarketrates };
