@@ -11,6 +11,8 @@ async function storemarketrates(marketrates) {
       await client.connect();
       const filter = { marketId: element.marketId };
       const update = {
+        sportsId: element.sportsId,
+        eventId: element.eventId,
         state: element.state,
         runners: element.runners,
         marketId: element.marketId,
