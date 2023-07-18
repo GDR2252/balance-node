@@ -6,6 +6,7 @@ const logger = require('log4js').getLogger(path.parse(__filename).name);
 const Sport = require('../model/Sport');
 const Tournament = require('../model/Tournament');
 const Event = require('../model/Event');
+const Market = require('../model/Market');
 
 async function sportsList(req, res) {
   const retresult = { data: [] };
@@ -102,10 +103,8 @@ async function getEventList(req, res) {
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   let results = [];
-  const data = {
-    inplay: Boolean,
-    startTime: String,
-  };
+  const retresult = [];
+  const data = { };
   try {
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
@@ -114,6 +113,21 @@ async function getEventList(req, res) {
     if (results.length > 0) {
       for (let i = 0; i < results.length; i += 1) {
         data.inplay = results[i].state.inplay;
+        data.eventId = results[i].eventId;
+        const eventdata = await Event.findOne({ eventId: results[i].eventId }).exec();
+        data.eventName = eventdata.eventName;
+        const tournamentdata = await Tournament
+          .findOne({ tournamentId: eventdata.tournamentsId }).exec();
+        data.tournamentName = tournamentdata.tournamentName;
+        const marketdata = await Market.findOne({ marketId: results[i].marketId }).exec();
+        data.isVirtual = marketdata.isVirtual;
+        data.isStreaming = marketdata.isStreaming;
+        data.isSportsbook = marketdata.isSportsbook;
+        data.isPreBet = marketdata.isPreBet;
+        data.isFancy = marketdata.isFancy;
+        data.isCasinoGame = marketdata.isCasinoGame;
+        data.isBookmakers = marketdata.isBookmakers;
+        retresult.push(data);
       }
     }
   } catch (err) {
@@ -121,7 +135,7 @@ async function getEventList(req, res) {
   } finally {
     await client.close();
   }
-  res.send(data);
+  res.send(retresult);
 }
 
 module.exports = { sportsList, sideMenuList, getEventList };
