@@ -120,13 +120,13 @@ async function getEventList(req, res) {
           .findOne({ tournamentId: eventdata.tournamentsId }).exec();
         data.tournamentName = tournamentdata.tournamentName;
         const marketdata = await Market.findOne({ marketId: results[i].marketId }).exec();
-        data.isVirtual = marketdata.isVirtual;
-        data.isStreaming = marketdata.isStreaming;
-        data.isSportsbook = marketdata.isSportsbook;
-        data.isPreBet = marketdata.isPreBet;
-        data.isFancy = marketdata.isFancy;
-        data.isCasinoGame = marketdata.isCasinoGame;
-        data.isBookmakers = marketdata.isBookmakers;
+        data.isVirtual = marketdata.isVirtual || false;
+        data.isStreaming = marketdata.isStreaming || false;
+        data.isSportsbook = marketdata.isSportsbook || false;
+        data.isPreBet = marketdata.isPreBet || false;
+        data.isFancy = marketdata.isFancy || false;
+        data.isCasinoGame = marketdata.isCasinoGame || false;
+        data.isBookmakers = marketdata.isBookmakers || false;
         retresult.push(data);
       }
     }
