@@ -114,6 +114,13 @@ async function getEventList(req, res) {
       for (let i = 0; i < results.length; i += 1) {
         data.inplay = results[i].state.inplay;
         data.eventId = results[i].eventId;
+        data.marketTime = results[i].description?.marketTime;
+        const { runners } = results[i];
+        const runnerdata = [];
+        runners.forEach((element) => {
+          runnerdata.push(element.exchange);
+        });
+        data.runners = runnerdata;
         const eventdata = await Event.findOne({ eventId: results[i].eventId }).exec();
         data.eventName = eventdata?.eventName;
         const tournamentdata = await Tournament
