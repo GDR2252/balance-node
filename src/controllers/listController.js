@@ -102,17 +102,26 @@ async function getEventList(req, res) {
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   let results = [];
+  const data = {
+    inplay: Boolean,
+    startTime: String,
+  };
   try {
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
       .find({});
     results = await cursor.toArray();
+    if (results.length > 0) {
+      for (let i = 0; i < results.length; i += 1) {
+        data.inplay = results[i].state.inplay;
+      }
+    }
   } catch (err) {
     logger.error(err);
   } finally {
     await client.close();
   }
-  res.send(results);
+  res.send(data);
 }
 
 module.exports = { sportsList, sideMenuList, getEventList };
