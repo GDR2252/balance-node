@@ -140,6 +140,8 @@ async function getEventList(req, res) {
         data.isFancy = marketdata?.isFancy || false;
         data.isCasinoGame = marketdata?.isCasinoGame || false;
         data.isBookmakers = marketdata?.isBookmakers || false;
+        logger.info('Data before Push');
+        logger.info(data);
         retresult.push(data);
       }
     }
