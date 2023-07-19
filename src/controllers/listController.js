@@ -111,13 +111,14 @@ async function getEventList(req, res) {
       .find({});
     results = await cursor.toArray();
     if (results.length > 0) {
+      logger.info(results.length);
       for (let i = 0; i < results.length; i += 1) {
         data.sportsId = results[i].sportsId;
         const sportsdata = await Sport.findOne({ sportId: data.sportsId }).exec();
         data.sportName = sportsdata.sportName;
         data.inplay = results[i].state.inplay;
         data.eventId = results[i].eventId;
-        data.marketTime = results[i].description?.marketTime;
+        data.marketTime = results[i].state?.lastMatchTime;
         const { runners } = results[i];
         const runnerdata = [];
         runners.forEach((element) => {
