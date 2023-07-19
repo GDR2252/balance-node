@@ -143,6 +143,8 @@ async function getEventList(req, res) {
         logger.info('Data before Push');
         logger.info(data);
         retresult.push(data);
+        logger.info('Data after push');
+        logger.info(retresult);
       }
     }
   } catch (err) {
