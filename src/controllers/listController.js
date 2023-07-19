@@ -110,9 +110,11 @@ async function getEventList(req, res) {
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
       .find({});
     results = await cursor.toArray();
+    logger.info(results);
     if (results.length > 0) {
       logger.info(results.length);
       for (let i = 0; i < results.length; i += 1) {
+        logger.info(results[i]);
         data.sportsId = results[i].sportsId;
         const sportsdata = await Sport.findOne({ sportId: data.sportsId }).exec();
         data.sportName = sportsdata.sportName;
