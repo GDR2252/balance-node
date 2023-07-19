@@ -110,11 +110,8 @@ async function getEventList(req, res) {
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
       .find({});
     results = await cursor.toArray();
-    logger.info(results);
     if (results.length > 0) {
-      logger.info(results.length);
       for (let i = 0; i < results.length; i += 1) {
-        logger.info(results[i]);
         data.sportsId = results[i].sportsId;
         const sportsdata = await Sport.findOne({ sportId: data.sportsId }).exec();
         data.sportName = sportsdata.sportName;
@@ -140,11 +137,8 @@ async function getEventList(req, res) {
         data.isFancy = marketdata?.isFancy || false;
         data.isCasinoGame = marketdata?.isCasinoGame || false;
         data.isBookmakers = marketdata?.isBookmakers || false;
-        logger.info('Data before Push');
-        logger.info(data);
-        retresult.push(data);
-        logger.info('Data after push');
-        logger.info(retresult);
+        const listdata = JSON.parse(JSON.stringify(data));
+        retresult.push(listdata);
       }
     }
   } catch (err) {
