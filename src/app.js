@@ -42,6 +42,7 @@ app.use(cors());
 app.use('/scrapdata', require('./routes/scrapdata'));
 app.use('/ssotoken', require('./routes/ssotoken'));
 app.use('/storenavdata', require('./routes/storenavdata'));
+app.use('/fetchmarketrate', require('./routes/getmarketrates'));
 
 app.use('/register', registerRouter);
 app.use('/auth', authRouter);
@@ -51,10 +52,10 @@ app.use('/logout', logoutRouter);
 app.use('/navigation', navigationRouter);
 app.use('/list', listRouter);
 app.use('/finduser', finduserRouter);
+app.use('/getthemes', fetchThemesRouter);
 
 app.use(verifyJWT);
 app.use('/getnavdata', fetchNavDataRouter);
-app.use('/getthemes', fetchThemesRouter);
 app.use('/sports', sportsRouter);
 app.use('/tournaments', tournamentsRouter);
 app.use('/events', eventsRouter);
