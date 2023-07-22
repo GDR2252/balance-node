@@ -62,6 +62,7 @@ app.use('/markets', marketsRouter);
 app.use('/betlimits', betlimitRouter);
 app.use('/changeauth', changeauthRouter);
 app.use('/getBalance', balanceRouter);
+app.use('/rules', require('./routes/rules'));
 
 // custom 404
 // eslint-disable-next-line no-unused-vars
