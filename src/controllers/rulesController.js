@@ -51,7 +51,7 @@ async function addsubrules(req, res) {
 }
 
 async function deleterules(req, res) {
-  const { id } = req.body;
+  const { id } = req.query;
   if (!id) return res.status(400).json({ message: 'Id is required.' });
   try {
     const data = await matchrules.findOne({ id }).exec();
