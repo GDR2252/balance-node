@@ -2,6 +2,10 @@ const { MongoClient } = require('mongodb');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 require('dotenv').config();
+const Sport = require('../model/Sport');
+const Event = require('../model/Event');
+const Market = require('../model/Market');
+const Selection = require('../model/Selection');
 
 async function storemarketrates(marketrates) {
   const uri = process.env.MONGO_URI;
@@ -11,16 +15,31 @@ async function storemarketrates(marketrates) {
       await client.connect();
       const filter = { marketId: element.marketId };
       const update = {
-        sportsId: element.sportsId,
-        eventId: element.eventId,
+        sportsId: element.sportsId.toISOString(),
+        eventId: element.eventId.toISOString(),
+        exEventId: new Date().getTime(),
+        exMarketId: new Date().getTime(),
         state: element.state,
         runners: element.runners,
+        runnerData: {},
         marketId: element.marketId,
         isMarketDataVirtual: element.isMarketDataVirtual,
         isMarketDataDelayed: element.isMarketDataDelayed,
         highWaterMark: element.highWaterMark,
         lastChanged: new Date().toISOString(),
       };
+      const sportsdata = await Sport.findOne({ sportId: update.sportsId }).exec();
+      update.sportName = sportsdata?.sportName;
+      const eventdata = await Event.findOne({ eventId: update.eventId }).exec();
+      update.eventName = eventdata?.eventName;
+      const marketdata = await Market.findOne({ marketId: update.marketId }).exec();
+      update.marketName = marketdata?.marketName;
+      const selectiondata = await Selection.find({ marketId: update.marketId }).exec();
+      if (selectiondata.length > 0) {
+        selectiondata.forEach((ele) => {
+          update.runnerData[ele.selectionId] = ele.selectionName;
+        });
+      }
       await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
         .findOneAndUpdate(filter, { $set: update }, { upsert: true });
     } catch (err) {
