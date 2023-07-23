@@ -127,7 +127,7 @@ async function getEventList(req, res) {
         const eventdata = await Event.findOne({ eventId: results[i].eventId }).exec();
         data.eventName = eventdata?.eventName;
         const tournamentdata = await Tournament
-          .findOne({ tournamentId: eventdata.tournamentsId }).exec();
+          .findOne({ tournamentId: eventdata?.tournamentsId }).exec();
         data.tournamentName = tournamentdata?.tournamentName;
         const marketdata = await Market.findOne({ marketId: results[i].marketId }).exec();
         data.isVirtual = marketdata?.isVirtual || false;
