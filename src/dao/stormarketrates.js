@@ -17,8 +17,8 @@ async function storemarketrates(marketrates) {
       const update = {
         sportsId: (element.sportsId).toString(),
         eventId: (element.eventId).toString(),
-        exEventId: new Date().getTime(),
-        exMarketId: new Date().getTime(),
+        exEventId: Date.now().toString(),
+        exMarketId: Date.now().toString(),
         state: element.state,
         runners: element.runners,
         runnerData: {},
