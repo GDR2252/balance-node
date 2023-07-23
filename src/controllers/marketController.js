@@ -59,6 +59,7 @@ async function addMarkets(req, res) {
         selectionName,
         sportsId,
         marketTime,
+        marketId,
       };
       await Selection.findOneAndUpdate(filter, { $set: update }, { upsert: true });
     });

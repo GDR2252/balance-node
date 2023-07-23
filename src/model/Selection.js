@@ -15,6 +15,9 @@ const selectionSchema = new Schema({
   marketTime: {
     type: String,
   },
+  marketId: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model('Selection', selectionSchema);
