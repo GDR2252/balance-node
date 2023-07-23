@@ -8,8 +8,9 @@ const router = express.Router();
 
 // eslint-disable-next-line no-unused-vars
 router.get('/', auth, async (req, res, next) => {
+  const { origin } = req.headers;
   logger.info('Fetching Data for Themes.');
-  const data = await fetchThemesData();
+  const data = await fetchThemesData(origin);
   logger.info('Data fetched for Themes.');
   res.json(data);
 });

@@ -20,14 +20,14 @@ async function fetchNavData() {
   return results;
 }
 
-async function fetchThemesData() {
+async function fetchThemesData(origin) {
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   let results = [];
   try {
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection(process.env.THEME_COLLECTION)
-      .find({});
+      .find({ origin });
     results = await cursor.toArray();
   } catch (err) {
     logger.error(err);
