@@ -37,6 +37,7 @@ async function storemarketrates(marketrates) {
       const selectiondata = await Selection.find({ marketId: update.marketId }).exec();
       if (selectiondata.length > 0) {
         selectiondata.forEach((ele) => {
+          logger.info(ele.selectionName);
           update.runnerData[ele.selectionId] = ele.selectionName;
         });
       }
