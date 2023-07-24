@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-function getBalance(value) {
+function getdecimal(value) {
   if (typeof value !== 'undefined') {
-     return parseFloat(value.toString());
+    return parseFloat(value.toString());
   }
   return value;
 }
@@ -30,7 +30,12 @@ const userSchema = new Schema({
   balance: {
     type: Schema.Types.Decimal128,
     default: 0,
-    get: getBalance,
+    get: getdecimal,
+  },
+  creditReference: {
+    type: Schema.Types.Decimal128,
+    default: 0,
+    get: getdecimal,
   },
   exposureLimit: {
     type: Number,
