@@ -19,6 +19,8 @@ function processcontent(content) {
     const docId = element._id;
     delete element._id;
     delete element.__v;
+    delete element.isMarketDataDelayed;
+    delete element.isMarketDataVirtual;
     obj[docId] = element;
   });
   return obj;

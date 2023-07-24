@@ -73,7 +73,33 @@ async function deleterules(req, res) {
 }
 
 async function fetchrules(req, res) {
-
+  const rules = [];
+  try {
+    const mainrules = await matchrules.aggregate([{
+      $match: {
+        parentId: null,
+      },
+    }]);
+    for (let i = 0; i < mainrules.length; i += 1) {
+      const element = mainrules[i];
+      delete element._id;
+      delete element.__v;
+      delete element.createdAt;
+      delete element.updatedAt;
+      const childrules = await matchrules.aggregate([{
+        $match: {
+          parentId: element.id,
+        },
+      }]);
+      element.children = childrules;
+      rules.push(element);
+      logger.info(rules);
+    }
+    res.status(201).json(rules);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: err.message });
+  }
 }
 
 module.exports = {
