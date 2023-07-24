@@ -1,4 +1,5 @@
 const path = require('path');
+const crypto = require('crypto');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const Event = require('../model/Event');
 const Market = require('../model/Market');
@@ -12,6 +13,7 @@ async function addEvents(req, res) {
   try {
     const result = await Event.create({
       eventId,
+      exEventId: crypto.randomBytes(16).toString('hex'),
       sportId: body.sportId,
       tournamentsId: body.tournamentsId,
       eventName: body.eventName,

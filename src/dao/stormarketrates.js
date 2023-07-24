@@ -1,5 +1,4 @@
 const { MongoClient } = require('mongodb');
-const crypto = require('crypto');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 require('dotenv').config();
@@ -18,8 +17,6 @@ async function storemarketrates(marketrates) {
       const update = {
         sportsId: (element.sportsId).toString(),
         eventId: (element.eventId).toString(),
-        exEventId: crypto.randomBytes(16).toString('hex'),
-        exMarketId: crypto.randomBytes(16).toString('hex'),
         state: element.state,
         runners: element.runners,
         runnerData: {},
@@ -33,8 +30,10 @@ async function storemarketrates(marketrates) {
       update.sportName = sportsdata?.sportName;
       const eventdata = await Event.findOne({ eventId: update.eventId }).exec();
       update.eventName = eventdata?.eventName;
+      update.exEventId = eventdata?.exEventId;
       const marketdata = await Market.findOne({ marketId: update.marketId }).exec();
       update.marketName = marketdata?.marketName;
+      update.exMarketId = marketdata?.exMarketId;
       const selectiondata = await Selection.find({ marketId: update.marketId }).exec();
       if (selectiondata.length > 0) {
         selectiondata.forEach((ele) => {

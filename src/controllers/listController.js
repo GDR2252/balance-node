@@ -65,7 +65,7 @@ async function sideMenuList(req, res) {
             },
           }, {
             $project: {
-              eventId: 1,
+              exEventId: 1,
               eventName: 1,
             },
           }]);
@@ -91,7 +91,7 @@ async function sideMenuList(req, res) {
     json = JSON.parse(JSON.stringify(json).split('"tournamentId":').join('"id":'));
     json = JSON.parse(JSON.stringify(json).split('"tournamentName":').join('"name":'));
     json = JSON.parse(JSON.stringify(json).split('"events":').join('"children":'));
-    json = JSON.parse(JSON.stringify(json).split('"eventId":').join('"id":'));
+    json = JSON.parse(JSON.stringify(json).split('"exEventId":').join('"id":'));
     json = JSON.parse(JSON.stringify(json).split('"eventName":').join('"name":'));
     res.status(200).json(json);
   } catch (err) {
