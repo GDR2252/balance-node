@@ -1,4 +1,5 @@
 const { MongoClient } = require('mongodb');
+const crypto = require('crypto');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 require('dotenv').config();
@@ -17,8 +18,8 @@ async function storemarketrates(marketrates) {
       const update = {
         sportsId: (element.sportsId).toString(),
         eventId: (element.eventId).toString(),
-        exEventId: Date.now().toString(),
-        exMarketId: Date.now().toString(),
+        exEventId: crypto.randomBytes(16).toString('hex'),
+        exMarketId: crypto.randomBytes(16).toString('hex'),
         state: element.state,
         runners: element.runners,
         runnerData: {},
