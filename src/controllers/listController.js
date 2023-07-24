@@ -117,6 +117,7 @@ async function getEventList(req, res) {
         data.sportName = sportsdata.sportName;
         data.inplay = results[i].state.inplay;
         data.eventId = results[i].eventId;
+        data.exEventId = results[i].exEventId;
         data.marketTime = results[i].state?.lastMatchTime;
         const { runners } = results[i];
         const runnerdata = [];
