@@ -33,6 +33,7 @@ async function storemarketrates(marketrates) {
       const marketdata = await Market.findOne({ marketId: update.marketId }).exec();
       update.marketName = marketdata?.marketName;
       update.exMarketId = marketdata?.exMarketId;
+      update.betLimit = marketdata?.betLimit;
       const selectiondata = await Selection.find({ marketId: update.marketId }).exec();
       if (selectiondata.length > 0) {
         selectiondata.forEach((ele) => {
