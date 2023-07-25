@@ -24,7 +24,6 @@ async function storemarketrates(marketrates) {
         isMarketDataVirtual: element.isMarketDataVirtual,
         isMarketDataDelayed: element.isMarketDataDelayed,
         highWaterMark: element.highWaterMark,
-        lastChanged: new Date().toISOString(),
       };
       const sportsdata = await Sport.findOne({ sportId: update.sportsId }).exec();
       update.sportName = sportsdata?.sportName;
@@ -37,8 +36,8 @@ async function storemarketrates(marketrates) {
       const selectiondata = await Selection.find({ marketId: update.marketId }).exec();
       if (selectiondata.length > 0) {
         selectiondata.forEach((ele) => {
-          logger.info(ele.selectionName);
           update.runnerData[ele.selectionId] = ele.selectionName;
+          update.marketTime = ele.marketTime;
         });
       }
       await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
