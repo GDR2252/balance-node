@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const User = require('../model/User');
+const B2cUser = require('../model/B2cUser');
 require('dotenv').config();
 
 const handleNewUser = async (req, res) => {
@@ -99,14 +100,19 @@ const verifyotp = async (req, res) => {
     } else {
       const hashedPwd = await bcrypt.hash(pwd, 10);
       const roles = ['User'];
-
+      const { origin } = req.headers;
+      const branch = B2cUser.find({ roles: ['Manager'], isActive: true, origin })
+        .projection({})
+        .sort({ _id: -1 })
+        .limit(1);
       await User.create({
         username: user,
         password: hashedPwd,
         mobile,
         ip,
-        origin: req.headers.origin,
+        origin,
         roles,
+        branch: branch._id,
       });
       const accessToken = jwt.sign(
         {

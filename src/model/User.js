@@ -47,6 +47,10 @@ const userSchema = new Schema({
   parentId: [{
     type: Number,
   }],
+  branch: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'B2cUser',
+  },
   level: {
     type: Number,
   },
