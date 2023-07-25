@@ -102,8 +102,6 @@ const verifyotp = async (req, res) => {
       const roles = ['User'];
       const { origin } = req.headers;
       const branch = B2cUser.find({ roles: ['Manager'], isActive: true, origin })
-        .projection({})
-        .sort({ _id: -1 })
         .limit(1);
       await User.create({
         username: user,
