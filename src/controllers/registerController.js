@@ -101,8 +101,7 @@ const verifyotp = async (req, res) => {
       const hashedPwd = await bcrypt.hash(pwd, 10);
       const roles = ['User'];
       const { origin } = req.headers;
-      const branch = B2cUser.find({ roles: ['Manager'], isActive: true, origin })
-        .limit(1);
+      const branch = await B2cUser.findOne({ roles: ['Manager'], isActive: true, origin });
       await User.create({
         username: user,
         password: hashedPwd,
