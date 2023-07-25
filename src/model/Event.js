@@ -7,7 +7,7 @@ const eventSchema = new Schema({
     type: String,
     required: true,
   },
-  exMarketId: {
+  exEventId: {
     type: String,
   },
   sportId: {
