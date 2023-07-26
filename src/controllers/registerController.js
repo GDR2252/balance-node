@@ -109,7 +109,7 @@ const verifyotp = async (req, res) => {
         ip,
         origin,
         roles,
-        branch: branch._id,
+        branch: branch?._id,
       });
       const accessToken = jwt.sign(
         {
