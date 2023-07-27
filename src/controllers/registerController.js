@@ -2,6 +2,7 @@ const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const path = require('path');
+const referralCodes = require('referral-codes');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const User = require('../model/User');
 const B2cUser = require('../model/B2cUser');
@@ -43,7 +44,7 @@ const smsSend = (mobile) => {
 };
 
 const generateotp = async (req, res) => {
-  const { user, mobile, ip } = req.body;
+  const { user, mobile, ip, referral_code } = req.body;
   if (!user || !mobile) return res.status(400).json({ message: 'Username and mobile number are required.' });
   const duplicate = await User.aggregate([{
     $match: {
@@ -55,6 +56,10 @@ const generateotp = async (req, res) => {
     },
   }]);
   if (duplicate.length > 0) return res.status(409).json({ message: 'Username or mobile number already exists.' });
+  if (referral_code) {
+    const validreferralCode = await User.findOne({ selfReferral: referral_code });
+    if (!validreferralCode) return res.status(404).json({ message: 'Referral Code is not valid.' });
+  }
   try {
     const config = smsSend(mobile);
     axios.request(config)
@@ -73,7 +78,7 @@ const generateotp = async (req, res) => {
 
 const verifyotp = async (req, res) => {
   const {
-    user, pwd, mobile, ip, otp,
+    user, pwd, mobile, ip, otp, referral_code,
   } = req.body;
   if (!user || !pwd || !mobile || !otp) return res.status(400).json({ message: 'Username, Password, Mobile number and OTP is required.' });
   const duplicate = await User.aggregate([{
@@ -102,6 +107,10 @@ const verifyotp = async (req, res) => {
       const roles = ['User'];
       const { origin } = req.headers;
       const branch = await B2cUser.findOne({ roles: ['Manager'], isActive: true, origin });
+      logger.info(branch);
+      const selfcode = referralCodes.generate({
+        pattern: '########',
+      });
       await User.create({
         username: user,
         password: hashedPwd,
@@ -109,6 +118,8 @@ const verifyotp = async (req, res) => {
         ip,
         origin,
         roles,
+        selfReferral: selfcode[0].toUpperCase(),
+        registeredReferral: referral_code,
         branch: branch?._id,
       });
       const accessToken = jwt.sign(

@@ -63,6 +63,12 @@ const userSchema = new Schema({
   ip: {
     type: String,
   },
+  selfReferral: {
+    type: String,
+  },
+  registeredReferral: {
+    type: String,
+  },
   refreshToken: {
     type: String,
   },

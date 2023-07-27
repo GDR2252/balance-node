@@ -23,6 +23,7 @@
     "log4js": "^6.9.1",
     "mongodb": "^5.6.0",
     "mongoose": "^7.3.0",
+    "referral-codes": "^2.0.3",
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
