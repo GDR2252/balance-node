@@ -109,7 +109,8 @@ const verifyotp = async (req, res) => {
       const branch = await B2cUser.findOne({ roles: ['Manager'], isActive: true, origin });
       logger.info(branch);
       const selfcode = referralCodes.generate({
-        pattern: '########',
+        length: 8,
+        charset: referralCodes.charset('alphanumeric'),
       });
       await User.create({
         username: user,
