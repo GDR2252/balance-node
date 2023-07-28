@@ -32,6 +32,11 @@ const userSchema = new Schema({
     default: 0,
     get: getdecimal,
   },
+  redeemBalance: {
+    type: Schema.Types.Decimal128,
+    default: 0,
+    get: getdecimal,
+  },
   creditReference: {
     type: Schema.Types.Decimal128,
     default: 0,

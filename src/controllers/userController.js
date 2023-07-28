@@ -9,6 +9,7 @@ const getBalance = async (req, res) => {
   const data = {
     balance: profile.balance,
     exposure: profile.exposureLimit,
+    redeemBalance: profile.redeemBalance,
   };
   res.json({ data });
 };
