@@ -22,6 +22,9 @@ const marketSchema = new Schema({
   marketName: {
     type: String,
   },
+  marketTime: {
+    type: Date,
+  },
   betLimit: {
     type: String,
   },
