@@ -13,24 +13,6 @@ async function addMarkets(req, res) {
   const duplicate = await Market.findOne({ marketId }).exec();
   if (duplicate) return res.status(409).json({ message: 'Cannot add market. Market already present.' });
   try {
-    const result = await Market.create({
-      marketId,
-      exMarketId: crypto.randomBytes(16).toString('hex'),
-      sportId: body.sportId,
-      tournamentsId: body.tournamentsId,
-      eventId: body.eventId,
-      marketName: body.marketName,
-      betLimit: body.betLimit,
-      isFancy: body.isFancy || false,
-      isBookmakers: body.isBookmakers || false,
-      isStreaming: body.isStreaming || false,
-      isVirtual: body.isVirtual || false,
-      isSportsbook: body.isSportsbook || false,
-      isCasinoGame: body.isCasinoGame || false,
-      isPreBet: body.isPreBet || false,
-    });
-    logger.debug(result);
-
     const data = JSON.stringify({
       marketId,
     });
@@ -52,6 +34,25 @@ async function addMarkets(req, res) {
     const { marketTime } = marketnodes.description;
     const { runners } = marketnodes;
 
+    const result = await Market.create({
+      marketId,
+      exMarketId: crypto.randomBytes(16).toString('hex'),
+      sportId: body.sportId,
+      tournamentsId: body.tournamentsId,
+      eventId: body.eventId,
+      marketName: body.marketName,
+      betLimit: body.betLimit,
+      marketTime,
+      isFancy: body.isFancy || false,
+      isBookmakers: body.isBookmakers || false,
+      isStreaming: body.isStreaming || false,
+      isVirtual: body.isVirtual || false,
+      isSportsbook: body.isSportsbook || false,
+      isCasinoGame: body.isCasinoGame || false,
+      isPreBet: body.isPreBet || false,
+    });
+    logger.debug(result);
+
     runners.forEach(async (element) => {
       const { selectionId } = element;
       const selectionName = element.description.runnerName;
@@ -60,8 +61,6 @@ async function addMarkets(req, res) {
         selectionId,
         selectionName,
         sportsId,
-        marketTime,
-        marketId,
       };
       await Selection.findOneAndUpdate(filter, { $set: update }, { upsert: true });
     });
