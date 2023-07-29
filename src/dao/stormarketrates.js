@@ -34,11 +34,11 @@ async function storemarketrates(marketrates) {
       update.marketName = marketdata?.marketName;
       update.exMarketId = marketdata?.exMarketId;
       update.betLimit = marketdata?.betLimit;
+      update.marketTime = marketdata?.marketTime;
       const selectiondata = await Selection.find({ marketId: update.marketId }).exec();
       if (selectiondata.length > 0) {
         selectiondata.forEach((ele) => {
           update.runnerData[ele.selectionId] = ele.selectionName;
-          update.marketTime = ele.marketTime;
         });
       }
       await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
