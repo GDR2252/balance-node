@@ -118,7 +118,6 @@ async function getEventList(req, res) {
         data.inplay = results[i].state.inplay;
         data.eventId = results[i].eventId;
         data.exEventId = results[i].exEventId;
-        data.marketTime = results[i].state?.lastMatchTime;
         const { runners } = results[i];
         const runnerdata = [];
         runners.forEach((element) => {
@@ -138,6 +137,7 @@ async function getEventList(req, res) {
         data.isFancy = marketdata?.isFancy || false;
         data.isCasinoGame = marketdata?.isCasinoGame || false;
         data.isBookmakers = marketdata?.isBookmakers || false;
+        data.marketTime = marketdata?.marketTime;
         const listdata = JSON.parse(JSON.stringify(data));
         retresult.push(listdata);
       }
