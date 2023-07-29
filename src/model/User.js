@@ -74,9 +74,6 @@ const userSchema = new Schema({
   registeredReferral: {
     type: String,
   },
-  refreshToken: {
-    type: String,
-  },
 });
 
 module.exports = mongoose.model('User', userSchema);
