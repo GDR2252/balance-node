@@ -44,7 +44,9 @@ const smsSend = (mobile) => {
 };
 
 const generateotp = async (req, res) => {
-  const { user, mobile, ip, referral_code } = req.body;
+  const {
+    user, mobile, ip, referral_code,
+  } = req.body;
   if (!user || !mobile) return res.status(400).json({ message: 'Username and mobile number are required.' });
   const duplicate = await User.aggregate([{
     $match: {
@@ -106,8 +108,15 @@ const verifyotp = async (req, res) => {
       const hashedPwd = await bcrypt.hash(pwd, 10);
       const roles = ['User'];
       const { origin } = req.headers;
-      const branch = await B2cUser.findOne({ roles: ['Manager'], isActive: true, origin });
-      logger.info(branch);
+      let branch = '';
+      if (referral_code) {
+        branch = await User.findOne({ selfReferral: referral_code });
+        branch = branch?.branch;
+      } else {
+        branch = await B2cUser.findOne({ roles: ['Manager'], isActive: true, origin });
+        branch = branch?._id;
+      }
+
       const selfcode = referralCodes.generate({
         length: 8,
         charset: referralCodes.charset('alphanumeric'),
@@ -121,7 +130,7 @@ const verifyotp = async (req, res) => {
         roles,
         selfReferral: selfcode[0].toUpperCase(),
         registeredReferral: referral_code,
-        branch: branch?._id,
+        branch,
       });
       const accessToken = jwt.sign(
         {
