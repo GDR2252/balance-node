@@ -14,6 +14,21 @@ const getBalance = async (req, res) => {
   res.json({ data });
 };
 
+const updateBalance = async (req, res) => {
+  try {
+    const profile = await User.findOne({ username: req.user }).exec();
+    if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+    const balance = profile.balance + profile.redeemBalance;
+    profile.balance = balance;
+    profile.redeemBalance = 0;
+    await profile.save();
+    res.status(200).json({ message: 'Balance updated successfully.' });
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while updating balance.' });
+  }
+};
+
 const generateotp = async (req, res) => {
   const { mobile, ip } = req.body;
   if (!mobile) return res.status(400).json({ message: 'Mobile number is required.' });
@@ -59,4 +74,6 @@ const verifyotp = async (req, res) => {
     res.status(500).json({ message: 'Error while verifying OTP.' });
   }
 };
-module.exports = { getBalance, generateotp, verifyotp };
+module.exports = {
+  getBalance, generateotp, verifyotp, updateBalance,
+};
