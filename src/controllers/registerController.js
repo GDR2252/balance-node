@@ -141,7 +141,7 @@ const verifyotp = async (req, res) => {
         { expiresIn: '1d' },
       );
       res.json({
-        roles, username: user, mobile, accessToken,
+        roles, username: user, mobile, accessToken, referralCode: selfcode,
       });
     }
   } catch (err) {

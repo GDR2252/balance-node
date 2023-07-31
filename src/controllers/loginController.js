@@ -11,7 +11,9 @@ async function handleLogin(req, res) {
   if (!foundUser) return res.status(401).json({ message: 'The username or password is incorrect.' });
   const match = await bcrypt.compare(pwd, foundUser.password);
   if (match) {
-    const { roles, username, mobile } = foundUser;
+    const {
+      roles, username, mobile, selfcode,
+    } = foundUser;
     const accessToken = jwt.sign(
       {
         username: foundUser.username,
@@ -30,7 +32,7 @@ async function handleLogin(req, res) {
       httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000,
     });
     res.json({
-      roles, username, mobile, accessToken,
+      roles, username, mobile, accessToken, referralCode: selfcode,
     });
   } else {
     res.status(401).json({ message: 'The username or password is incorrect.' });
