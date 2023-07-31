@@ -2,11 +2,16 @@ const path = require('path');
 const crypto = require('crypto');
 const axios = require('axios');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
+const { MongoClient } = require('mongodb');
+const Sport = require('../model/Sport');
+const Event = require('../model/Event');
 const Market = require('../model/Market');
 const Selection = require('../model/Selection');
 require('dotenv').config();
 
 async function addMarkets(req, res) {
+  const uri = process.env.MONGO_URI;
+  const client = new MongoClient(uri);
   const { marketId } = req.body;
   const { body } = req;
   logger.debug(body);
@@ -34,6 +39,34 @@ async function addMarkets(req, res) {
     const { marketTime } = marketnodes.description;
     const { runners } = marketnodes;
 
+    const filter = { marketId: marketnodes.marketId };
+    const update = {
+      sportsId: sportsId.toString(),
+      eventId: eventypes[0].eventNodes[0].eventId.toString(),
+      state: marketnodes.state,
+      runners: marketnodes.runners,
+      runnerData: {},
+      marketId: marketnodes.marketId,
+      isMarketDataVirtual: marketnodes.isMarketDataVirtual,
+      isMarketDataDelayed: marketnodes.isMarketDataDelayed,
+    };
+    const sportsdata = await Sport.findOne({ sportId: update.sportsId }).exec();
+    update.sportName = sportsdata?.sportName;
+    const eventdata = await Event.findOne({ eventId: update.eventId }).exec();
+    update.eventName = eventdata?.eventName;
+    update.exEventId = eventdata?.exEventId;
+    const marketdata = await Market.findOne({ marketId: update.marketId }).exec();
+    update.marketName = marketdata?.marketName;
+    update.exMarketId = marketdata?.exMarketId;
+    update.betLimit = marketdata?.betLimit;
+    update.marketTime = marketdata?.marketTime;
+    for (let j = 0; j < update.runners.length; j += 1) {
+      update.runnerData[update.runners[j].selectionId] = update
+        .runners[j].description.selectionName;
+    }
+    await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
+      .findOneAndUpdate(filter, { $set: update }, { upsert: true });
+
     const result = await Market.create({
       marketId,
       exMarketId: crypto.randomBytes(16).toString('hex'),
@@ -56,13 +89,13 @@ async function addMarkets(req, res) {
     runners.forEach(async (element) => {
       const { selectionId } = element;
       const selectionName = element.description.runnerName;
-      const filter = { selectionId };
-      const update = {
+      const selfilter = { selectionId };
+      const selupdate = {
         selectionId,
         selectionName,
         sportsId,
       };
-      await Selection.findOneAndUpdate(filter, { $set: update }, { upsert: true });
+      await Selection.findOneAndUpdate(selfilter, { $set: selupdate }, { upsert: true });
     });
     res.status(201).json({ message: `New market ${marketId} created!` });
   } catch (err) {
@@ -104,6 +137,7 @@ async function updateMarkets(req, res) {
     };
     const result = await Market.findOneAndUpdate(filter, update);
     logger.info(result);
+    // To-DO : update betlimit in marketrates also
     res.status(201).json({ success: `Market ${marketId} updated!` });
   } catch (err) {
     res.status(500).json({ message: err.message });
