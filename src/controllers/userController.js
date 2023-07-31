@@ -18,6 +18,7 @@ const updateBalance = async (req, res) => {
   try {
     const profile = await User.findOne({ username: req.user }).exec();
     if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+    if (profile.redeemBalance === 0) return res.status(401).json({ message: 'Redeem Balance is 0. Cannot be redeemed.' });
     const balance = profile.balance + profile.redeemBalance;
     profile.balance = balance;
     profile.redeemBalance = 0;

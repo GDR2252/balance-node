@@ -65,8 +65,9 @@ const userSchema = new Schema({
   origin: {
     type: String,
   },
-  ip: {
+  status: {
     type: String,
+    enum: ['Active', 'Suspend', 'Lock'],
   },
   selfReferral: {
     type: String,
