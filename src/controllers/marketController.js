@@ -39,34 +39,6 @@ async function addMarkets(req, res) {
     const { marketTime } = marketnodes.description;
     const { runners } = marketnodes;
 
-    const filter = { marketId: marketnodes.marketId };
-    const update = {
-      sportsId: sportsId.toString(),
-      eventId: eventypes[0].eventNodes[0].eventId.toString(),
-      state: marketnodes.state,
-      runners: marketnodes.runners,
-      runnerData: {},
-      marketId: marketnodes.marketId,
-      isMarketDataVirtual: marketnodes.isMarketDataVirtual,
-      isMarketDataDelayed: marketnodes.isMarketDataDelayed,
-    };
-    const sportsdata = await Sport.findOne({ sportId: update.sportsId }).exec();
-    update.sportName = sportsdata?.sportName;
-    const eventdata = await Event.findOne({ eventId: update.eventId }).exec();
-    update.eventName = eventdata?.eventName;
-    update.exEventId = eventdata?.exEventId;
-    const marketdata = await Market.findOne({ marketId: update.marketId }).exec();
-    update.marketName = marketdata?.marketName;
-    update.exMarketId = marketdata?.exMarketId;
-    update.betLimit = marketdata?.betLimit;
-    update.marketTime = marketdata?.marketTime;
-    for (let j = 0; j < update.runners.length; j += 1) {
-      update.runnerData[update.runners[j].selectionId] = update
-        .runners[j].description.selectionName;
-    }
-    await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
-      .findOneAndUpdate(filter, { $set: update }, { upsert: true });
-
     const result = await Market.create({
       marketId,
       exMarketId: crypto.randomBytes(16).toString('hex'),
@@ -97,6 +69,35 @@ async function addMarkets(req, res) {
       };
       await Selection.findOneAndUpdate(selfilter, { $set: selupdate }, { upsert: true });
     });
+
+    const filter = { marketId: marketnodes.marketId };
+    const update = {
+      sportsId: sportsId.toString(),
+      eventId: eventypes[0].eventNodes[0].eventId.toString(),
+      state: marketnodes.state,
+      runners: marketnodes.runners,
+      runnerData: {},
+      marketId: marketnodes.marketId,
+      isMarketDataVirtual: marketnodes.isMarketDataVirtual,
+      isMarketDataDelayed: marketnodes.isMarketDataDelayed,
+    };
+    const sportsdata = await Sport.findOne({ sportId: update.sportsId }).exec();
+    update.sportName = sportsdata?.sportName;
+    const eventdata = await Event.findOne({ eventId: update.eventId }).exec();
+    update.eventName = eventdata?.eventName;
+    update.exEventId = eventdata?.exEventId;
+    const marketdata = await Market.findOne({ marketId: update.marketId }).exec();
+    update.marketName = marketdata?.marketName;
+    update.exMarketId = marketdata?.exMarketId;
+    update.betLimit = marketdata?.betLimit;
+    update.marketTime = marketdata?.marketTime;
+    for (let j = 0; j < update.runners.length; j += 1) {
+      update.runnerData[update.runners[j].selectionId] = update
+        .runners[j].description.selectionName;
+    }
+    await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
+      .findOneAndUpdate(filter, { $set: update }, { upsert: true });
+
     res.status(201).json({ message: `New market ${marketId} created!` });
   } catch (err) {
     res.status(500).json({ message: err.message });
