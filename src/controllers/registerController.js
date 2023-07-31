@@ -107,7 +107,6 @@ const verifyotp = async (req, res) => {
     } else {
       const hashedPwd = await bcrypt.hash(pwd, 10);
       const roles = ['User'];
-      const status = 'Active';
       const { origin } = req.headers;
       let branch = '';
       if (referral_code) {
@@ -126,7 +125,6 @@ const verifyotp = async (req, res) => {
         username: user,
         password: hashedPwd,
         mobile,
-        status,
         origin,
         roles,
         selfReferral: selfcode[0].toUpperCase(),

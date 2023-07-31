@@ -68,6 +68,7 @@ const userSchema = new Schema({
   status: {
     type: String,
     enum: ['Active', 'Suspend', 'Lock'],
+    default: 'Active',
   },
   selfReferral: {
     type: String,
