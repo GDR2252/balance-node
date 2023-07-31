@@ -93,7 +93,7 @@ async function addMarkets(req, res) {
     update.marketTime = marketdata?.marketTime;
     for (let j = 0; j < update.runners.length; j += 1) {
       update.runnerData[update.runners[j].selectionId] = update
-        .runners[j].description.selectionName;
+        .runners[j].description.runnerName;
     }
     await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
       .findOneAndUpdate(filter, { $set: update }, { upsert: true });
