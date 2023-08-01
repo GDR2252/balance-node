@@ -118,6 +118,8 @@ async function fetchMarkets(req, res) {
 }
 
 async function updateMarkets(req, res) {
+  const uri = process.env.MONGO_URI;
+  const client = new MongoClient(uri);
   const { marketId } = req.body;
   const { body } = req;
   logger.debug(body);
@@ -139,7 +141,15 @@ async function updateMarkets(req, res) {
     const result = await Market.findOneAndUpdate(filter, update);
     logger.info(result);
     // To-DO : update betlimit in marketrates also
-    res.status(201).json({ success: `Market ${marketId} updated!` });
+
+    if (body.betLimit) {
+      const marketratesfilter = { marketId };
+      const marketratesupdate = {
+        betLimit: body.betLimit,
+      };
+      await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
+        .findOneAndUpdate(marketratesfilter, { $set: marketratesupdate }, { upsert: true });
+    }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
