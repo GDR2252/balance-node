@@ -5,6 +5,7 @@ const { setTimeout } = require('timers/promises');
 const User = require('../model/User');
 const Market = require('../model/Market');
 const CricketBetPlace = require('../model/CricketBetPlace');
+const CricketPL = require('../model/CricketPL');
 
 async function placebet(req, res) {
   const uri = process.env.MONGO_URI;
@@ -34,10 +35,31 @@ async function placebet(req, res) {
   logger.info(JSON.stringify(runners));
   let laydata;
   let backdata;
+  let profit;
+  let loss;
+  const selectionIds = [];
+
   runners.forEach((element) => {
     if (element.selectionId.toString() === selectionId) {
       backdata = element.exchange.availableToBack[0];
       laydata = element.exchange.availableToLay[0];
+      if (type === 'back') {
+        profit = (backdata.price - 1) * stake;
+        selectionIds.push(`${selectionId} : ${profit}`);
+      }
+      if (type === 'lay') {
+        loss = (laydata.price - 1) % stake;
+        selectionIds.push(`${selectionId} : ${loss}`);
+      }
+    } else {
+      if (type === 'back') {
+        loss = -Math.abs(stake);
+        selectionIds.push(`${selectionId} : ${loss}`);
+      }
+      if (type === 'lay') {
+        profit = stake;
+        selectionIds.push(`${selectionId} : ${profit}`);
+      }
     }
   });
   logger.info(backdata);
@@ -70,6 +92,12 @@ async function placebet(req, res) {
     userdata.exposureLimit = stake;
     userdata.balance = balance - stake;
     await userdata.save();
+    await CricketPL.create({
+      username: req.user,
+      exEventId,
+      exMarketId,
+      selectionId: selectionIds,
+    });
     res.json({ message: 'Bet placed successfully.' });
   } catch (err) {
     logger.error(err);
