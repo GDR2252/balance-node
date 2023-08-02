@@ -33,6 +33,8 @@ async function placebet(req, res) {
       laydata = element.exchange.availableToLay[0];
     }
   });
+    logger.info(backdata);
+    logger.info(laydata);
   if (type === 'back') {
     const backprice = backdata.price - 1;
     odds -= 1;
