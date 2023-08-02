@@ -7,7 +7,7 @@ async function getActivityLogs(req, res) {
   const profile = await ActivityLog.findOne({ username: req.user }).exec();
   if (!profile) return res.status(404).json({ message: 'No Activity logged yet!' });
   try {
-    const activitylogs = await ActivityLog.find({ username: req.user });
+    const activitylogs = await ActivityLog.find({ username: req.user }, { sort: { createdAt: 1 } });
     res.status(200).json(activitylogs);
   } catch (err) {
     logger.error(err);
