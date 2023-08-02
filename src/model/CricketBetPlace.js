@@ -18,10 +18,7 @@ const cricketbetplaceSchema = new Schema({
   selectionId: {
     type: String,
   },
-  lay: {
-    type: String,
-  },
-  back: {
+  type: {
     type: String,
   },
 });

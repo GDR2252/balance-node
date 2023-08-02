@@ -10,7 +10,7 @@ async function placebet(req, res) {
   const client = new MongoClient(uri);
   const { body } = req;
   const {
-    exEventId, exMarketId, stake, selectionId, lay, back,
+    exEventId, exMarketId, stake, selectionId, type,
   } = body;
   let { odds } = body;
   let userdata = await User.findOne({ username: req.user });
@@ -21,9 +21,10 @@ async function placebet(req, res) {
   const min = marketlimit.split('-')[0].trim();
   const max = marketlimit.split('-')[1].trim();
   if (stake < min || stake > max) return res.status(401).json({ message: 'Cannot place bet. Stake is not within the limits.' });
-  const marketratesdata = client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
+  const marketratesdata = await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
     .findOne({ exMarketId });
   const { runners } = marketratesdata;
+  logger.info(runners);
   let laydata;
   let backdata;
   runners.forEach((element) => {
@@ -32,12 +33,12 @@ async function placebet(req, res) {
       laydata = element.exchange.availableToLay[0];
     }
   });
-  if (back) {
+  if (type === 'back') {
     const backprice = backdata.price - 1;
     odds -= 1;
     if (odds > backprice) return res.status(401).json({ message: 'Cannot place bet. Odds is not correct.' });
   }
-  if (lay) {
+  if (type === 'lay') {
     const layprice = laydata.price - 1;
     odds -= 1;
     if (odds < layprice) return res.status(401).json({ message: 'Cannot place bet. Odds is not correct.' });
@@ -53,8 +54,7 @@ async function placebet(req, res) {
       exMarketId,
       stake,
       selectionId,
-      lay,
-      back,
+      type,
     });
     logger.info(`Placed bet for user: ${req.user}`);
     res.json({ message: 'Bet placed successfully.' });
