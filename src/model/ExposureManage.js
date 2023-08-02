@@ -17,4 +17,4 @@ const betlimitSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('Betlimit', betlimitSchema);
+module.exports = mongoose.model('ExposureManage', betlimitSchema);

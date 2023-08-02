@@ -29,4 +29,4 @@ const betlimitSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('Betlimit', betlimitSchema);
+module.exports = mongoose.model('CricketPL', betlimitSchema);
