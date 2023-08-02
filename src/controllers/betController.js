@@ -34,7 +34,7 @@ async function placebet(req, res) {
   let laydata;
   let backdata;
   runners.forEach((element) => {
-    if (element.selectionId === selectionId) {
+    if (element.selectionId.toString() === selectionId) {
       backdata = element.exchange.availableToBack[0];
       laydata = element.exchange.availableToLay[0];
     }
