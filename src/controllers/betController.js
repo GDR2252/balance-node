@@ -27,22 +27,12 @@ async function placebet(req, res) {
   logger.info(JSON.stringify(runners));
   let laydata;
   let backdata;
-  if (runners.length > 0) {
-    runners.map((runner) => {
-      if (runner.selectionId === selectionId) {
-        logger.info('inside if');
-        backdata = runner.exchange.availableToBack[0];
-        laydata = runner.exchange.availableToLay[0];
-      }
-    });
-  }
-/*   runners.forEach((element) => {
+  runners.forEach((element) => {
     if (element.selectionId === selectionId) {
-      logger.info('inside if');
       backdata = element.exchange.availableToBack[0];
       laydata = element.exchange.availableToLay[0];
     }
-  }); */
+  });
   logger.info(backdata);
   logger.info(laydata);
   if (type === 'back') {
