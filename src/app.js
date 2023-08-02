@@ -63,6 +63,7 @@ app.use('/markets', marketsRouter);
 app.use('/betlimits', betlimitRouter);
 app.use('/changeauth', changeauthRouter);
 app.use('/getBalance', balanceRouter);
+app.use('/activity', require('./routes/activity'));
 app.use('/rules', require('./routes/rules'));
 app.use('/themes', require('./routes/themes'));
 
