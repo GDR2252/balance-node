@@ -9,6 +9,7 @@ async function placebet(req, res) {
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   const { body } = req;
+  logger.info(body);
   const {
     exEventId, exMarketId, stake, selectionId, type,
   } = body;
