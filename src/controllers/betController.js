@@ -90,9 +90,9 @@ async function placebet(req, res) {
     });
     logger.info(`Placed bet for user: ${req.user}`);
     logger.info(parseFloat(stake));
-    logger.info(balance - parseFloat(stake));
+    logger.info(parseFloat(balance) - parseFloat(stake));
     userdata.exposureLimit = parseFloat(stake);
-    userdata.balance = balance - parseFloat(stake);
+    userdata.balance = parseFloat(balance) - parseFloat(stake);
     await userdata.save();
     await CricketPL.create({
       username: req.user,
