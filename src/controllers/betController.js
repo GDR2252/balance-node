@@ -89,6 +89,8 @@ async function placebet(req, res) {
       type,
     });
     logger.info(`Placed bet for user: ${req.user}`);
+    logger.info(parseFloat(stake));
+    logger.info(balance - parseFloat(stake));
     userdata.exposureLimit = parseFloat(stake);
     userdata.balance = balance - parseFloat(stake);
     await userdata.save();
