@@ -21,6 +21,18 @@ const cricketbetplaceSchema = new Schema({
   type: {
     type: String,
   },
+  IsSettle: {
+    type: Number,
+    default: 0,
+  },
+  IsVoid: {
+    type: Number,
+    default: 0,
+  },
+  IsUnsettle: {
+    type: Number,
+    default: 0,
+  },
 });
 
 module.exports = mongoose.model('CricketBetPlace', cricketbetplaceSchema);
