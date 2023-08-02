@@ -24,11 +24,12 @@ async function placebet(req, res) {
   const marketratesdata = await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
     .findOne({ exMarketId });
   const { runners } = marketratesdata;
-  logger.info(runners);
+  logger.info(JSON.stringify(runners));
   let laydata;
   let backdata;
   runners.forEach((element) => {
-    if (element.selectionId === selectionId) {
+      if (element.selectionId === selectionId) {
+          logger.info('inside if');
       backdata = element.exchange.availableToBack[0];
       laydata = element.exchange.availableToLay[0];
     }
