@@ -24,6 +24,8 @@ async function placebet(req, res) {
   logger.info(min);
   logger.info(max);
   logger.info(stake);
+  logger.info(stake < min);
+  logger.info(stake > max);
   if (stake < min || stake > max) return res.status(401).json({ message: 'Cannot place bet. Stake is not within the limits.' });
   const marketratesdata = await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
     .findOne({ exMarketId });
