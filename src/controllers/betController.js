@@ -67,6 +67,9 @@ async function placebet(req, res) {
       type,
     });
     logger.info(`Placed bet for user: ${req.user}`);
+    userdata.exposureLimit = stake;
+    userdata.balance = balance - stake;
+    await userdata.save();
     res.json({ message: 'Bet placed successfully.' });
   } catch (err) {
     logger.error(err);
