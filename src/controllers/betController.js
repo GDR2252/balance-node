@@ -1,6 +1,7 @@
 const { MongoClient } = require('mongodb');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
+const { setTimeout } = require('timers/promises');
 const User = require('../model/User');
 const Market = require('../model/Market');
 const CricketBetPlace = require('../model/CricketBetPlace');
@@ -52,6 +53,7 @@ async function placebet(req, res) {
     if (odds < layprice) return res.status(401).json({ message: 'Cannot place bet. Odds is not correct.' });
   }
   await setTimeout(5000);
+  logger.info('Waited for 5 secs.');
   userdata = await User.findOne({ username: req.user });
   balance = userdata;
   if (balance < stake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
