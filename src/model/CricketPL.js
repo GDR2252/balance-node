@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const betlimitSchema = new Schema({
+const cricketPLSchema = new Schema({
   exEventId: {
     type: String,
   },
@@ -29,4 +29,4 @@ const betlimitSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('CricketPL', betlimitSchema);
+module.exports = mongoose.model('CricketPL', cricketPLSchema);

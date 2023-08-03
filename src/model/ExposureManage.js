@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const betlimitSchema = new Schema({
+const exposureManageSchema = new Schema({
   exEventId: {
     type: String,
   },
@@ -17,4 +17,4 @@ const betlimitSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('ExposureManage', betlimitSchema);
+module.exports = mongoose.model('ExposureManage', exposureManageSchema);
