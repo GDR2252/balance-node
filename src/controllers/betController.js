@@ -44,25 +44,31 @@ async function placebet(req, res) {
   const selectionIds = [];
 
   runners.forEach((element) => {
-    if (element.selectionId.toString() === selectionId) {
+    const selId = element.selectionId.toString();
+    if (selId === selectionId) {
       backdata = element.exchange.availableToBack[0];
       laydata = element.exchange.availableToLay[0];
       if (type === 'back') {
         profit = (backdata.price - 1) * stake;
-        selectionIds.push(`${selectionId} : ${profit}`);
+        const key = { selId: profit };
+        selectionIds.push(key);
       }
       if (type === 'lay') {
         loss = (laydata.price - 1) % stake;
-        selectionIds.push(`${selectionId} : ${loss}`);
+        const key = { selId: loss };
+        selectionIds.push(key);
       }
     } else {
       if (type === 'back') {
         loss = -Math.abs(stake);
-        selectionIds.push(`${selectionId} : ${loss}`);
+        const key = { selId: loss };
+        selectionIds.push(key);
+        // selectionIds.push(`${element.selectionId.toString()} : ${loss}`);
       }
       if (type === 'lay') {
         profit = stake;
-        selectionIds.push(`${selectionId} : ${profit}`);
+        const key = { selId: profit };
+        selectionIds.push(key);
       }
     }
   });
@@ -101,12 +107,26 @@ async function placebet(req, res) {
     userdata.exposureLimit = numberstake;
     userdata.balance = balance - numberstake;
     await userdata.save();
-    await CricketPL.create({
-      username: req.user,
-      exEventId,
-      exMarketId,
-      selectionId: selectionIds,
-    });
+
+    const isMarketData = await CricketPL.findOne({ exEventId }).exec();
+    if (!isMarketData) {
+      await CricketPL.create({
+        username: req.user,
+        exEventId,
+        exMarketId,
+        selectionId: selectionIds,
+      });
+    } else {
+      const selectionData = isMarketData.selectionId;
+      const result = selectionData.map((key, value) => {
+        return Object.keys(key).reduce((o, k) => {
+          o[k] = key[k] + selectionIds[value][k];
+          return o;
+        }, {});
+      });
+      logger.info(result);
+    }
+
     res.json({ message: 'Bet placed successfully.' });
   } catch (err) {
     logger.error(err);
