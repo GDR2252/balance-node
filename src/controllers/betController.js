@@ -51,11 +51,13 @@ async function placebet(req, res) {
       if (type === 'back') {
         profit = Math.round((backdata.price - 1) * stake);
         const key = { [selId]: profit };
+        logger.info(key);
         selectionIds.push(key);
       }
       if (type === 'lay') {
         loss = Math.round((laydata.price - 1) % stake);
         const key = { [selId]: loss };
+        logger.info(key);
         selectionIds.push(key);
       }
     } else {
