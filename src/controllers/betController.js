@@ -127,7 +127,7 @@ async function placebet(req, res) {
         return o;
       }, {}));
       plData[0].selectionId = result;
-      await plData.save();
+      await plData[0].save();
     }
 
     res.json({ message: 'Bet placed successfully.' });
