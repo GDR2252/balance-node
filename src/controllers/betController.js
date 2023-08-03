@@ -126,6 +126,7 @@ async function placebet(req, res) {
         o[k] = key[k] + selectionIds[value][k];
         return o;
       }, {}));
+      logger.info(result);
       const filter = { _id: plData[0]._id };
       const update = { selectionId: result };
       await CricketPL.findOneAndUpdate(filter, update).exec();
