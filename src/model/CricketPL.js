@@ -12,9 +12,7 @@ const cricketPLSchema = new Schema({
   username: {
     type: String,
   },
-  selectionId: [{
-    type: String,
-  }],
+  selectionId: [],
   IsSettle: {
     type: Number,
     default: 0,
