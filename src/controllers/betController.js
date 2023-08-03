@@ -18,7 +18,8 @@ async function placebet(req, res) {
   let { odds } = body;
   let userdata = await User.findOne({ username: req.user });
   let { balance } = userdata;
-  if (balance < stake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+  const numberstake = Number(stake);
+  if (balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
   const marketdata = await Market.findOne({ exMarketId });
   const marketlimit = marketdata.betLimit;
   const min = marketlimit.split('-')[0].trim();
@@ -27,6 +28,7 @@ async function placebet(req, res) {
   logger.info(max);
   logger.info(stake);
   logger.info(typeof stake);
+  logger.info(typeof numberstake);
   logger.info(typeof balance);
   logger.info(Number(stake) < Number(min));
   logger.info(Number(stake) > Number(max));
