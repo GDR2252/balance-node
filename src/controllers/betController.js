@@ -109,7 +109,7 @@ async function placebet(req, res) {
 
     const plData = await CricketPL.aggregate([{
       $match: {
-        exEventId,
+        exMarketId,
         username: req.user,
       },
     }]);
@@ -121,12 +121,12 @@ async function placebet(req, res) {
         selectionId: selectionIds,
       });
     } else {
-      const selectionData = plData.selectionId;
+      const selectionData = plData[0].selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
         o[k] = key[k] + selectionIds[value][k];
         return o;
       }, {}));
-      plData.selectionId = result;
+      plData[0].selectionId = result;
       await plData.save();
     }
 
