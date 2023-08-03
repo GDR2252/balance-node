@@ -56,7 +56,7 @@ async function placebet(req, res) {
         fselectionIds.push({ [selId]: Math.round(profit) });
       }
       if (type === 'lay') {
-        loss = (laydata.price - 1) % stake;
+        loss = (laydata.price - 1) / stake;
         const key = { [selId]: loss };
         logger.info(key);
         selectionIds.push(key);
