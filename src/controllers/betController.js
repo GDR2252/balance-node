@@ -49,23 +49,23 @@ async function placebet(req, res) {
       backdata = element.exchange.availableToBack[0];
       laydata = element.exchange.availableToLay[0];
       if (type === 'back') {
-        profit = (backdata.price - 1) * stake;
+        profit = Math.round((backdata.price - 1) * stake);
         const key = { [selId]: profit };
         selectionIds.push(key);
       }
       if (type === 'lay') {
-        loss = (laydata.price - 1) % stake;
+        loss = Math.round((laydata.price - 1) % stake);
         const key = { [selId]: loss };
         selectionIds.push(key);
       }
     } else {
       if (type === 'back') {
-        loss = -Math.abs(stake);
+        loss = Math.round(-Math.abs(stake));
         const key = { [selId]: loss };
         selectionIds.push(key);
       }
       if (type === 'lay') {
-        profit = stake;
+        profit = Math.round(stake);
         const key = { [selId]: profit };
         selectionIds.push(key);
       }
