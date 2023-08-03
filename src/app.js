@@ -67,6 +67,7 @@ app.use('/activity', require('./routes/activity'));
 app.use('/rules', require('./routes/rules'));
 app.use('/themes', require('./routes/themes'));
 app.use('/placebet', require('./routes/bet'));
+app.use('/stakes', require('./routes/stakes'));
 
 // custom 404
 // eslint-disable-next-line no-unused-vars
