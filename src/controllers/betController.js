@@ -107,8 +107,13 @@ async function placebet(req, res) {
     userdata.balance = balance - numberstake;
     await userdata.save();
 
-    const isMarketData = await CricketPL.findOne({ exEventId }).exec();
-    if (!isMarketData) {
+    const plData = await CricketPL.aggregate([{
+      $match: {
+        exEventId,
+        username: req.user,
+      },
+    }]);
+    if (!plData.length > 0) {
       await CricketPL.create({
         username: req.user,
         exEventId,
@@ -116,12 +121,13 @@ async function placebet(req, res) {
         selectionId: selectionIds,
       });
     } else {
-      const selectionData = isMarketData.selectionId;
+      const selectionData = plData.selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
         o[k] = key[k] + selectionIds[value][k];
         return o;
       }, {}));
-      logger.info(result);
+      plData.selectionId = result;
+      await plData.save();
     }
 
     res.json({ message: 'Bet placed successfully.' });
