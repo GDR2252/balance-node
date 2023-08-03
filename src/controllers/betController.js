@@ -26,6 +26,8 @@ async function placebet(req, res) {
   logger.info(min);
   logger.info(max);
   logger.info(stake);
+  logger.info(typeof stake);
+  logger.info(typeof balance);
   logger.info(Number(stake) < Number(min));
   logger.info(Number(stake) > Number(max));
   if (Number(stake) < Number(min) || Number(stake) > Number(max)) return res.status(401).json({ message: 'Cannot place bet. Stake is not within the limits.' });
