@@ -42,34 +42,38 @@ async function placebet(req, res) {
   let profit;
   let loss;
   const selectionIds = [];
-
+  const fselectionIds = [];
   runners.forEach((element) => {
     const selId = element.selectionId.toString();
     if (selId === selectionId) {
       backdata = element.exchange.availableToBack[0];
       laydata = element.exchange.availableToLay[0];
       if (type === 'back') {
-        profit = Math.round((backdata.price - 1) * stake);
+        profit = (backdata.price - 1) * stake;
         const key = { [selId]: profit };
         logger.info(key);
         selectionIds.push(key);
+        fselectionIds.push({ [selId]: Math.round(profit) });
       }
       if (type === 'lay') {
-        loss = Math.round((laydata.price - 1) % stake);
+        loss = (laydata.price - 1) % stake;
         const key = { [selId]: loss };
         logger.info(key);
         selectionIds.push(key);
+        fselectionIds.push({ [selId]: Math.round(loss) });
       }
     } else {
       if (type === 'back') {
-        loss = Math.round(-Math.abs(stake));
+        loss = -Math.abs(stake);
         const key = { [selId]: loss };
         selectionIds.push(key);
+        fselectionIds.push(key);
       }
       if (type === 'lay') {
-        profit = Math.round(stake);
+        profit = stake;
         const key = { [selId]: profit };
         selectionIds.push(key);
+        fselectionIds.push(key);
       }
     }
   });
@@ -120,17 +124,12 @@ async function placebet(req, res) {
         username: req.user,
         exEventId,
         exMarketId,
-        selectionId: selectionIds,
+        selectionId: fselectionIds,
       });
     } else {
       const selectionData = plData[0].selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
-        if (type === 'back') {
-          o[k] = key[k] + selectionIds[value][k];
-        }
-        if (type === 'lay') {
-          o[k] = key[k] - selectionIds[value][k];
-        }
+        o[k] = Math.round(key[k] + selectionIds[value][k]);
         return o;
       }, {}));
       logger.info(result);
