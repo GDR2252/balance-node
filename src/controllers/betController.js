@@ -81,7 +81,7 @@ async function placebet(req, res) {
   await setTimeout(5000);
   logger.info('Waited for 5 secs.');
   userdata = await User.findOne({ username: req.user });
-  balance = userdata;
+  balance = userdata.balance;
   if (balance < Number(stake)) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
   try {
     await CricketBetPlace.create({
@@ -94,7 +94,8 @@ async function placebet(req, res) {
     });
     logger.info(`Placed bet for user: ${req.user}`);
     logger.info(numberstake);
-    logger.info(parseFloat(balance - numberstake));
+    logger.info(balance - numberstake);
+    logger.info(balance - stake);
     userdata.exposureLimit = numberstake;
     userdata.balance = balance - numberstake;
     await userdata.save();
