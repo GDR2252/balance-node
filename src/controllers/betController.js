@@ -126,10 +126,10 @@ async function placebet(req, res) {
         o[k] = key[k] + selectionIds[value][k];
         return o;
       }, {}));
-      plData[0].selectionId = result;
-      await plData[0].save();
+      const filter = { _id: plData[0]._id };
+      const update = { selectionId: result };
+      await CricketPL.findOneAndUpdate(filter, update).exec();
     }
-
     res.json({ message: 'Bet placed successfully.' });
   } catch (err) {
     logger.error(err);
