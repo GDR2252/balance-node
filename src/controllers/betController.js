@@ -129,7 +129,7 @@ async function placebet(req, res) {
     } else {
       const selectionData = plData[0].selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
-        o[k] = Math.round(key[k] + selectionIds[value][k]);
+        o[k] = key[k] + selectionIds[value][k];
         return o;
       }, {}));
       logger.info(result);
