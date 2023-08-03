@@ -50,24 +50,23 @@ async function placebet(req, res) {
       laydata = element.exchange.availableToLay[0];
       if (type === 'back') {
         profit = (backdata.price - 1) * stake;
-        const key = { selId: profit };
+        const key = { [selId]: profit };
         selectionIds.push(key);
       }
       if (type === 'lay') {
         loss = (laydata.price - 1) % stake;
-        const key = { selId: loss };
+        const key = { [selId]: loss };
         selectionIds.push(key);
       }
     } else {
       if (type === 'back') {
         loss = -Math.abs(stake);
-        const key = { selId: loss };
+        const key = { [selId]: loss };
         selectionIds.push(key);
-        // selectionIds.push(`${element.selectionId.toString()} : ${loss}`);
       }
       if (type === 'lay') {
         profit = stake;
-        const key = { selId: profit };
+        const key = { [selId]: profit };
         selectionIds.push(key);
       }
     }
@@ -118,12 +117,10 @@ async function placebet(req, res) {
       });
     } else {
       const selectionData = isMarketData.selectionId;
-      const result = selectionData.map((key, value) => {
-        return Object.keys(key).reduce((o, k) => {
-          o[k] = key[k] + selectionIds[value][k];
-          return o;
-        }, {});
-      });
+      const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
+        o[k] = key[k] + selectionIds[value][k];
+        return o;
+      }, {}));
       logger.info(result);
     }
 
