@@ -6,6 +6,7 @@ const User = require('../model/User');
 const Market = require('../model/Market');
 const CricketBetPlace = require('../model/CricketBetPlace');
 const CricketPL = require('../model/CricketPL');
+const ExposureManage = require('../model/ExposureManage');
 
 async function placebet(req, res) {
   const uri = process.env.MONGO_URI;
@@ -43,6 +44,7 @@ async function placebet(req, res) {
   let loss;
   const selectionIds = [];
   const fselectionIds = [];
+  const exposures = [];
   runners.forEach((element) => {
     const selId = element.selectionId.toString();
     if (selId === selectionId) {
@@ -60,6 +62,7 @@ async function placebet(req, res) {
         const key = { [selId]: loss };
         logger.info(key);
         selectionIds.push(key);
+        exposures.push(loss);
         fselectionIds.push({ [selId]: Math.round(loss) });
       }
     } else {
@@ -67,6 +70,7 @@ async function placebet(req, res) {
         loss = -Math.abs(numberstake);
         const key = { [selId]: loss };
         selectionIds.push(key);
+        exposures.push(loss);
         fselectionIds.push(key);
       }
       if (type === 'lay') {
@@ -129,7 +133,7 @@ async function placebet(req, res) {
     } else {
       const selectionData = plData[0].selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
-        o[k] = key[k] + selectionIds[value][k];
+        o[k] = Math.round(key[k] + selectionIds[value][k]);
         return o;
       }, {}));
       logger.info(result);
@@ -137,6 +141,28 @@ async function placebet(req, res) {
       const update = { selectionId: result };
       await CricketPL.findOneAndUpdate(filter, update).exec();
     }
+
+    const exposure = Math.min(...exposures);
+    const exposureData = await ExposureManage.aggregate([{
+      $match: {
+        exMarketId,
+        username: req.user,
+      },
+    }]);
+    if (!exposureData.length > 0) {
+      await ExposureManage.create({
+        exEventId,
+        exMarketId,
+        username: req.user,
+        exposure,
+      });
+    } else {
+      const filter = { _id: exposureData[0]._id };
+      const update = { exposure };
+      await ExposureManage.findOneAndUpdate(filter, update).exec();
+    }
+    userdata.exposure += exposure;
+    await userdata.save();
     res.json({ message: 'Bet placed successfully.' });
   } catch (err) {
     logger.error(err);

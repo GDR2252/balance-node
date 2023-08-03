@@ -42,6 +42,10 @@ const userSchema = new Schema({
     default: 0,
     get: getdecimal,
   },
+  exposure: {
+    type: Number,
+    default: 0,
+  },
   exposureLimit: {
     type: Number,
     default: 0,
