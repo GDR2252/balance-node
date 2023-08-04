@@ -9,7 +9,7 @@ const getBalance = async (req, res) => {
   if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
   const data = {
     balance: profile.balance,
-    exposure: profile.exposureLimit,
+    exposure: profile.exposure,
     redeemBalance: profile.redeemBalance,
   };
   res.json({ data });
