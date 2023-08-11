@@ -15,22 +15,24 @@ async function placebet(req, res) {
   logger.info('Starting to place a bet.');
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
-  const session = client.startSession();
+  // const session = client.startSession();
   try {
-    session.startTransaction(transactionOptions);
+    // session.startTransaction(transactionOptions);
     const { body } = req;
     const {
       exEventId, exMarketId, stake, selectionId, type,
     } = body;
     let { odds } = body;
     let userdata = await client
-      .db(process.env.EXCH_DB).collection('users').findOne({ username: req.user }, { session });
+      .db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
+      // , { session }
     let { balance } = userdata;
     const numberstake = Number(stake);
     if (balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
     const marketratesdata = await client
       .db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
-      .findOne({ exMarketId }, { session });
+      .findOne({ exMarketId });
+      // , { session }
     const { runners, eventName, runnerData } = marketratesdata;
     const marketlimit = marketratesdata.betLimit;
     const marketType = marketratesdata.marketName;
@@ -95,7 +97,8 @@ async function placebet(req, res) {
     }
     await setTimeout(5000);
     logger.info('Waited for 5 secs.');
-    userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user }, { session });
+    userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
+    // , { session }
     balance = userdata.balance;
     if (balance < Number(stake)) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
     await client.db(process.env.EXCH_DB).collection('cricketbetplaces').insertOne({
@@ -109,12 +112,13 @@ async function placebet(req, res) {
       eventName,
       selectionName,
       marketType,
-    }, { session });
+    });
+    // , { session }
     logger.info(`Placed bet for user: ${req.user}`);
     await client.db(process.env.EXCH_DB).collection('users').updateOne(
       { username: req.user },
       { $set: { exposureLimit: numberstake, balance: balance - numberstake } },
-      { session },
+      // { session },
     );
     const balanceexposures = [];
     let prevVal;
@@ -122,14 +126,16 @@ async function placebet(req, res) {
     const plData = await client.db(process.env.EXCH_DB).collection('cricketpls').find({
       exMarketId,
       username: req.user,
-    }, { session }).toArray();
+    }).toArray();
+    // , { session }
     if (!plData.length > 0) {
       await client.db(process.env.EXCH_DB).collection('cricketpls').insertOne({
         username: req.user,
         exEventId,
         exMarketId,
         selectionId: fselectionIds,
-      }, { session });
+      });
+      // , { session }
     } else {
       const selectionData = plData[0].selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
@@ -146,7 +152,7 @@ async function placebet(req, res) {
       await client.db(process.env.EXCH_DB).collection('cricketpls').updateOne(
         filter,
         { $set: update },
-        { session },
+        // { session },
       );
     }
 
@@ -156,14 +162,16 @@ async function placebet(req, res) {
     const exposureData = await client.db(process.env.EXCH_DB).collection('exposuremanages').find({
       exMarketId,
       username: req.user,
-    }, { session }).toArray();
+    }).toArray();
+    // , { session }
     if (!exposureData.length > 0) {
       await client.db(process.env.EXCH_DB).collection('exposuremanages').insertOne({
         exEventId,
         exMarketId,
         username: req.user,
         exposure,
-      }, { session });
+      });
+      // , { session }
     } else {
       if (exposureval > 0) {
         exposure = Number(exposureData[0].exposure) + exposureval;
@@ -175,7 +183,7 @@ async function placebet(req, res) {
       await client.db(process.env.EXCH_DB).collection('exposuremanages').updateOne(
         filter,
         { $set: update },
-        { session },
+        // { session },
       );
     }
     if (exposureval > 0) {
@@ -188,20 +196,20 @@ async function placebet(req, res) {
     await client.db(process.env.EXCH_DB).collection('users').updateOne(
       { username: req.user },
       { $set: { exposure, balance } },
-      { session },
+      // { session },
     );
-    await session.commitTransaction();
+    // await session.commitTransaction();
     logger.info('Transaction successfully committed.');
     logger.info('Bet place ends.');
     res.json({ message: 'Bet placed successfully.' });
   } catch (err) {
     logger.error(err);
-    await session.abortTransaction();
+    // await session.abortTransaction();
     logger.info('Transaction rolled back.');
     res.status(500).json({ message: err.message });
   } finally {
     if (client) {
-      await session.endSession();
+      // await session.endSession();
       await client.close();
     }
   }
