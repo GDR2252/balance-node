@@ -4,6 +4,8 @@ const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const User = require('../model/User');
 const ActivityLog = require('../model/ActivityLog');
+const Support = require('../model/Support');
+
 require('dotenv').config();
 
 const addActivity = async (foundUser, activity, status) => {
@@ -35,7 +37,7 @@ const addActivity = async (foundUser, activity, status) => {
 async function handleLogin(req, res) {
   const { user, pwd, ip } = req.body;
   if (!user || !pwd) return res.status(400).json({ message: 'Username and password are required.' });
-
+  const { origin } = req.headers;
   const foundUser = await User.findOne({ username: user }).exec();
   if (!foundUser) return res.status(401).json({ message: 'The username or password is incorrect.' });
   const match = await bcrypt.compare(pwd, foundUser.password);
@@ -51,8 +53,9 @@ async function handleLogin(req, res) {
       { expiresIn: '1d' },
     );
     await addActivity(foundUser, ip, 'success');
+    const contact = await Support.findOne({ origin }).exec();
     res.json({
-      roles, username, mobile, accessToken, referralCode: selfReferral,
+      roles, username, mobile, accessToken, referralCode: selfReferral, wacontact: contact?.contact,
     });
   } else {
     await addActivity(foundUser, ip, 'failed');
