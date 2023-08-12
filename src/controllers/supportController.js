@@ -27,7 +27,7 @@ async function fetchDetail(req, res) {
 async function updateDetail(req, res) {
   const { body } = req;
   try {
-    const filter = { origin: body.origin };
+    const filter = { _id: body._id };
     const update = {
       origin: body.origin,
       contact: body.contact,
@@ -39,9 +39,9 @@ async function updateDetail(req, res) {
   }
 }
 async function deleteDetail(req, res) {
-  const { origin } = req.query;
+  const { _id } = req.query;
   try {
-    await Support.deleteOne({ origin });
+    await Support.deleteOne({ _id });
     res.status(201).json({ success: 'Contact deleted!' });
   } catch (err) {
     logger.error(err);
