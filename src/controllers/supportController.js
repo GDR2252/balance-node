@@ -29,6 +29,7 @@ async function updateDetail(req, res) {
   try {
     const filter = { origin: body.origin };
     const update = {
+      origin: body.origin,
       contact: body.contact,
     };
     await Support.findOneAndUpdate(filter, update);
