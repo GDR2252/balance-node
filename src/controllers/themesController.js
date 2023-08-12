@@ -53,6 +53,7 @@ async function updateThemes(req, res) {
     logger.info(result);
     res.status(201).json({ success: `Theme for ${body.origin} updated!` });
   } catch (err) {
+    logger.error(err);
     res.status(500).json({ message: err.message });
   }
 }
