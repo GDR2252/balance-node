@@ -11,7 +11,7 @@ const matchruleSchema = new Schema({
     type: String,
   },
   highlight: {
-    type: String,
+    type: Boolean,
     default: false,
   },
   parentId: {
