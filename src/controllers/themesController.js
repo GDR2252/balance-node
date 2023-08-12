@@ -12,6 +12,7 @@ async function addThemes(req, res) {
     const result = await client.db(process.env.EXCH_DB).collection('themes')
       .insertOne(body);
     logger.info(`New listing created with the following id: ${result.insertedId}`);
+    res.status(200).json({ message: 'Theme added successfully.' });
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: err.message });
