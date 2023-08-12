@@ -96,7 +96,7 @@ async function fetchrules(req, res) {
       { $sort: { 'children.level': -1 } },
       {
         $group: {
-          _id: '$id',
+          _id: '$_id',
           id: { $first: '$id' },
           title: { $first: '$title' },
           highlight: { $first: '$highlight' },
@@ -156,7 +156,7 @@ async function fetchrules(req, res) {
       },
       {
         $addFields: {
-          id: '$_id',
+          _id: '$_id',
           children: '$children.presentChild',
         },
       },
