@@ -20,12 +20,11 @@ async function addThemes(req, res) {
 }
 
 async function fetchThemes(req, res) {
-  const { origin } = req.body;
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   try {
     await client.connect();
-    const result = await client.db(process.env.EXCH_DB).collection('themes').find({ origin });
+    const result = await client.db(process.env.EXCH_DB).collection('themes').find({}).toArray();
     logger.info(result);
     res.status(200).json(result);
   } catch (err) {
