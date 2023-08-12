@@ -6,7 +6,7 @@ async function addDetail(req, res) {
   const { body } = req;
   try {
     await Support.create({
-      origin: req.headers.origin,
+      origin: body.origin,
       contact: body.contact,
     });
     res.status(200).json({ message: 'Contact added successfully.' });
