@@ -53,8 +53,8 @@ async function placebet(req, res) {
     runners.forEach((element) => {
       const selId = element.selectionId.toString();
       if (selId === selectionId) {
-        [backdata] = element.exchange.availableToBack;
-        [laydata] = element.exchange.availableToLay;
+        backdata = element.exchange.availableToBack[0];
+        laydata = element.exchange.availableToLay[0];
         logger.info(backdata);
         if (type === 'back') {
           profit = (backdata.price - 1) * numberstake;
