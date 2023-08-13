@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, Double } = require('mongodb');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const { setTimeout } = require('timers/promises');
@@ -126,10 +126,11 @@ async function placebet(req, res) {
     // , { session }
     logger.info(`Placed bet for user: ${req.user}`);
     logger.info(typeof balance);
-    logger.info(Number(balance) - numberstake);
+    logger.info(parseFloat(balance) - numberstake);
+    logger.info(typeof (parseFloat(balance) - numberstake));
     await client.db(process.env.EXCH_DB).collection('users').updateOne(
       { username: req.user },
-      { $set: { exposureLimit: numberstake, balance: Number(balance) - numberstake } },
+      { $set: { exposureLimit: numberstake, balance: parseFloat(balance) - numberstake } },
       // { session },
     );
     const balanceexposures = [];
