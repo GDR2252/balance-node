@@ -1,6 +1,7 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
+const { formidable } = require('formidable');
 
 async function addThemes(req, res) {
   const { body } = req;
@@ -33,26 +34,32 @@ async function fetchThemes(req, res) {
 }
 async function updateThemes(req, res) {
   const { body } = req;
+  const form = formidable({});
+  const [fields, files] = await form.parse(req);
+  console.log(fields);
+  console.log(files);
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   try {
     await client.connect();
-    const filter = { _id: body._id };
+    const filter = { _id: fields._id[0] };
     const update = {
-      origin: body.origin,
-      bottomImageContainerBg: body.bottomImageContainerBg,
-      commonActiveColor: body.commonActiveColor,
-      commonBgColor: body.commonBgColor,
-      commonHeighLightColor: body.commonHeighLightColor,
-      commonTextColor: body.commonTextColor,
-      loginSignupBg: body.loginSignupBg,
-      loginSignupText: body.loginSignupText,
-      topHeaderBgColor: body.topHeaderBgColor,
-      topHeaderTextColor: body.topHeaderTextColor,
+      origin: fields.origin[0],
+      bottomImageContainerBg: fields.bottomImageContainerBg[0],
+      commonActiveColor: fields.commonActiveColor[0],
+      commonBgColor: fields.commonBgColor[0],
+      commonHeighLightColor: fields.commonHeighLightColor[0],
+      commonTextColor: fields.commonTextColor[0],
+      loginSignupBg: fields.loginSignupBg[0],
+      loginSignupText: fields.loginSignupText[0],
+      topHeaderBgColor: fields.topHeaderBgColor[0],
+      topHeaderTextColor: fields.topHeaderTextColor[0],
     };
-    const result = await client.db(process.env.EXCH_DB).collection('themes').findOneAndUpdate(filter, update);
+    logger.info(filter);
+    logger.info(update);
+    const result = await client.db(process.env.EXCH_DB).collection('themes').findOneAndUpdate(filter, { $set: update });
     logger.info(result);
-    res.status(201).json({ success: `Theme for ${body.origin} updated!` });
+    res.status(201).json({ success: 'Theme updated!' });
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: err.message });
@@ -65,8 +72,8 @@ async function deleteThemes(req, res) {
   try {
     await client.connect();
     const result = await client.db(process.env.EXCH_DB).collection('themes')
-      .deleteOne({ _id });
-    logger.debug(result);
+      .deleteOne({ _id: new ObjectId(_id) });
+    logger.info(result);
     res.status(201).json({ success: 'Themes deleted!' });
   } catch (err) {
     logger.error(err);
