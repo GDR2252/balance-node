@@ -29,6 +29,7 @@ async function placebet(req, res) {
       .db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
       // , { session }
     let { balance } = userdata;
+    logger.info(balance);
     const numberstake = Number(stake);
     if (balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
     const marketratesdata = await client
@@ -105,6 +106,7 @@ async function placebet(req, res) {
     userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
     // , { session }
     balance = userdata.balance;
+    logger.info(balance);
     if (balance < Number(stake)) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
     await client.db(process.env.EXCH_DB).collection('cricketbetplaces').insertOne({
       username: req.user,
@@ -123,6 +125,8 @@ async function placebet(req, res) {
     });
     // , { session }
     logger.info(`Placed bet for user: ${req.user}`);
+    logger.info(typeof balance);
+    logger.info(Number(balance) - numberstake);
     await client.db(process.env.EXCH_DB).collection('users').updateOne(
       { username: req.user },
       { $set: { exposureLimit: numberstake, balance: Number(balance) - numberstake } },
@@ -197,9 +201,13 @@ async function placebet(req, res) {
     if (exposureval > 0) {
       exposure = userdata.exposure + exposureval;
       balance = userdata.balance - exposureval;
+      logger.info(balance);
+      logger.info(exposure);
     } else {
       exposure = userdata.exposure - exposureval;
       balance = userdata.balance + exposureval;
+      logger.info(balance);
+      logger.info(exposure);
     }
     await client.db(process.env.EXCH_DB).collection('users').updateOne(
       { username: req.user },
@@ -232,12 +240,13 @@ async function fetchCricket(req, res) {
       username: req.user,
     },
   }]);
-  if (!betData.length > 0) return res.status(404).json({ message: 'Bet Data not present.' });
-  const retdata = betData.map((bets) => {
-    delete bets.__v;
-    return bets;
-  });
-  return res.json(retdata);
+  if (betData.length > 0) {
+    const retdata = betData.map((bets) => {
+      delete bets.__v;
+      return bets;
+    });
+    return res.json(retdata);
+  }
 }
 
 async function fetchPl(req, res) {
