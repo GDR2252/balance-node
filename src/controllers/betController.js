@@ -149,7 +149,7 @@ async function placebet(req, res) {
         selectionId: fselectionIds,
       });
       // , { session }
-      newVal = Math.min(...exposures);
+      // newVal = Math.min(...exposures);
     } else {
       const selectionData = plData[0].selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
