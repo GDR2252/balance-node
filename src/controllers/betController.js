@@ -130,7 +130,7 @@ async function placebet(req, res) {
     logger.info(typeof (parseFloat(balance) - numberstake));
     await client.db(process.env.EXCH_DB).collection('users').updateOne(
       { username: req.user },
-      { $set: { exposureLimit: numberstake, balance: parseFloat(balance) - numberstake } },
+      { $set: { exposure: numberstake, balance: parseFloat(balance) - numberstake } },
       // { session },
     );
     const balanceexposures = [];
