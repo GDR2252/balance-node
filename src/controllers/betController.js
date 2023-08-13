@@ -3,6 +3,7 @@ const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const { setTimeout } = require('timers/promises');
 const CricketBetPlace = require('../model/CricketBetPlace');
+const CricketPL = require('../model/CricketPL');
 
 const diff = ((a, b) => (a > b ? a - b : b - a));
 
@@ -237,4 +238,18 @@ async function fetchCricket(req, res) {
   return res.json(retdata);
 }
 
-module.exports = { placebet, fetchCricket };
+async function fetchPl(req, res) {
+  const { body } = req;
+  const { exEventId } = body;
+  const betData = await CricketPL.aggregate([{
+    $match: {
+      exEventId,
+      username: req.user,
+    },
+  }]);
+  if (!betData.length > 0) return res.status(404).json({ message: 'PL Data not present.' });
+  const retdata = betData.map((bets) => bets.selectionId);
+  return res.json(retdata);
+}
+
+module.exports = { placebet, fetchCricket, fetchPl };
