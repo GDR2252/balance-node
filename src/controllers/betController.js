@@ -128,11 +128,6 @@ async function placebet(req, res) {
     logger.info(typeof balance);
     logger.info(parseFloat(balance) - numberstake);
     logger.info(typeof (parseFloat(balance) - numberstake));
-    await client.db(process.env.EXCH_DB).collection('users').updateOne(
-      { username: req.user },
-      { $set: { exposure: numberstake, balance: parseFloat(balance) - numberstake } },
-      // { session },
-    );
     const balanceexposures = [];
     let prevVal = 0;
     let newVal = 0;
@@ -150,6 +145,11 @@ async function placebet(req, res) {
       });
       // , { session }
       // newVal = Math.min(...exposures);
+      if (type === 'back') {
+        newVal = numberstake;
+      } else {
+        newVal = -Math.abs((laydata.price - 1) * numberstake);
+      }
     } else {
       const selectionData = plData[0].selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
