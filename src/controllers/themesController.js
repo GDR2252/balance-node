@@ -37,8 +37,9 @@ async function updateThemes(req, res) {
   const client = new MongoClient(uri);
   try {
     await client.connect();
-    const filter = { origin: body.origin };
+    const filter = { _id: body._id };
     const update = {
+      origin: body.origin,
       bottomImageContainerBg: body.bottomImageContainerBg,
       commonActiveColor: body.commonActiveColor,
       commonBgColor: body.commonBgColor,
@@ -58,13 +59,13 @@ async function updateThemes(req, res) {
   }
 }
 async function deleteThemes(req, res) {
-  const { origin } = req.query;
+  const { _id } = req.query;
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   try {
     await client.connect();
     const result = await client.db(process.env.EXCH_DB).collection('themes')
-      .deleteOne({ origin });
+      .deleteOne({ _id });
     logger.debug(result);
     res.status(201).json({ success: 'Themes deleted!' });
   } catch (err) {
