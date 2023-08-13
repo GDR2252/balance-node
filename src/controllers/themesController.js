@@ -1,7 +1,6 @@
 const { MongoClient, ObjectId } = require('mongodb');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
-const { formidable } = require('formidable');
 const { uploadImageTos3 } = require('../config/awsUploader');
 
 async function addThemes(req, res) {
@@ -43,26 +42,22 @@ async function fetchThemes(req, res) {
 }
 async function updateThemes(req, res) {
   const { body } = req;
-  const form = formidable({});
-  const [fields, files] = await form.parse(req);
-  console.log(fields);
-  console.log(files);
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   try {
     await client.connect();
-    const filter = { _id: fields._id[0] };
+    const filter = { _id: body._id[0] };
     const update = {
-      origin: fields.origin[0],
-      bottomImageContainerBg: fields.bottomImageContainerBg[0],
-      commonActiveColor: fields.commonActiveColor[0],
-      commonBgColor: fields.commonBgColor[0],
-      commonHeighLightColor: fields.commonHeighLightColor[0],
-      commonTextColor: fields.commonTextColor[0],
-      loginSignupBg: fields.loginSignupBg[0],
-      loginSignupText: fields.loginSignupText[0],
-      topHeaderBgColor: fields.topHeaderBgColor[0],
-      topHeaderTextColor: fields.topHeaderTextColor[0],
+      origin: body.origin[0],
+      bottomImageContainerBg: body.bottomImageContainerBg[0],
+      commonActiveColor: body.commonActiveColor[0],
+      commonBgColor: body.commonBgColor[0],
+      commonHeighLightColor: body.commonHeighLightColor[0],
+      commonTextColor: body.commonTextColor[0],
+      loginSignupBg: body.loginSignupBg[0],
+      loginSignupText: body.loginSignupText[0],
+      topHeaderBgColor: body.topHeaderBgColor[0],
+      topHeaderTextColor: body.topHeaderTextColor[0],
     };
     logger.info(filter);
     logger.info(update);
