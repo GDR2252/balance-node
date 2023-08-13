@@ -133,8 +133,8 @@ async function placebet(req, res) {
       // { session },
     );
     const balanceexposures = [];
-    let prevVal;
-    let newVal;
+    let prevVal = 0;
+    let newVal = 0;
     const plData = await client.db(process.env.EXCH_DB).collection('cricketpls').find({
       exMarketId,
       username: req.user,
