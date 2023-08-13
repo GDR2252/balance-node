@@ -57,6 +57,6 @@ const cricketbetplaceSchema = new Schema({
     type: Number,
     default: 1,
   },
-}, { toJSON: { getters: true } }, { timestamps: true });
+}, { timestamps: true });
 
 module.exports = mongoose.model('CricketBetPlace', cricketbetplaceSchema);
