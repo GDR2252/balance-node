@@ -14,9 +14,10 @@ const matchruleSchema = new Schema({
     type: Boolean,
     default: false,
   },
-  parentId: {
+  parentId: [{
     type: String,
-  },
+    default: null,
+  }],
 }, { timestamps: true });
 
 module.exports = mongoose.model('Matchrule', matchruleSchema);

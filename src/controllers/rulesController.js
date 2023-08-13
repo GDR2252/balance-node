@@ -40,7 +40,7 @@ async function addsubrules(req, res) {
   try {
     const result = await matchrules.create({
       title,
-      parentId,
+      parentId: [...parentIdData[0].parentId, parentId],
       id: new Date().getTime(),
     });
     logger.debug(result);
@@ -71,97 +71,36 @@ async function deleterules(req, res) {
     res.status(500).json({ message: err.message });
   }
 }
+const createNestedStructure = (data) => {
+  const map = {};
+  const result = [];
+  data.forEach((item) => {
+    map[item.id] = { ...item.toJSON(), children: [] };
+    logger.info(map);
+  });
+  data.forEach((item) => {
+    item.parentId.forEach((pid) => {
+      if (map[pid]) {
+        if (map[pid]?.id === item?.parentId?.[item?.parentId?.length - 1]) {
+          map[pid].children.push(map[item.id]);
+        }
+      }
+    });
+  });
+  data.forEach((item) => {
+    if (item.parentId.length === 0) {
+      result.push(map[item.id]);
+    }
+  });
+  return result;
+};
 
 async function fetchrules(req, res) {
   let rules = [];
   try {
-    rules = await matchrules.aggregate([
-      { $match: { parentId: null } },
-      {
-        $graphLookup: {
-          from: 'matchrules',
-          startWith: '$id',
-          connectFromField: 'id',
-          connectToField: 'parentId',
-          depthField: 'level',
-          as: 'children',
-        },
-      },
-      {
-        $unwind: {
-          path: '$children',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      { $sort: { 'children.level': -1 } },
-      {
-        $group: {
-          _id: '$_id',
-          id: { $first: '$id' },
-          title: { $first: '$title' },
-          highlight: { $first: '$highlight' },
-          children: { $push: '$children' },
-        },
-      },
-      {
-        $addFields: {
-          children: {
-            $reduce: {
-              input: '$children',
-              initialValue: { level: -1, presentChild: [], prevChild: [] },
-              in: {
-                $let: {
-                  vars: {
-                    prev: {
-                      $cond: [
-                        { $eq: ['$$value.level', '$$this.level'] },
-                        '$$value.prevChild',
-                        '$$value.presentChild',
-                      ],
-                    },
-                    current: {
-                      $cond: [{ $eq: ['$$value.level', '$$this.level'] }, '$$value.presentChild', []],
-                    },
-                  },
-                  in: {
-                    level: '$$this.level',
-                    prevChild: '$$prev',
-                    presentChild: {
-                      $concatArrays: [
-                        '$$current',
-                        [
-                          {
-                            $mergeObjects: [
-                              '$$this',
-                              {
-                                children: {
-                                  $filter: {
-                                    input: '$$prev',
-                                    as: 'e',
-                                    cond: { $eq: ['$$e.parentId', '$$this.id'] },
-                                  },
-                                },
-                              },
-                            ],
-                          },
-                        ],
-                      ],
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      {
-        $addFields: {
-          _id: '$_id',
-          children: '$children.presentChild',
-        },
-      },
-    ]);
-    res.status(200).json(rules);
+    rules = await matchrules.find({});
+    const data = createNestedStructure(rules);
+    res.status(200).json(data);
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: err.message });
