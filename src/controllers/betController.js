@@ -200,7 +200,7 @@ async function placebet(req, res) {
         // { session },
       );
     }
-    userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
+    // userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
     if (exposureval > 0) {
       exposure = userdata.exposure + exposureval;
       balance = userdata.balance - exposureval;
