@@ -13,7 +13,11 @@ router.post('/', logoUpload.fields([{
   name: 'faviconUrl', maxCount: 1,
 }]), themesController.addThemes);
 router.get('/', themesController.fetchThemes);
-router.post('/update', themesController.updateThemes);
+router.post('/update', logoUpload.fields([{
+  name: 'logoUrl', maxCount: 1,
+}, {
+  name: 'faviconUrl', maxCount: 1,
+}]), themesController.updateThemes);
 router.delete('/', themesController.deleteThemes);
 
 module.exports = router;

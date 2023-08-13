@@ -5,7 +5,6 @@ const { uploadImageTos3 } = require('../config/awsUploader');
 
 async function addThemes(req, res) {
   const { files } = req;
-  logger.info(files);
   const data = req.body;
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
@@ -40,25 +39,43 @@ async function fetchThemes(req, res) {
     res.status(500).json({ message: err.message });
   }
 }
+
 async function updateThemes(req, res) {
-  const { body } = req;
+  const { files } = req;
+  logger.info(files);
+  const data = req.body;
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   try {
+    if (files.logoUrl) {
+      const logoUrl = await uploadImageTos3(files.logoUrl);
+      data.logoUrl = logoUrl.data.Location;
+    }
+    if (files.faviconUrl) {
+      const faviconUrl = await uploadImageTos3(files.faviconUrl);
+      data.faviconUrl = faviconUrl.data.Location;
+    }
+    logger.info(data);
     await client.connect();
-    const filter = { _id: body._id[0] };
+    const filter = { _id: new ObjectId(data._id) };
     const update = {
-      origin: body.origin[0],
-      bottomImageContainerBg: body.bottomImageContainerBg[0],
-      commonActiveColor: body.commonActiveColor[0],
-      commonBgColor: body.commonBgColor[0],
-      commonHeighLightColor: body.commonHeighLightColor[0],
-      commonTextColor: body.commonTextColor[0],
-      loginSignupBg: body.loginSignupBg[0],
-      loginSignupText: body.loginSignupText[0],
-      topHeaderBgColor: body.topHeaderBgColor[0],
-      topHeaderTextColor: body.topHeaderTextColor[0],
+      origin: data.origin,
+      bottomImageContainerBg: data.bottomImageContainerBg,
+      commonActiveColor: data.commonActiveColor,
+      commonBgColor: data.commonBgColor,
+      commonHeighLightColor: data.commonHeighLightColor,
+      commonTextColor: data.commonTextColor,
+      loginSignupBg: data.loginSignupBg,
+      loginSignupText: data.loginSignupText,
+      topHeaderBgColor: data.topHeaderBgColor,
+      topHeaderTextColor: data.topHeaderTextColor,
     };
+    if (files.logoUrl) {
+      update.logoUrl = data.logoUrl;
+    }
+    if (files.faviconUrl) {
+      update.faviconUrl = data.faviconUrl;
+    }
     logger.info(filter);
     logger.info(update);
     const result = await client.db(process.env.EXCH_DB).collection('themes').findOneAndUpdate(filter, { $set: update });
