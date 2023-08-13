@@ -118,6 +118,8 @@ async function placebet(req, res) {
       eventName,
       selectionName,
       marketType,
+      createdAt: new Date(),
+      upddatedAt: new Date(),
     });
     // , { session }
     logger.info(`Placed bet for user: ${req.user}`);
