@@ -249,12 +249,13 @@ async function fetchPl(req, res) {
       username: req.user,
     },
   }]);
-  if (!betData.length > 0) return res.status(404).json({ message: 'PL Data not present.' });
-  const retdata = betData.map((bets) => {
-    delete bets.__v;
-    return bets;
-  });
-  return res.json(retdata);
+  if (betData.length > 0) {
+    const retdata = betData.map((bets) => {
+      delete bets.__v;
+      return bets;
+    });
+    return res.json(retdata);
+  }
 }
 
 module.exports = { placebet, fetchCricket, fetchPl };
