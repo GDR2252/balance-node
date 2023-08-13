@@ -23,6 +23,7 @@ async function placebet(req, res) {
       exEventId, exMarketId, stake, selectionId, type,
     } = body;
     let { odds } = body;
+    const userOdds = odds;
     let userdata = await client
       .db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
       // , { session }
@@ -47,6 +48,7 @@ async function placebet(req, res) {
     let backdata;
     let profit;
     let loss;
+    let pl;
     const selectionIds = [];
     const fselectionIds = [];
     const exposures = [];
@@ -58,12 +60,14 @@ async function placebet(req, res) {
         logger.info(backdata);
         if (type === 'back') {
           profit = (backdata.price - 1) * numberstake;
+          pl = profit;
           const key = { [selId]: profit };
           selectionIds.push(key);
           fselectionIds.push({ [selId]: Math.round(profit) });
         }
         if (type === 'lay') {
           loss = -Math.abs((laydata.price - 1) * numberstake);
+          pl = loss;
           const key = { [selId]: loss };
           selectionIds.push(key);
           exposures.push(loss);
@@ -108,7 +112,8 @@ async function placebet(req, res) {
       stake,
       selectionId,
       type,
-      odds: parseFloat(odds),
+      pl,
+      odds: parseFloat(userOdds),
       eventName,
       selectionName,
       marketType,
@@ -226,7 +231,6 @@ async function fetchCricket(req, res) {
   }]);
   if (!betData.length > 0) return res.status(404).json({ message: 'Bet Data not present.' });
   const retdata = betData.map((bets) => {
-    delete bets._id;
     delete bets.__v;
     return bets;
   });

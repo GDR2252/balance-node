@@ -32,6 +32,10 @@ const cricketbetplaceSchema = new Schema({
     type: Schema.Types.Decimal128,
     get: getdecimal,
   },
+  pl: {
+    type: Schema.Types.Decimal128,
+    get: getdecimal,
+  },
   selectionId: {
     type: String,
   },
@@ -53,6 +57,6 @@ const cricketbetplaceSchema = new Schema({
     type: Number,
     default: 1,
   },
-}, { toJSON: { getters: true } });
+}, { toJSON: { getters: true } }, { timestamps: true });
 
 module.exports = mongoose.model('CricketBetPlace', cricketbetplaceSchema);
