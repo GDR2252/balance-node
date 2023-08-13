@@ -2,16 +2,25 @@ const { MongoClient, ObjectId } = require('mongodb');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const { formidable } = require('formidable');
+const { uploadImageTos3 } = require('../config/awsUploader');
 
 async function addThemes(req, res) {
-  const { body } = req;
-  logger.info(req);
+  const { files } = req;
+  logger.info(files);
+  const data = req.body;
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   try {
+    const logoUrl = await uploadImageTos3(files.logoUrl);
+    logger.info(logoUrl);
+    const faviconUrl = await uploadImageTos3(files.faviconUrl);
+    logger.info(faviconUrl);
+    data.logoUrl = logoUrl.data.Location;
+    data.faviconUrl = faviconUrl.data.Location;
+    logger.info(data);
     await client.connect();
     const result = await client.db(process.env.EXCH_DB).collection('themes')
-      .insertOne(body);
+      .insertOne(data);
     logger.info(`New listing created with the following id: ${result.insertedId}`);
     res.status(200).json({ message: 'Theme added successfully.' });
   } catch (err) {
