@@ -250,7 +250,10 @@ async function fetchPl(req, res) {
     },
   }]);
   if (!betData.length > 0) return res.status(404).json({ message: 'PL Data not present.' });
-  const retdata = betData.map((bets) => bets.selectionId);
+  const retdata = betData.map((bets) => {
+    delete bets.__v;
+    return bets;
+  });
   return res.json(retdata);
 }
 
