@@ -125,7 +125,7 @@ async function placebet(req, res) {
     logger.info(`Placed bet for user: ${req.user}`);
     await client.db(process.env.EXCH_DB).collection('users').updateOne(
       { username: req.user },
-      { $set: { exposureLimit: numberstake, balance: balance - numberstake } },
+      { $set: { exposureLimit: numberstake, balance: Number(balance) - numberstake } },
       // { session },
     );
     const balanceexposures = [];
