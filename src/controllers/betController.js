@@ -51,7 +51,10 @@ async function placebet(req, res) {
     let profit;
     let loss;
     let pl;
+    let prevVal = 0;
+    let newVal = 0;
     const selectionIds = [];
+    const exposureIds = [];
     const fselectionIds = [];
     const exposures = [];
     runners.forEach((element) => {
@@ -59,20 +62,24 @@ async function placebet(req, res) {
       if (selId === selectionId) {
         backdata = element.exchange.availableToBack[0];
         laydata = element.exchange.availableToLay[0];
-        logger.info(backdata);
         if (type === 'back') {
           profit = (backdata.price - 1) * numberstake;
           pl = profit;
           const key = { [selId]: profit };
+          const exposekey = { [selId]: -Math.abs(numberstake) };
+          newVal = -Math.abs(numberstake);
           selectionIds.push(key);
+          exposureIds.push(exposekey);
           fselectionIds.push({ [selId]: Math.round(profit) });
         }
         if (type === 'lay') {
           loss = -Math.abs((laydata.price - 1) * numberstake);
           pl = loss;
+          exposures.push(loss);
           const key = { [selId]: loss };
           selectionIds.push(key);
-          exposures.push(loss);
+          exposureIds.push(key);
+          newVal = numberstake;
           fselectionIds.push({ [selId]: Math.round(loss) });
         }
       } else {
@@ -80,6 +87,8 @@ async function placebet(req, res) {
           loss = -Math.abs(numberstake);
           const key = { [selId]: loss };
           selectionIds.push(key);
+          exposureIds.push(key);
+          // newVal = loss;
           exposures.push(loss);
           fselectionIds.push(key);
         }
@@ -87,6 +96,7 @@ async function placebet(req, res) {
           profit = numberstake;
           const key = { [selId]: profit };
           selectionIds.push(key);
+          exposureIds.push(key);
           fselectionIds.push(key);
         }
       }
@@ -101,7 +111,7 @@ async function placebet(req, res) {
       odds -= 1;
       if (odds < layprice) return res.status(401).json({ message: 'Cannot place bet. Odds is not correct.' });
     }
-    await setTimeout(5000);
+    // await setTimeout(5000);
     logger.info('Waited for 5 secs.');
     userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
     // , { session }
@@ -125,12 +135,8 @@ async function placebet(req, res) {
     });
     // , { session }
     logger.info(`Placed bet for user: ${req.user}`);
-    logger.info(typeof balance);
-    logger.info(parseFloat(balance) - numberstake);
-    logger.info(typeof (parseFloat(balance) - numberstake));
     const balanceexposures = [];
-    let prevVal = 0;
-    let newVal = 0;
+
     const plData = await client.db(process.env.EXCH_DB).collection('cricketpls').find({
       exMarketId,
       username: req.user,
@@ -145,22 +151,20 @@ async function placebet(req, res) {
       });
       // , { session }
       // newVal = Math.min(...exposures);
-      if (type === 'back') {
-        newVal = numberstake;
-      } else {
-        newVal = -Math.abs((laydata.price - 1) * numberstake);
-      }
     } else {
       const selectionData = plData[0].selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
         o[k] = Math.round(key[k] + selectionIds[value][k]);
-        balanceexposures.push(selectionIds[value][k]);
-        if (k === selectionId) {
-          prevVal = key[k];
-          newVal = o[k];
-        }
+        balanceexposures.push(o[k]);
         return o;
       }, {}));
+      const minVal = Math.min(...balanceexposures);
+      logger.info(minVal);
+      if (minVal < 0) {
+        prevVal = minVal;
+      } else {
+        prevVal = 0;
+      }
       const filter = { _id: plData[0]._id };
       const update = { selectionId: result };
       await client.db(process.env.EXCH_DB).collection('cricketpls').updateOne(
@@ -172,7 +176,6 @@ async function placebet(req, res) {
 
     let exposure = Math.min(...exposures);
     const exposureval = diff(newVal, prevVal);
-    logger.info(`Exposure: ${exposureval}`);
     const exposureData = await client.db(process.env.EXCH_DB).collection('exposuremanages').find({
       exMarketId,
       username: req.user,
@@ -186,12 +189,14 @@ async function placebet(req, res) {
         exposure,
       });
       // , { session }
-    } else {
-      if (exposureval > 0) {
-        exposure = Number(exposureData[0].exposure) + exposureval;
+      if (type === 'back') {
+        newVal = -Math.abs(numberstake);
       } else {
-        exposure = Number(exposureData[0].exposure) - exposureval;
+        newVal = -Math.abs((laydata.price - 1) * numberstake);
       }
+    } else {
+      // prevVal = exposureData[0].exposure;
+      // newVal = pl;
       const filter = { _id: exposureData[0]._id };
       const update = { exposure };
       await client.db(process.env.EXCH_DB).collection('exposuremanages').updateOne(
@@ -200,15 +205,39 @@ async function placebet(req, res) {
         // { session },
       );
     }
-    // userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
-    if (exposureval > 0) {
-      exposure = userdata.exposure + exposureval;
-      balance = userdata.balance - exposureval;
+    logger.info(prevVal);
+    logger.info(newVal);
+/*     if (prevVal) {
+      if (Math.abs(prevVal) > Math.abs(newVal)) {
+        exposure = userdata.exposure - Math.abs(prevVal);
+        logger.info(exposure);
+        balance = userdata.balance + Math.abs(prevVal);
+        logger.info(balance);
+        exposure += Math.abs(newVal);
+        logger.info(exposure);
+        balance -= Math.abs(newVal);
+        logger.info(balance);
+      } else {
+        exposure = Math.abs(prevVal) + Math.abs(newVal);
+        logger.info(exposure);
+        balance = userdata.balance - Math.abs(newVal);
+        logger.info(balance);
+      }
+    } else {
+      exposure = userdata.exposure + Math.abs(newVal);
+      balance = userdata.balance - Math.abs(newVal);
+      logger.info(balance);
+      logger.info(exposure);
+    } */
+    newVal = -Math.abs(numberstake);
+    if (type === 'back') {
+      exposure = userdata.exposure + Math.abs(newVal);
+      balance = userdata.balance - Math.abs(newVal);
       logger.info(balance);
       logger.info(exposure);
     } else {
-      exposure = userdata.exposure - exposureval;
-      balance = userdata.balance + exposureval;
+      exposure = userdata.exposure + newVal;
+      balance = userdata.balance + Math.abs(newVal);
       logger.info(balance);
       logger.info(exposure);
     }
