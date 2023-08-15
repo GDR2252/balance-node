@@ -70,7 +70,7 @@ async function placebet(req, res) {
           fselectionIds.push({ [selId]: Math.round(profit) });
         }
         if (type === 'lay') {
-          loss = -Math.abs(numberstake);
+          loss = -Math.abs(Number(Number((userOdds - 1) * numberstake).toFixed(2)));
           pl = loss;
           exposures.push(loss);
           const key = { [selId]: loss };
@@ -87,7 +87,7 @@ async function placebet(req, res) {
           fselectionIds.push(key);
         }
         if (type === 'lay') {
-          profit = Number(Number((userOdds - 1) * numberstake).toFixed(2));
+          profit = numberstake;
           const key = { [selId]: profit };
           logger.info(key);
           selectionIds.push(key);
