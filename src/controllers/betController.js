@@ -75,7 +75,7 @@ async function placebet(req, res) {
           exposures.push(loss);
           const key = { [selId]: loss };
           selectionIds.push(key);
-          newVal = numberstake;
+          newVal = loss;
           fselectionIds.push({ [selId]: Math.round(loss) });
         }
       } else {
