@@ -60,6 +60,8 @@ async function placebet(req, res) {
     runners.forEach((element) => {
       const selId = element.selectionId.toString();
       if (selId === selectionId) {
+        console.log(JSON.stringify(element));
+        console.log(backdata);
         backdata = element.exchange.availableToBack[0];
         laydata = element.exchange.availableToLay[0];
         if (type === 'back') {
@@ -111,7 +113,7 @@ async function placebet(req, res) {
       odds -= 1;
       if (odds < layprice) return res.status(401).json({ message: 'Cannot place bet. Odds is not correct.' });
     }
-    // await setTimeout(5000);
+    await setTimeout(5000);
     logger.info('Waited for 5 secs.');
     userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
     // , { session }
@@ -136,7 +138,7 @@ async function placebet(req, res) {
     // , { session }
     logger.info(`Placed bet for user: ${req.user}`);
     const balanceexposures = [];
-
+    const oldbalanceexposures = [];
     const plData = await client.db(process.env.EXCH_DB).collection('cricketpls').find({
       exMarketId,
       username: req.user,
@@ -155,16 +157,20 @@ async function placebet(req, res) {
       const selectionData = plData[0].selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
         o[k] = Math.round(key[k] + selectionIds[value][k]);
-        balanceexposures.push(o[k]);
+        if (key[k] < 0) {
+          oldbalanceexposures.push(key[k]);
+        } else {
+          oldbalanceexposures.push(0);
+        }
+        if (o[k] < 0) {
+          balanceexposures.push(o[k]);
+        } else {
+          balanceexposures.push(0);
+        }
         return o;
       }, {}));
-      const minVal = Math.min(...balanceexposures);
-      logger.info(minVal);
-      if (minVal < 0) {
-        prevVal = minVal;
-      } else {
-        prevVal = 0;
-      }
+      prevVal = Math.min(...oldbalanceexposures);
+      newVal = Math.min(...balanceexposures);
       const filter = { _id: plData[0]._id };
       const update = { selectionId: result };
       await client.db(process.env.EXCH_DB).collection('cricketpls').updateOne(
@@ -207,29 +213,22 @@ async function placebet(req, res) {
     }
     logger.info(prevVal);
     logger.info(newVal);
-/*     if (prevVal) {
-      if (Math.abs(prevVal) > Math.abs(newVal)) {
-        exposure = userdata.exposure - Math.abs(prevVal);
-        logger.info(exposure);
-        balance = userdata.balance + Math.abs(prevVal);
-        logger.info(balance);
-        exposure += Math.abs(newVal);
-        logger.info(exposure);
-        balance -= Math.abs(newVal);
-        logger.info(balance);
-      } else {
-        exposure = Math.abs(prevVal) + Math.abs(newVal);
-        logger.info(exposure);
-        balance = userdata.balance - Math.abs(newVal);
-        logger.info(balance);
-      }
+    if (prevVal) {
+      exposure = userdata.exposure - Math.abs(prevVal);
+      logger.info(exposure);
+      balance = userdata.balance + Math.abs(prevVal);
+      logger.info(balance);
+      exposure += Math.abs(newVal);
+      logger.info(exposure);
+      balance -= Math.abs(newVal);
+      logger.info(balance);
     } else {
       exposure = userdata.exposure + Math.abs(newVal);
       balance = userdata.balance - Math.abs(newVal);
       logger.info(balance);
       logger.info(exposure);
-    } */
-    newVal = -Math.abs(numberstake);
+    }
+    /* newVal = -Math.abs(numberstake);
     if (type === 'back') {
       exposure = userdata.exposure + Math.abs(newVal);
       balance = userdata.balance - Math.abs(newVal);
@@ -240,7 +239,7 @@ async function placebet(req, res) {
       balance = userdata.balance + Math.abs(newVal);
       logger.info(balance);
       logger.info(exposure);
-    }
+    } */
     await client.db(process.env.EXCH_DB).collection('users').updateOne(
       { username: req.user },
       { $set: { exposure, balance } },
