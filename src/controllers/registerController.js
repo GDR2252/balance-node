@@ -6,6 +6,7 @@ const referralCodes = require('referral-codes');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const User = require('../model/User');
 const B2cUser = require('../model/B2cUser');
+const Stake = require('../model/Stake');
 require('dotenv').config();
 
 const handleNewUser = async (req, res) => {
@@ -131,6 +132,9 @@ const verifyotp = async (req, res) => {
         registeredReferral: referral_code,
         branch,
       });
+      const stakes = await Stake.create({
+        username: user,
+      });
       const accessToken = jwt.sign(
         {
           username: user,
@@ -139,7 +143,7 @@ const verifyotp = async (req, res) => {
         { expiresIn: '1d' },
       );
       res.json({
-        roles, username: user, mobile, accessToken, referralCode: selfcode,
+        roles, username: user, mobile, accessToken, referralCode: selfcode, stakes: stakes.stakes,
       });
     }
   } catch (err) {

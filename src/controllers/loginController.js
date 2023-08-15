@@ -5,6 +5,7 @@ const logger = require('log4js').getLogger(path.parse(__filename).name);
 const User = require('../model/User');
 const ActivityLog = require('../model/ActivityLog');
 const Support = require('../model/Support');
+const Stake = require('../model/Stake');
 
 require('dotenv').config();
 
@@ -54,8 +55,15 @@ async function handleLogin(req, res) {
     );
     await addActivity(foundUser, ip, 'success');
     const contact = await Support.findOne({ origin }).exec();
+    const stakes = await Stake.findOne({ username }).exec();
     res.json({
-      roles, username, mobile, accessToken, referralCode: selfReferral, wacontact: contact?.contact,
+      roles,
+      username,
+      mobile,
+      accessToken,
+      referralCode: selfReferral,
+      wacontact: contact?.contact,
+      stakes,
     });
   } else {
     await addActivity(foundUser, ip, 'failed');
