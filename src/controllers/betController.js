@@ -54,24 +54,19 @@ async function placebet(req, res) {
     let prevVal = 0;
     let newVal = 0;
     const selectionIds = [];
-    const exposureIds = [];
     const fselectionIds = [];
     const exposures = [];
     runners.forEach((element) => {
       const selId = element.selectionId.toString();
       if (selId === selectionId) {
-        console.log(JSON.stringify(element));
-        console.log(backdata);
         backdata = element.exchange.availableToBack[0];
         laydata = element.exchange.availableToLay[0];
         if (type === 'back') {
-          profit = (backdata.price - 1) * numberstake;
+          profit = Number(Number((userOdds - 1) * numberstake).toFixed(2));
           pl = profit;
           const key = { [selId]: profit };
-          const exposekey = { [selId]: -Math.abs(numberstake) };
           newVal = -Math.abs(numberstake);
           selectionIds.push(key);
-          exposureIds.push(exposekey);
           fselectionIds.push({ [selId]: Math.round(profit) });
         }
         if (type === 'lay') {
@@ -80,7 +75,6 @@ async function placebet(req, res) {
           exposures.push(loss);
           const key = { [selId]: loss };
           selectionIds.push(key);
-          exposureIds.push(key);
           newVal = numberstake;
           fselectionIds.push({ [selId]: Math.round(loss) });
         }
@@ -89,17 +83,16 @@ async function placebet(req, res) {
           loss = -Math.abs(numberstake);
           const key = { [selId]: loss };
           selectionIds.push(key);
-          exposureIds.push(key);
-          // newVal = loss;
           exposures.push(loss);
           fselectionIds.push(key);
         }
         if (type === 'lay') {
-          profit = (laydata.price - 1) * numberstake;
+          profit = Number(Number((userOdds - 1) * numberstake).toFixed(2));
           const key = { [selId]: profit };
+          logger.info(key);
           selectionIds.push(key);
-          exposureIds.push(key);
           fselectionIds.push(key);
+          logger.info(fselectionIds);
         }
       }
     });
@@ -145,6 +138,7 @@ async function placebet(req, res) {
     }).toArray();
     // , { session }
     if (!plData.length > 0) {
+      logger.info(fselectionIds);
       await client.db(process.env.EXCH_DB).collection('cricketpls').insertOne({
         username: req.user,
         exEventId,
@@ -152,7 +146,6 @@ async function placebet(req, res) {
         selectionId: fselectionIds,
       });
       // , { session }
-      // newVal = Math.min(...exposures);
     } else {
       const selectionData = plData[0].selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
@@ -179,9 +172,7 @@ async function placebet(req, res) {
         // { session },
       );
     }
-
     let exposure = Math.min(...exposures);
-    const exposureval = diff(newVal, prevVal);
     const exposureData = await client.db(process.env.EXCH_DB).collection('exposuremanages').find({
       exMarketId,
       username: req.user,
@@ -195,14 +186,7 @@ async function placebet(req, res) {
         exposure,
       });
       // , { session }
-      if (type === 'back') {
-        newVal = -Math.abs(numberstake);
-      } else {
-        newVal = -Math.abs((laydata.price - 1) * numberstake);
-      }
     } else {
-      // prevVal = exposureData[0].exposure;
-      // newVal = pl;
       const filter = { _id: exposureData[0]._id };
       const update = { exposure };
       await client.db(process.env.EXCH_DB).collection('exposuremanages').updateOne(
@@ -211,35 +195,15 @@ async function placebet(req, res) {
         // { session },
       );
     }
-    logger.info(prevVal);
-    logger.info(newVal);
     if (prevVal) {
       exposure = userdata.exposure - Math.abs(prevVal);
-      logger.info(exposure);
       balance = userdata.balance + Math.abs(prevVal);
-      logger.info(balance);
       exposure += Math.abs(newVal);
-      logger.info(exposure);
       balance -= Math.abs(newVal);
-      logger.info(balance);
     } else {
       exposure = userdata.exposure + Math.abs(newVal);
       balance = userdata.balance - Math.abs(newVal);
-      logger.info(balance);
-      logger.info(exposure);
     }
-    /* newVal = -Math.abs(numberstake);
-    if (type === 'back') {
-      exposure = userdata.exposure + Math.abs(newVal);
-      balance = userdata.balance - Math.abs(newVal);
-      logger.info(balance);
-      logger.info(exposure);
-    } else {
-      exposure = userdata.exposure + newVal;
-      balance = userdata.balance + Math.abs(newVal);
-      logger.info(balance);
-      logger.info(exposure);
-    } */
     await client.db(process.env.EXCH_DB).collection('users').updateOne(
       { username: req.user },
       { $set: { exposure, balance } },
