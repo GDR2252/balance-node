@@ -243,6 +243,7 @@ async function fetchCricket(req, res) {
     });
     return res.json(retdata);
   }
+  return res.status(201);
 }
 
 async function fetchPl(req, res) {
@@ -261,6 +262,7 @@ async function fetchPl(req, res) {
     });
     return res.json(retdata);
   }
+  return res.status(201);
 }
 
 module.exports = { placebet, fetchCricket, fetchPl };
