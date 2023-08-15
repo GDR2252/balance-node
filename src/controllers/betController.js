@@ -36,6 +36,7 @@ async function placebet(req, res) {
       .db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
       .findOne({ exMarketId });
       // , { session }
+    logger.info(marketratesdata);
     const { runners, eventName, runnerData } = marketratesdata;
     const marketlimit = marketratesdata.betLimit;
     const marketType = marketratesdata.marketName;
