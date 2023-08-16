@@ -132,8 +132,9 @@ const verifyotp = async (req, res) => {
         registeredReferral: referral_code,
         branch,
       });
-      const stakes = await Stake.create({
+      const stake = await Stake.create({
         username: user,
+        stakes: [100, 500, 1000, 5000, 10000, 50000, 100000, 200000],
       });
       const accessToken = jwt.sign(
         {
@@ -143,7 +144,7 @@ const verifyotp = async (req, res) => {
         { expiresIn: '1d' },
       );
       res.json({
-        roles, username: user, mobile, accessToken, referralCode: selfcode, stakes: stakes.stakes,
+        roles, username: user, mobile, accessToken, referralCode: selfcode, stakes: stake.stakes,
       });
     }
   } catch (err) {
