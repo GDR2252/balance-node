@@ -7,6 +7,7 @@ const logger = require('log4js').getLogger(path.parse(__filename).name);
 const User = require('../model/User');
 const B2cUser = require('../model/B2cUser');
 const Stake = require('../model/Stake');
+const { sendSMS, verifySMS } = require('./smsapiController');
 require('dotenv').config();
 
 const handleNewUser = async (req, res) => {
@@ -63,19 +64,12 @@ const generateotp = async (req, res) => {
     const validreferralCode = await User.findOne({ selfReferral: referral_code });
     if (!validreferralCode) return res.status(404).json({ message: 'Referral Code is not valid.' });
   }
-  try {
-    const config = smsSend(mobile);
-    axios.request(config)
-      .then((response) => {
-        res.status(200).json({ message: response.data });
-      })
-      .catch((error) => {
-        logger.info(error);
-        res.status(500).json({ message: 'Error while generating OTP.' });
-      });
-  } catch (err) {
-    logger.error(err);
-    res.status(500).json({ message: 'Error while generating OTP.' });
+  const response = await sendSMS(mobile);
+  logger.info(response);
+  if (response.return) {
+    res.status(200).json({ message: response.message });
+  } else {
+    res.status(500).json({ message: response.message });
   }
 };
 
@@ -95,16 +89,9 @@ const verifyotp = async (req, res) => {
   }]);
   if (duplicate.length > 0) return res.status(409).json({ message: 'Username or mobile number already exists.' });
   try {
-    const config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: `https://2factor.in/API/V1/${process.env.SMS_API_KEY}/SMS/VERIFY3/${mobile}/${otp}`,
-      headers: {},
-      maxRedirects: 0,
-    };
-    const response = await axios.request(config);
-    if (response.data.Status === 'Error') {
-      res.status(400).json({ message: response.data });
+    const response = await verifySMS(mobile, otp);
+    if (!response.return) {
+      res.status(400).json({ message: response.message });
     } else {
       const hashedPwd = await bcrypt.hash(pwd, 10);
       const roles = ['User'];
