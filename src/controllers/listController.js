@@ -72,15 +72,15 @@ async function sideMenuList(req, res) {
           if (events?.length > 0) {
             sportscopy[key].tournaments[i].events = events;
           } else {
-            delete sportscopy[key].tournaments[i];
+            // delete sportscopy[key].tournaments[i];
           }
         }
       }
     }
     const retresult = [];
     for (let result = 0; result < sportscopy.length; result += 1) {
-      sportscopy[result].tournaments = sportscopy[result].tournaments
-        .filter((value) => Object.keys(value).length !== 0);
+      sportscopy[result].tournaments = sportscopy[result]
+        ?.tournaments?.filter((value) => Object.keys(value).length !== 0);
       if (sportscopy[result].tournaments.length > 0) {
         retresult.push(sportscopy[result]);
       }
