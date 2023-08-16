@@ -81,7 +81,7 @@ async function sideMenuList(req, res) {
     for (let result = 0; result < sportscopy.length; result += 1) {
       sportscopy[result].tournaments = sportscopy[result]
         ?.tournaments?.filter((value) => Object.keys(value).length !== 0);
-      if (sportscopy[result].tournaments.length > 0) {
+      if (sportscopy[result]?.tournaments?.length > 0) {
         retresult.push(sportscopy[result]);
       }
     }
