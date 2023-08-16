@@ -53,6 +53,7 @@ app.use('/navigation', navigationRouter);
 app.use('/list', listRouter);
 app.use('/finduser', finduserRouter);
 app.use('/getthemes', fetchThemesRouter);
+app.use('/rules', require('./routes/rules'));
 
 app.use(verifyJWT);
 app.use('/getnavdata', fetchNavDataRouter);
@@ -64,7 +65,6 @@ app.use('/betlimits', betlimitRouter);
 app.use('/changeauth', changeauthRouter);
 app.use('/getBalance', balanceRouter);
 app.use('/activity', require('./routes/activity'));
-app.use('/rules', require('./routes/rules'));
 app.use('/themes', require('./routes/themes'));
 app.use('/placebet', require('./routes/bet'));
 app.use('/stakes', require('./routes/stakes'));
