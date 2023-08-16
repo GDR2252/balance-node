@@ -51,7 +51,7 @@ async function sideMenuList(req, res) {
       if (tournaments?.length > 0) {
         sportscopy[key].tournaments = tournaments;
       } else {
-        // delete sportscopy[key];
+        delete sportscopy[key];
       }
     }
     sportscopy = sportscopy.filter((value) => Object.keys(value).length !== 0);
@@ -72,16 +72,16 @@ async function sideMenuList(req, res) {
           if (events?.length > 0) {
             sportscopy[key].tournaments[i].events = events;
           } else {
-            // delete sportscopy[key].tournaments[i];
+            delete sportscopy[key].tournaments[i];
           }
         }
       }
     }
     const retresult = [];
     for (let result = 0; result < sportscopy.length; result += 1) {
-      sportscopy[result].tournaments = sportscopy[result]
-        ?.tournaments?.filter((value) => Object.keys(value).length !== 0);
-      if (sportscopy[result]?.tournaments?.length > 0) {
+      sportscopy[result].tournaments = sportscopy[result].tournaments
+        .filter((value) => Object.keys(value).length !== 0);
+      if (sportscopy[result].tournaments.length > 0) {
         retresult.push(sportscopy[result]);
       }
     }
@@ -95,7 +95,6 @@ async function sideMenuList(req, res) {
     json = JSON.parse(JSON.stringify(json).split('"eventName":').join('"name":'));
     res.status(200).json(json);
   } catch (err) {
-    logger.error(err);
     res.status(500).json({ message: err.message });
   }
 }
