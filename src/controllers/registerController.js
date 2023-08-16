@@ -7,8 +7,35 @@ const logger = require('log4js').getLogger(path.parse(__filename).name);
 const User = require('../model/User');
 const B2cUser = require('../model/B2cUser');
 const Stake = require('../model/Stake');
+const ActivityLog = require('../model/ActivityLog');
 const { sendSMS, verifySMS } = require('./smsapiController');
 require('dotenv').config();
+
+const addActivity = async (foundUser, activity, status) => {
+  try {
+    const activityPayload = {
+      username: foundUser.username,
+      ip: activity?.query,
+      detail: JSON.stringify(activity),
+      status,
+    };
+
+    const findActivity = await ActivityLog
+      .find({ username: foundUser.username }).countDocuments().lean();
+
+    if (findActivity > 25) {
+      const firstRecord = await ActivityLog
+        .findOne({ username: foundUser.username }, { sort: { createdAt: 1 } });
+      await ActivityLog.findByIdAndDelete({ _id: firstRecord._id });
+      await ActivityLog.create(activityPayload);
+    } else {
+      await ActivityLog.create(activityPayload);
+    }
+  } catch (err) {
+    logger.error(err);
+    return false;
+  }
+};
 
 const handleNewUser = async (req, res) => {
   const {
@@ -34,17 +61,6 @@ const handleNewUser = async (req, res) => {
   }
 };
 
-const smsSend = (mobile) => {
-  const config = {
-    method: 'get',
-    maxBodyLength: Infinity,
-    url: `https://2factor.in/API/V1/${process.env.SMS_API_KEY}/SMS/${mobile}/AUTOGEN/`,
-    headers: {},
-    maxRedirects: 0,
-  };
-  return config;
-};
-
 const generateotp = async (req, res) => {
   const {
     user, mobile, ip, referral_code,
@@ -65,7 +81,6 @@ const generateotp = async (req, res) => {
     if (!validreferralCode) return res.status(404).json({ message: 'Referral Code is not valid.' });
   }
   const response = await sendSMS(mobile);
-  logger.info(response);
   if (response.return) {
     res.status(200).json({ message: response.message });
   } else {
@@ -130,6 +145,7 @@ const verifyotp = async (req, res) => {
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: '1d' },
       );
+      await addActivity(user, ip, 'success');
       res.json({
         roles, username: user, mobile, accessToken, referralCode: selfcode, stakes: stake.stakes,
       });
@@ -144,15 +160,12 @@ const resendOtp = async (req, res) => {
   const { mobile, ip } = req.body;
   if (!mobile) return res.status(400).json({ message: 'mobile number required.' });
   try {
-    const config = smsSend(mobile);
-    axios.request(config)
-      .then((response) => {
-        res.status(200).json({ message: response.data.Details });
-      })
-      .catch((error) => {
-        logger.info(error);
-        res.status(500).json({ message: 'Error while generating OTP.' });
-      });
+    const response = await sendSMS(mobile);
+    if (response.return) {
+      res.status(200).json({ message: response.message });
+    } else {
+      res.status(500).json({ message: response.message });
+    }
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: 'Error while generating OTP.' });
@@ -165,15 +178,12 @@ async function forgotpassword(req, res) {
   const data = await User.findOne({ mobile }).exec();
   if (!data) return res.status(404).json({ message: 'Mobile number does not exist.' });
   try {
-    const config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: `https://2factor.in/API/V1/${process.env.SMS_API_KEY}/SMS/${mobile}/AUTOGEN/`,
-      headers: {},
-      maxRedirects: 0,
-    };
-    await axios.request(config);
-    res.status(200).json({ message: 'OTP generated successfully.' });
+    const response = await sendSMS(mobile);
+    if (response.return) {
+      res.status(200).json({ message: response.message });
+    } else {
+      res.status(500).json({ message: response.message });
+    }
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: 'Error while generating OTP.' });
@@ -186,18 +196,11 @@ async function verifyforgotpassword(req, res) {
   } = req.body;
   if (!mobile || !otp) return res.status(400).json({ message: 'Password, Mobile number and OTP is required.' });
   try {
-    const config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: `https://2factor.in/API/V1/${process.env.SMS_API_KEY}/SMS/VERIFY3/${mobile}/${otp}`,
-      headers: {},
-      maxRedirects: 0,
-    };
-    const response = await axios.request(config);
-    if (response.data.Status === 'Error') {
-      res.status(400).json({ message: response.data.Details });
+    const response = await verifySMS(mobile, otp);
+    if (response.return) {
+      res.status(200).json({ message: response.message });
     } else {
-      res.status(200).json({ message: response.data.Details });
+      res.status(400).json({ message: response.message });
     }
   } catch (err) {
     logger.error(err);
