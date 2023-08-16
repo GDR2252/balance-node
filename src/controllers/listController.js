@@ -95,7 +95,7 @@ async function sideMenuList(req, res) {
     json = JSON.parse(JSON.stringify(json).split('"eventName":').join('"name":'));
     res.status(200).json(json);
   } catch (err) {
-    logger.err(err);
+    logger.error(err);
     res.status(500).json({ message: err.message });
   }
 }
