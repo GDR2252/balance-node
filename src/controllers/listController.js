@@ -72,7 +72,7 @@ async function sideMenuList(req, res) {
           if (events?.length > 0) {
             sportscopy[key].tournaments[i].events = events;
           } else {
-            // delete sportscopy[key].tournaments[i];
+            delete sportscopy[key].tournaments[i];
           }
         }
       }
