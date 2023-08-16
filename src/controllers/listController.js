@@ -51,7 +51,7 @@ async function sideMenuList(req, res) {
       if (tournaments?.length > 0) {
         sportscopy[key].tournaments = tournaments;
       } else {
-        delete sportscopy[key];
+        // delete sportscopy[key];
       }
     }
     sportscopy = sportscopy.filter((value) => Object.keys(value).length !== 0);
@@ -72,7 +72,7 @@ async function sideMenuList(req, res) {
           if (events?.length > 0) {
             sportscopy[key].tournaments[i].events = events;
           } else {
-            delete sportscopy[key].tournaments[i];
+            // delete sportscopy[key].tournaments[i];
           }
         }
       }
