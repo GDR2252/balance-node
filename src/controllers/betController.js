@@ -1,11 +1,9 @@
-const { MongoClient, Double } = require('mongodb');
+const { MongoClient } = require('mongodb');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const { setTimeout } = require('timers/promises');
 const CricketBetPlace = require('../model/CricketBetPlace');
 const CricketPL = require('../model/CricketPL');
-
-const diff = ((a, b) => (a > b ? a - b : b - a));
 
 async function placebet(req, res) {
   const transactionOptions = {
@@ -29,14 +27,12 @@ async function placebet(req, res) {
       .db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
       // , { session }
     let { balance } = userdata;
-    logger.info(balance);
     const numberstake = Number(stake);
     if (balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
     const marketratesdata = await client
       .db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
       .findOne({ exMarketId });
       // , { session }
-    logger.info(marketratesdata);
     const { runners, eventName, runnerData } = marketratesdata;
     const marketlimit = marketratesdata.betLimit;
     const marketType = marketratesdata.marketName;
@@ -111,9 +107,8 @@ async function placebet(req, res) {
     logger.info('Waited for 5 secs.');
     userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
     // , { session }
-    balance = userdata.balance;
-    logger.info(balance);
-    if (balance < Number(stake)) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+    /* balance = userdata.balance;
+    if (balance < Number(stake)) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' }); */
     await client.db(process.env.EXCH_DB).collection('cricketbetplaces').insertOne({
       username: req.user,
       exEventId,
@@ -133,13 +128,13 @@ async function placebet(req, res) {
     logger.info(`Placed bet for user: ${req.user}`);
     const balanceexposures = [];
     const oldbalanceexposures = [];
+    let placebetcondition = true;
     const plData = await client.db(process.env.EXCH_DB).collection('cricketpls').find({
       exMarketId,
       username: req.user,
     }).toArray();
     // , { session }
     if (!plData.length > 0) {
-      logger.info(fselectionIds);
       await client.db(process.env.EXCH_DB).collection('cricketpls').insertOne({
         username: req.user,
         exEventId,
@@ -165,6 +160,7 @@ async function placebet(req, res) {
       }, {}));
       prevVal = Math.min(...oldbalanceexposures);
       newVal = Math.min(...balanceexposures);
+      placebetcondition = newVal < prevVal;
       const filter = { _id: plData[0]._id };
       const update = { selectionId: result };
       await client.db(process.env.EXCH_DB).collection('cricketpls').updateOne(
@@ -179,6 +175,8 @@ async function placebet(req, res) {
       username: req.user,
     }).toArray();
     // , { session }
+    balance = userdata.balance;
+    if (balance < Number(stake) && !placebetcondition) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
     if (!exposureData.length > 0) {
       await client.db(process.env.EXCH_DB).collection('exposuremanages').insertOne({
         exEventId,
@@ -205,13 +203,14 @@ async function placebet(req, res) {
       exposure = userdata.exposure + Math.abs(newVal);
       balance = userdata.balance - Math.abs(newVal);
     }
+    if (exposure > userdata.exposureLimit) return res.status(401).json({ message: 'Cannot place bet. Please check Exposure Limit.' });
     await client.db(process.env.EXCH_DB).collection('users').updateOne(
       { username: req.user },
       { $set: { exposure, balance } },
       // { session },
     );
     // await session.commitTransaction();
-    logger.info('Transaction successfully committed.');
+    // logger.info('Transaction successfully committed.');
     logger.info('Bet place ends.');
     res.json({ message: 'Bet placed successfully.' });
   } catch (err) {
