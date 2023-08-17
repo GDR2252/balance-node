@@ -175,6 +175,8 @@ async function placebet(req, res) {
     }).toArray();
     // , { session }
     const placebetcondition = newVal < exposure;
+    logger.info(`exposure: ${exposure}`);
+    logger.info(`newVal: ${newVal}`);
     balance = userdata.balance;
     if (balance < Number(stake) && !placebetcondition) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
     if (!exposureData.length > 0) {
