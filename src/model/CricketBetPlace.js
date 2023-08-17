@@ -58,8 +58,9 @@ const cricketbetplaceSchema = new Schema({
     type: Number,
     default: 1,
   },
-  sportName: {
+  sportId: {
     type: String,
+    ref: 'Sport',
   },
 }, { timestamps: true });
 
