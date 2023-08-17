@@ -63,7 +63,7 @@ async function handleLogin(req, res) {
       accessToken,
       referralCode: selfReferral,
       wacontact: contact?.contact,
-      stakes,
+      stakes: stakes.stakes,
     });
   } else {
     await addActivity(foundUser, ip, 'failed');
