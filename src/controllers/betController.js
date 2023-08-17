@@ -29,7 +29,7 @@ async function placebet(req, res) {
       // , { session }
     let { balance } = userdata;
     const numberstake = Number(stake);
-    if (balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+    /* if (balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' }); */
     const marketratesdata = await client
       .db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
       .findOne({ exMarketId });
@@ -177,6 +177,7 @@ async function placebet(req, res) {
     const placebetcondition = newVal < exposure;
     logger.info(`exposure: ${exposure}`);
     logger.info(`newVal: ${newVal}`);
+    logger.info(placebetcondition);
     balance = userdata.balance;
     if (balance < Number(stake) && !placebetcondition) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
     if (!exposureData.length > 0) {
