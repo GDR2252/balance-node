@@ -108,8 +108,8 @@ async function placebet(req, res) {
     logger.info('Waited for 5 secs.');
     userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
     // , { session }
-    /* balance = userdata.balance;
-    if (balance < Number(stake)) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' }); */
+    balance = userdata.balance;
+    if (balance < Number(stake)) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
     await client.db(process.env.EXCH_DB).collection('cricketbetplaces').insertOne({
       username: req.user,
       exEventId,
@@ -129,7 +129,7 @@ async function placebet(req, res) {
     logger.info(`Placed bet for user: ${req.user}`);
     const balanceexposures = [];
     const oldbalanceexposures = [];
-    let placebetcondition = true;
+    // let placebetcondition = true;
     const plData = await client.db(process.env.EXCH_DB).collection('cricketpls').find({
       exMarketId,
       username: req.user,
@@ -161,7 +161,7 @@ async function placebet(req, res) {
       }, {}));
       prevVal = Math.min(...oldbalanceexposures);
       newVal = Math.min(...balanceexposures);
-      placebetcondition = newVal < prevVal;
+      // placebetcondition = newVal < prevVal;
       const filter = { _id: plData[0]._id };
       const update = { selectionId: result };
       await client.db(process.env.EXCH_DB).collection('cricketpls').updateOne(
@@ -176,8 +176,8 @@ async function placebet(req, res) {
       username: req.user,
     }).toArray();
     // , { session }
-    balance = userdata.balance;
-    if (balance < Number(stake) && !placebetcondition) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+    /* balance = userdata.balance;
+    if (balance < Number(stake) && !placebetcondition) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' }); */
     if (!exposureData.length > 0) {
       await client.db(process.env.EXCH_DB).collection('exposuremanages').insertOne({
         exEventId,
