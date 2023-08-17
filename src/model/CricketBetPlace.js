@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { paginate } = require('./plugins');
 
 const { Schema } = mongoose;
 
@@ -57,6 +58,11 @@ const cricketbetplaceSchema = new Schema({
     type: Number,
     default: 1,
   },
+  sportId: {
+    type: String,
+    ref: 'Sport',
+  },
 }, { timestamps: true });
 
+cricketbetplaceSchema.plugin(paginate);
 module.exports = mongoose.model('CricketBetPlace', cricketbetplaceSchema);
