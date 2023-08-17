@@ -76,7 +76,6 @@ const createNestedStructure = (data) => {
   const result = [];
   data.forEach((item) => {
     map[item.id] = { ...item.toJSON(), children: [] };
-    logger.info(map);
   });
   data.forEach((item) => {
     item.parentId.forEach((pid) => {
@@ -107,6 +106,22 @@ async function fetchrules(req, res) {
   }
 }
 
+async function updaterules(req, res) {
+  const { id, highlight } = req.body;
+  const data = await matchrules.findOne({ id }).exec();
+  if (!data) res.status(404).json({ message: 'Cannot update highlight. Rule not present.' });
+  try {
+    const filter = { id };
+    const update = {
+      highlight,
+    };
+    const result = await matchrules.findOneAndUpdate(filter, update);
+    logger.info(result);
+    res.status(201).json({ success: `Highlight updated for ${id}!` });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
 module.exports = {
-  addrules, addsubrules, deleterules, fetchrules,
+  addrules, addsubrules, deleterules, fetchrules, updaterules,
 };
