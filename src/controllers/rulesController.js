@@ -109,7 +109,7 @@ async function fetchrules(req, res) {
 async function updaterules(req, res) {
   const { id, highlight } = req.body;
   const data = await matchrules.findOne({ id }).exec();
-  if (!data) res.status(404).json({ message: 'Cannot update highlight. Rule not present.' });
+  if (!data) return res.status(404).json({ message: 'Cannot update highlight. Rule not present.' });
   try {
     const filter = { id };
     const update = {
