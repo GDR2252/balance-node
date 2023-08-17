@@ -4,6 +4,7 @@ const logger = require('log4js').getLogger(path.parse(__filename).name);
 const { setTimeout } = require('timers/promises');
 const CricketBetPlace = require('../model/CricketBetPlace');
 const CricketPL = require('../model/CricketPL');
+const pick = require('../utils/pick');
 
 const diff = ((a, b) => (a > b ? a - b : b - a));
 
@@ -265,4 +266,41 @@ async function fetchPl(req, res) {
   return res.status(201).json([]);
 }
 
-module.exports = { placebet, fetchCricket, fetchPl };
+async function history(req, res) {
+  const filter = pick(req?.query, ['userId', 'sportName', 'status', 'type', 'from', 'to']);
+  const options = pick(req?.query, ['sortBy', 'limit', 'page']);
+  filter.username = req?.user;
+
+  if (filter?.to) {
+    filter.createdAt = new Date(filter.to);
+    delete filter.to;
+  }
+
+  if (filter?.from) {
+    filter.createdAt = new Date(filter.from);
+    delete filter.from;
+  }
+
+  if ((filter?.from && filter?.from !== '') && (filter?.to && filter?.to !== '')) {
+    delete filter.createdAt;
+    const date1 = new Date(filter?.from);
+    const date2 = new Date(filter?.to);
+    const timeDifferenceMs = date2 - date1;
+    const millisecondsIn15Days = 1000 * 60 * 60 * 24 * 15;
+    if (timeDifferenceMs >= millisecondsIn15Days) {
+      res.status(500).json({ error: 'Please select only 15 days range only.' });
+    }
+    filter.createdAt = {
+      $gte: new Date(filter?.from),
+      $lte: new Date(filter?.to),
+    };
+    delete filter.to;
+    delete filter.from;
+  }
+  const data = await CricketBetPlace.paginate(filter, options);
+  res.status(200).json({ data });
+}
+
+module.exports = {
+  placebet, fetchCricket, fetchPl, history,
+};
