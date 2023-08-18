@@ -38,13 +38,14 @@ async function addMarkets(req, res) {
     const marketnodes = eventypes[0].eventNodes[0].marketNodes[0];
     const { marketTime } = marketnodes.description;
     const { runners } = marketnodes;
-
+    const events = await Event.findOne({ eventId: body.eventId });
     const result = await Market.create({
       marketId,
       exMarketId: crypto.randomBytes(16).toString('hex'),
       sportId: body.sportId,
       tournamentsId: body.tournamentsId,
       eventId: body.eventId,
+      exEventId: events.exEventId,
       marketName: body.marketName,
       betLimit: body.betLimit,
       marketTime,
@@ -140,8 +141,6 @@ async function updateMarkets(req, res) {
     };
     const result = await Market.findOneAndUpdate(filter, update);
     logger.info(result);
-    // To-DO : update betlimit in marketrates also
-
     if (body.betLimit) {
       const marketratesfilter = { marketId };
       const marketratesupdate = {

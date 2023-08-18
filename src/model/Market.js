@@ -19,6 +19,9 @@ const marketSchema = new Schema({
   exMarketId: {
     type: String,
   },
+  exEventId: {
+    type: String,
+  },
   marketName: {
     type: String,
   },

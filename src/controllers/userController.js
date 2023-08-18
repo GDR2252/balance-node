@@ -1,4 +1,3 @@
-const axios = require('axios');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const User = require('../model/User');

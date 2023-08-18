@@ -150,4 +150,18 @@ async function getEventList(req, res) {
   res.send(retresult);
 }
 
-module.exports = { sportsList, sideMenuList, getEventList };
+async function getMarketList(req, res) {
+  const { eventId } = req.query;
+  try {
+    const result = await Market.find({ exEventId: eventId });
+    logger.debug(result);
+    res.status(200).json(result);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
+module.exports = {
+  sportsList, sideMenuList, getEventList, getMarketList,
+};
