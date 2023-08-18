@@ -53,4 +53,30 @@ async function fetchmarketrates(req, res) {
   }
 }
 
-module.exports = { fetchmarketrates };
+async function syncfirebase(req, res) {
+  const data = req.body;
+  const { type } = req.query;
+  try {
+    Object.entries(data).forEach(async ([key, value]) => {
+      if (type === 'update') {
+        const marketRatesRef = db.collection('marketRates').doc(key);
+        const result = await marketRatesRef.update(value);
+        logger.info(result);
+      }
+      if (type === 'insert') {
+        const result = await db.collection('marketRates').doc(key).set(value);
+        logger.info(result);
+      }
+      if (type === 'delete') {
+        const result = await db.collection('marketRates').doc(key).delete();
+        logger.info(result);
+      }
+    });
+    res.status(201).json({ message: 'Data migrated successfully' });
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
+module.exports = { fetchmarketrates, syncfirebase };
