@@ -122,6 +122,9 @@ async function placebet(req, res) {
       eventName,
       selectionName,
       marketType,
+      IsSettle: 0,
+      IsVoid: 0,
+      IsUnsettle: 1,
       createdAt: new Date(),
       upddatedAt: new Date(),
     });
