@@ -126,7 +126,7 @@ async function placebet(req, res) {
       IsVoid: 0,
       IsUnsettle: 1,
       createdAt: new Date(),
-      upddatedAt: new Date(),
+      updatedAt: new Date(),
     });
     // , { session }
     logger.info(`Placed bet for user: ${req.user}`);
