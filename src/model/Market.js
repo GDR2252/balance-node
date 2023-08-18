@@ -49,6 +49,6 @@ const marketSchema = new Schema({
   isPreBet: {
     type: Boolean,
   },
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Market', marketSchema);

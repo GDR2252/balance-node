@@ -28,6 +28,6 @@ const eventSchema = new Schema({
   popular: {
     type: Boolean,
   },
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Event', eventSchema);

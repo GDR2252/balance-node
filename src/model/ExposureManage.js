@@ -15,6 +15,6 @@ const exposureManageSchema = new Schema({
   exposure: {
     type: String,
   },
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('ExposureManage', exposureManageSchema);

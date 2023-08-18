@@ -20,9 +20,6 @@ const traderSchema = new Schema({
   origin: {
     type: String,
   },
-  refreshToken: {
-    type: String,
-  },
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Trader', traderSchema);

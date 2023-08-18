@@ -25,6 +25,6 @@ const tournamentSchema = new Schema({
   sequence: {
     type: String,
   },
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Tournament', tournamentSchema);
