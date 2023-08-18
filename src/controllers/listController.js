@@ -153,8 +153,12 @@ async function getEventList(req, res) {
 async function getMarketList(req, res) {
   const { eventId } = req.query;
   try {
-    const result = await Market.find({ exEventId: eventId });
-    logger.debug(result);
+    const uri = process.env.MONGO_URI;
+    const client = new MongoClient(uri);
+    await client.connect();
+    const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
+      .find({ exEventId: eventId });
+    const result = await cursor.toArray();
     res.status(200).json(result);
   } catch (err) {
     logger.error(err);
