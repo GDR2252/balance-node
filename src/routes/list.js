@@ -7,5 +7,5 @@ const listController = require('../controllers/listController');
 router.post('/sportsList', auth, listController.sportsList);
 router.post('/sideMenuList', auth, listController.sideMenuList);
 router.get('/getEventList', auth, listController.getEventList);
-router.post('/getMarketList', auth, listController.getMarketList);
+router.get('/getMarketList', auth, listController.getMarketList);
 module.exports = router;
