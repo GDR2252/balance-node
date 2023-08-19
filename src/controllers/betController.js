@@ -5,6 +5,7 @@ const { setTimeout } = require('timers/promises');
 const CricketBetPlace = require('../model/CricketBetPlace');
 const CricketPL = require('../model/CricketPL');
 const pick = require('../utils/pick');
+const CricketResult = require('../model/CricketResult');
 
 async function placebet(req, res) {
   const transactionOptions = {
@@ -15,9 +16,9 @@ async function placebet(req, res) {
   logger.info('Starting to place a bet.');
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
-  // const session = client.startSession();
+  const session = client.startSession();
   try {
-    // session.startTransaction(transactionOptions);
+    session.startTransaction(transactionOptions);
     const { body } = req;
     const {
       exEventId, exMarketId, stake, selectionId, type,
@@ -25,15 +26,12 @@ async function placebet(req, res) {
     let { odds } = body;
     const userOdds = odds;
     let userdata = await client
-      .db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
-      // , { session }
+      .db(process.env.EXCH_DB).collection('users').findOne({ username: req.user }, { session });
     let { balance } = userdata;
     const numberstake = Number(stake);
-    /* if (balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' }); */
     const marketratesdata = await client
       .db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
-      .findOne({ exMarketId });
-      // , { session }
+      .findOne({ exMarketId }, { session });
     const { runners, eventName, runnerData } = marketratesdata;
     const marketlimit = marketratesdata.betLimit;
     const marketType = marketratesdata.marketName;
@@ -106,10 +104,7 @@ async function placebet(req, res) {
     }
     await setTimeout(5000);
     logger.info('Waited for 5 secs.');
-    userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user });
-    // , { session }
-    /* balance = userdata.balance;
-    if (balance < Number(stake)) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' }); */
+    userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user }, { session });
     await client.db(process.env.EXCH_DB).collection('cricketbetplaces').insertOne({
       username: req.user,
       exEventId,
@@ -127,24 +122,21 @@ async function placebet(req, res) {
       IsUnsettle: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
-    // , { session }
+    }, { session });
     logger.info(`Placed bet for user: ${req.user}`);
     const balanceexposures = [];
     const oldbalanceexposures = [];
     const plData = await client.db(process.env.EXCH_DB).collection('cricketpls').find({
       exMarketId,
       username: req.user,
-    }).toArray();
-    // , { session }
+    }, { session }).toArray();
     if (!plData.length > 0) {
       await client.db(process.env.EXCH_DB).collection('cricketpls').insertOne({
         username: req.user,
         exEventId,
         exMarketId,
         selectionId: fselectionIds,
-      });
-      // , { session }
+      }, { session });
     } else {
       const selectionData = plData[0].selectionId;
       const result = selectionData.map((key, value) => Object.keys(key).reduce((o, k) => {
@@ -168,15 +160,14 @@ async function placebet(req, res) {
       await client.db(process.env.EXCH_DB).collection('cricketpls').updateOne(
         filter,
         { $set: update },
-        // { session },
+        { session },
       );
     }
     let exposure = Math.min(...exposures);
     const exposureData = await client.db(process.env.EXCH_DB).collection('exposuremanages').find({
       exMarketId,
       username: req.user,
-    }).toArray();
-    // , { session }
+    }, { session }).toArray();
     const placebetcondition = newVal < exposure;
     logger.info(`exposure: ${exposure}`);
     logger.info(`newVal: ${newVal}`);
@@ -189,15 +180,14 @@ async function placebet(req, res) {
         exMarketId,
         username: req.user,
         exposure,
-      });
-      // , { session }
+      }, { session });
     } else {
       const filter = { _id: exposureData[0]._id };
       const update = { exposure };
       await client.db(process.env.EXCH_DB).collection('exposuremanages').updateOne(
         filter,
         { $set: update },
-        // { session },
+        { session },
       );
     }
     if (prevVal) {
@@ -213,20 +203,20 @@ async function placebet(req, res) {
     await client.db(process.env.EXCH_DB).collection('users').updateOne(
       { username: req.user },
       { $set: { exposure, balance } },
-      // { session },
+      { session },
     );
-    // await session.commitTransaction();
-    // logger.info('Transaction successfully committed.');
+    await session.commitTransaction();
+    logger.info('Transaction successfully committed.');
     logger.info('Bet place ends.');
     res.json({ message: 'Bet placed successfully.' });
   } catch (err) {
     logger.error(err);
-    // await session.abortTransaction();
+    await session.abortTransaction();
     logger.info('Transaction rolled back.');
     res.status(500).json({ message: err.message });
   } finally {
     if (client) {
-      // await session.endSession();
+      await session.endSession();
       await client.close();
     }
   }
@@ -312,6 +302,25 @@ async function history(req, res) {
   res.status(200).json({ data });
 }
 
+async function putresults(req, res) {
+  const { body } = req;
+  try {
+    await CricketResult.create({
+      eventName: body.eventName,
+      exEventId: body.exEventId,
+      exMarketId: body.exMarketId,
+      marketType: body.marketType,
+      winner: body.winner,
+      sportName: body.sportName,
+      sportsId: body.sportsId,
+    });
+    res.status(200).json({ message: 'Data created successfully!' });
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
 module.exports = {
-  placebet, fetchCricket, fetchPl, history,
+  placebet, fetchCricket, fetchPl, history, putresults,
 };
