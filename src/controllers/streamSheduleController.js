@@ -20,7 +20,7 @@ async function getStream(req, res) {
     res.status(200).json(profile);
   } catch (err) {
     logger.error(err);
-    res.status(500).json({ message: 'Error fetching activity logs.' });
+    res.status(500).json({ message: 'Error fetching Events.' });
   }
 }
 
