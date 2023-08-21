@@ -56,7 +56,7 @@ app.use('/finduser', finduserRouter);
 app.use('/getthemes', fetchThemesRouter);
 app.use('/rules', require('./routes/rules'));
 
-app.use(verifyJWT);
+// app.use(verifyJWT);
 app.use('/getnavdata', fetchNavDataRouter);
 app.use('/sports', sportsRouter);
 app.use('/tournaments', tournamentsRouter);
