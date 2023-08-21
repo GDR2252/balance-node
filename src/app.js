@@ -26,6 +26,7 @@ const listRouter = require('./routes/list');
 const loginRouter = require('./routes/userlogin');
 const balanceRouter = require('./routes/balance');
 const finduserRouter = require('./routes/finduser');
+const streamRouter = require('./routes/stream');
 
 const app = express();
 connectDB();
@@ -64,6 +65,7 @@ app.use('/markets', marketsRouter);
 app.use('/betlimits', betlimitRouter);
 app.use('/changeauth', changeauthRouter);
 app.use('/getBalance', balanceRouter);
+app.use('/stream', streamRouter);
 app.use('/activity', require('./routes/activity'));
 app.use('/themes', require('./routes/themes'));
 app.use('/placebet', require('./routes/bet'));
