@@ -1,14 +1,15 @@
 const { default: axios } = require('axios');
 const cron = require('node-cron');
 const StreamShedule = require('../model/StreamShedule');
+const connectDB = require('../config/dbConn');
 
 // Define the task you want to run
 const task = async () => {
-   try {
+  try {
     console.log('Cron job running at:', new Date());
+    connectDB();
     let respData = [];
-    //   console.log('STREAM_SCHEDULE_URL', process.env.STREAM_SCHEDULE_URL);
-    await axios.get('https://ss247.life/api/7e0f63439c55a393c8d7eebaafe826093f235f3e/streaminfo.php').then(async (response) => {
+    await axios.get(process.env.STREAM_SCHEDULE_URL).then(async (response) => {
       if (response.data.data.getMatches.length > 0) {
         respData = response?.data?.data?.getMatches;
       }
@@ -26,6 +27,8 @@ const task = async () => {
       }));
       await StreamShedule.bulkWrite(bulkOps);
       console.log('Bulk update/creation completed.');
+    } else {
+      console.log('No match data to update.');
     }
   } catch (error) {
     console.log('error', error);
