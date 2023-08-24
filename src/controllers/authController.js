@@ -50,13 +50,32 @@ async function aviatorAuth(req, res) {
           user_id: userdata?._id,
           username: userdata?.username,
           balance: Number(userdata?.balance) * 1000,
-          currency: req?.body?.currency,
+          currency: currency,
         },
       });
     });
   } else {
-    return res.status(400).json({ code: 401, message: 'Username and password are required.' });
+    return res.status(400).json({ code: 401, message: 'User token is invalid' });
   }
 }
 
-module.exports = { handleLogin, aviatorAuth };
+async function aviatorProfile(req, res) {
+  const { user_id, currency } = req.body;
+  if (user_id && user_id !== '') {
+    const userdata = await User.findOne({ _id: user_id });
+    res.json({
+      code: 200,
+      message: 'ok',
+      data: {
+        user_id: userdata?._id,
+        username: userdata?.username,
+        balance: Number(userdata?.balance) * 1000,
+        currency,
+      },
+    });
+  } else {
+    return res.status(400).json({ code: 401, message: 'User token is invalid' });
+  }
+}
+
+module.exports = { handleLogin, aviatorAuth, aviatorProfile };
