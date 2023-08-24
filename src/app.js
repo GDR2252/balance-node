@@ -56,6 +56,7 @@ app.use('/finduser', finduserRouter);
 app.use('/getthemes', fetchThemesRouter);
 app.use('/rules', require('./routes/rules'));
 
+app.use('/st8', require('./routes/st8'));
 app.use(verifyJWT);
 app.use('/getnavdata', fetchNavDataRouter);
 app.use('/sports', sportsRouter);
@@ -71,7 +72,6 @@ app.use('/themes', require('./routes/themes'));
 app.use('/placebet', require('./routes/bet'));
 app.use('/stakes', require('./routes/stakes'));
 app.use('/support', require('./routes/support'));
-app.use('/st8', require('./routes/st8'));
 
 // custom 404
 // eslint-disable-next-line no-unused-vars
