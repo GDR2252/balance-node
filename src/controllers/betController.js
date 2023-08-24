@@ -32,7 +32,7 @@ async function placebet(req, res) {
     const marketratesdata = await client
       .db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
       .findOne({ exMarketId }, { session });
-    const { runners, eventName, runnerData } = marketratesdata;
+    const { runners, eventName, runnerData, sportsId, sportName } = marketratesdata;
     const marketlimit = marketratesdata.betLimit;
     const marketType = marketratesdata.marketName;
     let selectionName;
@@ -117,6 +117,8 @@ async function placebet(req, res) {
       eventName,
       selectionName,
       marketType,
+      sportId: sportsId,
+      sportName,
       IsSettle: 0,
       IsVoid: 0,
       IsUnsettle: 1,
