@@ -42,7 +42,6 @@ async function aviatorAuth(req, res) {
   let userdata;
   if (user_token && user_token !== '') {
     jwt.verify(user_token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
-      console.log('auth api called');
       console.log(err, decoded);
       userdata = await User.findOne({ username: decoded?.username });
       res.json({
