@@ -56,6 +56,7 @@ app.use('/list', listRouter);
 app.use('/finduser', finduserRouter);
 app.use('/getthemes', fetchThemesRouter);
 app.use('/rules', require('./routes/rules'));
+
 app.use('/info', userInfoRouter);
 
 app.use(verifyJWT);
