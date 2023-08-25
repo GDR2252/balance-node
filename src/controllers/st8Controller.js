@@ -29,12 +29,12 @@ async function signBody(req, res) {
     console.log('Signature valid?:');
     console.log(is_valid);
     
-    
+    console.log(req.method);
 
     if(is_valid){
         let data = JSON.stringify(req.body.data);
           let config = {
-            method: 'post',
+            method: req.method,
             maxBodyLength: Infinity,
             url: req.body.url,
             headers: { 
@@ -62,7 +62,7 @@ module.exports = {
     signBody
   };
 
-// 1. Game Lanuch API 
+// 1. Game Lanuch API - POST
 
 // {
 //     "data" : {
@@ -100,7 +100,7 @@ module.exports = {
 // }
 
 
-// 2. Get balance API 
+// 2. Get balance API - GET
 // {
 //     "data" : {
 //         "player": "user_1234",
@@ -111,7 +111,7 @@ module.exports = {
 //     "url" : "https://cbt001.o.p8d.xyz/api/operator/v1/cashier/balance"
 // }
 
-// 3. Deposit API 
+// 3. Deposit API - POST
 // {
 //     "data" : {
 //         "transaction_id": "adr4702abc4b4t7ae6b571979abhd817c987",
@@ -122,3 +122,6 @@ module.exports = {
 //     },
 //     "url" : "https://cbt001.o.p8d.xyz/api/operator/v1/cashier/deposit"
 // }
+
+// 4. TO get game thumb image - GET
+// https://luckmedia.link/gmz_40_chilli_fruits/thumb.jpg
