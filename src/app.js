@@ -27,6 +27,7 @@ const loginRouter = require('./routes/userlogin');
 const balanceRouter = require('./routes/balance');
 const finduserRouter = require('./routes/finduser');
 const streamRouter = require('./routes/stream');
+const userInfoRouter = require('./routes/userInfo');
 
 const app = express();
 connectDB();
@@ -57,6 +58,8 @@ app.use('/getthemes', fetchThemesRouter);
 app.use('/rules', require('./routes/rules'));
 
 app.use('/st8', require('./routes/st8'));
+app.use('/info', userInfoRouter);
+
 app.use(verifyJWT);
 app.use('/getnavdata', fetchNavDataRouter);
 app.use('/sports', sportsRouter);

@@ -62,6 +62,10 @@ const cricketbetplaceSchema = new Schema({
     type: String,
     ref: 'Sport',
   },
+  sportName: {
+    type: String,
+    ref: 'Sport',
+  },
 }, { timestamps: true });
 
 cricketbetplaceSchema.plugin(paginate);
