@@ -242,8 +242,7 @@ async function fetchCricket(req, res) {
 }
 
 async function fetchPl(req, res) {
-  const { body } = req;
-  const { exEventId } = body;
+  const { exEventId } = req.query;
   const betData = await CricketPL.aggregate([{
     $match: {
       exEventId,
