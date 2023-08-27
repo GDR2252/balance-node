@@ -225,12 +225,10 @@ async function placebet(req, res) {
 }
 
 async function fetchCricket(req, res) {
-  const { body } = req;
-  const { exEventId } = body;
   const betData = await CricketBetPlace.aggregate([{
     $match: {
-      exEventId,
       username: req.user,
+      IsUnsettle: 1,
     },
   }]);
   if (betData.length > 0) {
