@@ -32,9 +32,10 @@ const authenticate = (request) => {
 const auth = (req, res, next) => {
   const result = authenticate(req);
   if (result) {
-    logger.info('Access Verified!');
+    logger.debug('Access Verified!');
     next();
   } else {
+    logger.info('Access Denied!');
     res.status(401).json({ message: 'not authorized' });
   }
 };
