@@ -32,7 +32,9 @@ async function placebet(req, res) {
     const marketratesdata = await client
       .db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
       .findOne({ exMarketId }, { session });
-    const { runners, eventName, runnerData, sportsId, sportName } = marketratesdata;
+    const {
+      runners, eventName, runnerData, sportsId, sportName,
+    } = marketratesdata;
     const marketlimit = marketratesdata.betLimit;
     const marketType = marketratesdata.marketName;
     let selectionName;
@@ -241,6 +243,30 @@ async function fetchCricket(req, res) {
   return res.status(201).json([]);
 }
 
+async function fetchCricketBetMenu(req, res) {
+  const betData = await CricketBetPlace.aggregate([{
+    $match: {
+      username: req.user,
+      IsUnsettle: 1,
+    },
+  }, {
+    $project: {
+      exEventId: 1,
+      eventName: 1,
+    },
+  }]);
+  if (betData.length > 0) {
+    const retdata = betData.map((bets) => {
+      delete bets._id;
+      return bets;
+    });
+    const set = new Set(retdata.map((item) => JSON.stringify(item)));
+    const uniqdata = [...set].map((item) => JSON.parse(item));
+    return res.json(uniqdata);
+  }
+  return res.status(201).json([]);
+}
+
 async function fetchPl(req, res) {
   const { exEventId } = req.query;
   const betData = await CricketPL.aggregate([{
@@ -321,5 +347,5 @@ async function putresults(req, res) {
 }
 
 module.exports = {
-  placebet, fetchCricket, fetchPl, history, putresults,
+  placebet, fetchCricket, fetchPl, history, putresults, fetchCricketBetMenu,
 };
