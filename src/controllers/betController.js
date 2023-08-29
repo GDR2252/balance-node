@@ -286,7 +286,7 @@ async function fetchPl(req, res) {
 }
 
 async function history(req, res) {
-  const filter = pick(req?.query, ['userId', 'sportId', 'status', 'type', 'from', 'to']);
+  const filter = pick(req?.query, ['userId', 'marketType', 'sportName', 'status', 'from', 'to']);
   const options = pick(req?.query, ['sortBy', 'limit', 'page']);
   filter.username = req?.user;
 
@@ -317,12 +317,10 @@ async function history(req, res) {
     delete filter.from;
   }
 
-  options.path = [
-    {
-      path: 'sportId',
-      select: 'sportName',
-    },
-  ];
+  if (filter.status) {
+    if (filter.status === 'settle') { filter.IsSettle = 1; } else if (filter.status === 'unsettle') { filter.IsUnsettle = 1; } else { filter.IsVoid = 0; }
+    delete filter.status;
+  }
   const data = await CricketBetPlace.paginate(filter, options);
   res.status(200).json({ data });
 }
