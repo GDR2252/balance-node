@@ -29,22 +29,32 @@ async function sportsList(req, res) {
 
 async function sideMenuList(req, res) {
   try {
-    const sportsresult = await Sport.aggregate([{
-      $project: {
-        sportId: 1,
-        sportName: 1,
-        iconUrl: 1,
-        sequence: 1,
+    const sportsresult = await Sport.aggregate([
+      {
+        $match: {
+          sportId: {
+            $not: {
+              $in: ['home', 'in-play'],
+            },
+          },
+        },
       },
-    },
-    {
-      $addFields: {
-        numericSequence: { $toInt: '$sequence' },
+      {
+        $project: {
+          sportId: 1,
+          sportName: 1,
+          iconUrl: 1,
+          sequence: 1,
+        },
       },
-    },
-    {
-      $sort: { numericSequence: 1 },
-    },
+      {
+        $addFields: {
+          numericSequence: { $toInt: '$sequence' },
+        },
+      },
+      {
+        $sort: { numericSequence: 1 },
+      },
     ]);
     let sportscopy = JSON.parse(JSON.stringify(sportsresult));
     for (let key = 0; key < sportsresult.length; key += 1) {
