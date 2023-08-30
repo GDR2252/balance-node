@@ -123,6 +123,7 @@ async function getEventList(req, res) {
         data.sportsId = results[i].sportsId;
         const sportsdata = await Sport.findOne({ sportId: data.sportsId }).exec();
         data.sportName = sportsdata.sportName;
+        data.iconUrl = sportsdata.iconUrl;
         data.inplay = results[i].state.inplay;
         data.eventId = results[i].eventId;
         data.exEventId = results[i].exEventId;
