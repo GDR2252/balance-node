@@ -34,8 +34,18 @@ async function sideMenuList(req, res) {
         sportId: 1,
         sportName: 1,
         iconUrl: 1,
+        sequence: 1,
       },
-    }]);
+    },
+    {
+      $addFields: {
+        numericSequence: { $toInt: '$sequence' },
+      },
+    },
+    {
+      $sort: { numericSequence: 1 },
+    },
+    ]);
     let sportscopy = JSON.parse(JSON.stringify(sportsresult));
     for (let key = 0; key < sportsresult.length; key += 1) {
       const tournaments = await Tournament.aggregate([{

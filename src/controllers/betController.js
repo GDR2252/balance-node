@@ -305,9 +305,9 @@ async function history(req, res) {
     const date1 = new Date(filter?.from);
     const date2 = new Date(filter?.to);
     const timeDifferenceMs = date2 - date1;
-    const millisecondsIn15Days = 1000 * 60 * 60 * 24 * 15;
-    if (timeDifferenceMs >= millisecondsIn15Days) {
-      res.status(500).json({ error: 'Please select only 15 days range only.' });
+    const millisecondsIn30Days = 1000 * 60 * 60 * 24 * 30;
+    if (timeDifferenceMs >= millisecondsIn30Days) {
+      res.status(500).json({ error: 'Please select only 30 days range only.' });
     }
     filter.createdAt = {
       $gte: new Date(filter?.from),
