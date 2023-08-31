@@ -26,7 +26,7 @@ const task = async () => {
       console.log('if');
       result.map(async (matchs) => {
         let respData = [];
-        await axios.get(`https://www.spreadex.com/sports/model/api/SubscribeModel?modelRef=m1.s.d.match-centre.all:${matchs?.matchId}`).then(async (response) => {
+        await axios.get(`https://www.spreadex.com/sports/model/api/SubscribeModel?modelRef=m1.s.d.match-centre.all:${matchs?.spreadexId}`).then(async (response) => {
           if (response?.data?.model) {
             respData = response?.data?.model;
           }
@@ -166,7 +166,7 @@ const task = async () => {
           firebaseData.scoreItems = transformedData;
         }
         if (firebaseData.eventTypeName === '') {
-          await ScoreBoard.findOneAndUpdate({ matchId: matchs?.matchId }, { status: false });
+          await ScoreBoard.findOneAndUpdate({ spreadexId: matchs?.spreadexId }, { status: false });
         }
         if (firebaseData.eventTypeName !== '') {
         //   console.log('firebaseData', firebaseData);

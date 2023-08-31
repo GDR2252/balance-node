@@ -4,15 +4,16 @@ const { getFirestore } = require('firebase-admin/firestore');
 const ScoreBoard = require('../model/ScoreBoard');
 
 async function addScore(req, res) {
-  const { matchId } = req.body;
-  const duplicate = await ScoreBoard.findOne({ matchId }).exec();
+  const { spreadexId, eventId } = req.body;
+  const duplicate = await ScoreBoard.findOne({ spreadexId }).exec();
   if (duplicate) return res.status(409).json({ message: 'Cannot add Score. match already present.' });
   try {
     const result = await ScoreBoard.create({
-      matchId,
+        spreadexId,
+        eventId
     });
     logger.debug(result);
-    res.status(201).json({ success: `New scoreboard ${matchId} created!` });
+    res.status(201).json({ success: `New scoreboard ${spreadexId} created!` });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -29,14 +30,14 @@ async function fetchScore(req, res) {
 }
 
 async function deleteScore(req, res) {
-  const { matchId } = req.query;
+  const { spreadexId } = req.query;
   try {
-    const data = await ScoreBoard.findOne({ matchId }).exec();
+    const data = await ScoreBoard.findOne({ spreadexId }).exec();
     if (!data) return res.status(404).json({ message: 'Cannot delete Score. Score not present.' });
     const db = getFirestore();
-    await ScoreBoard.deleteOne({ matchId });
-    await db.collection('sportsData').doc(matchId).delete();
-    res.status(201).json({ success: `Sport ${matchId} deleted!` });
+    await ScoreBoard.deleteOne({ spreadexId });
+    await db.collection('sportsData').doc(spreadexId).delete();
+    res.status(201).json({ success: `Sport ${spreadexId} deleted!` });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

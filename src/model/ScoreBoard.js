@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const scoreBoardSchema = new Schema({
-  matchId: {
+  spreadexId: {
     type: String,
     required: true,
   },
