@@ -23,8 +23,8 @@ const task = async () => {
     console.log('Cron job running at:', new Date());
     const result = await ScoreBoard.find({ status: true });
     if (result.length > 0) {
-      console.log('if');
       result.map(async (matchs) => {
+        console.log('if', matchs?.spreadexId);
         let respData = [];
         await axios.get(`https://www.spreadex.com/sports/model/api/SubscribeModel?modelRef=m1.s.d.match-centre.all:${matchs?.spreadexId}`).then(async (response) => {
           if (response?.data?.model) {
@@ -34,6 +34,7 @@ const task = async () => {
         const firebaseData = {};
         if (respData.eventTypeName === 'Football') {
           firebaseData.leagueSpEventId = respData?.leagueSpEventId.toString();
+          firebaseData.eventStartTimeMs = respData?.eventStartTimeMs;
           firebaseData.timerDetail = {
             minutes: respData?.timerDetail?.minutes,
             seconds: respData?.timerDetail?.seconds,
@@ -82,6 +83,7 @@ const task = async () => {
           firebaseData.leagueSpEventId = respData?.players[0]?.spEventId.toString();
           firebaseData.statusText = respData.statusText;
           firebaseData.eventTypeName = respData?.eventTypeName;
+          firebaseData.eventStartTimeMs = respData?.eventStartTimeMs;
 
           const transformedData = respData?.scoreItems.map((item, index) => {
             const data = {
@@ -126,7 +128,7 @@ const task = async () => {
           firebaseData.leagueSpEventId = respData?.players[0]?.spEventId.toString();
           firebaseData.statusText = respData.statusText;
           firebaseData.eventTypeName = respData?.eventTypeName;
-
+          firebaseData.eventStartTimeMs = respData?.eventStartTimeMs;
           const transformedData = respData?.scoreItems.map((item, index) => {
             const data = {
               name: item?.teamName,
@@ -166,11 +168,11 @@ const task = async () => {
           firebaseData.scoreItems = transformedData;
         }
         if (firebaseData.eventTypeName === '') {
-          await ScoreBoard.findOneAndUpdate({ spreadexId: matchs?.spreadexId }, { status: false });
+          ScoreBoard.findOneAndUpdate({ spreadexId: matchs?.spreadexId }, { status: false });
         }
-        if (firebaseData.eventTypeName !== '') {
+        if (firebaseData.leagueSpEventId !== '') {
         //   console.log('firebaseData', firebaseData);
-          const results = await db.collection('scoreBoard').doc(firebaseData.leagueSpEventId).set(firebaseData);
+          const results = db.collection('scoreBoard').doc(firebaseData.leagueSpEventId).set(firebaseData);
           logger.info(results);
         }
       });
