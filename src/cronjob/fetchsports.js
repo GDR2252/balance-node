@@ -79,9 +79,9 @@ const task = async () => {
                 data.penalty = score?.value;
               } else if (score?.iconName === 'shots') {
                 data.shots = score?.value;
-              } else if (score?.iconName === 'shots_on') {
+              } else if (score?.iconName === 'shotsontarget') {
                 data.shots_on = score?.value;
-              } else if (score?.iconName === 'poss') {
+              } else if (score?.iconName === 'possession') {
                 data.poss = score?.value;
               }
             });
