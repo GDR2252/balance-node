@@ -8,7 +8,8 @@ const scoreBoardSchema = new Schema({
     required: true,
   },
   status: {
-    type: String,
+    type: Boolean,
+    default: true,
   },
 }, { timestamps: true });
 

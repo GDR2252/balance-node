@@ -1,5 +1,6 @@
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
+const { getFirestore } = require('firebase-admin/firestore');
 const ScoreBoard = require('../model/ScoreBoard');
 
 async function addScore(req, res) {
@@ -32,7 +33,9 @@ async function deleteScore(req, res) {
   try {
     const data = await ScoreBoard.findOne({ matchId }).exec();
     if (!data) return res.status(404).json({ message: 'Cannot delete Score. Score not present.' });
+    const db = getFirestore();
     await ScoreBoard.deleteOne({ matchId });
+    await db.collection('sportsData').doc(matchId).delete();
     res.status(201).json({ success: `Sport ${matchId} deleted!` });
   } catch (err) {
     res.status(500).json({ message: err.message });
