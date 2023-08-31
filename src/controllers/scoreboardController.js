@@ -36,7 +36,7 @@ async function deleteScore(req, res) {
     if (!data) return res.status(404).json({ message: 'Cannot delete Score. Score not present.' });
     const db = getFirestore();
     await ScoreBoard.deleteOne({ spreadexId });
-    await db.collection('sportsData').doc(spreadexId).delete();
+    await db.collection('scoreBoard').doc(spreadexId).delete();
     res.status(201).json({ success: `Sport ${spreadexId} deleted!` });
   } catch (err) {
     res.status(500).json({ message: err.message });

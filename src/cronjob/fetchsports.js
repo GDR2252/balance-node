@@ -170,7 +170,7 @@ const task = async () => {
         }
         if (firebaseData.eventTypeName !== '') {
         //   console.log('firebaseData', firebaseData);
-          const results = await db.collection('sportsData').doc(firebaseData.leagueSpEventId).set(firebaseData);
+          const results = await db.collection('scoreBoard').doc(firebaseData.leagueSpEventId).set(firebaseData);
           logger.info(results);
         }
       });
