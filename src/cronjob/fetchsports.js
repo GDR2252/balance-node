@@ -182,7 +182,7 @@ const task = async () => {
         if (firebaseData.eventTypeName === '') {
           ScoreBoard.findOneAndUpdate({ spreadexId: matchs?.spreadexId }, { status: false });
         }
-        if (firebaseData.leagueSpEventId !== '') {
+        if (firebaseData.leagueSpEventId && firebaseData.leagueSpEventId.length > 0) {
         //   console.log('firebaseData', firebaseData);
           const results = db.collection('scoreBoard').doc(firebaseData.leagueSpEventId).set(firebaseData);
           logger.info(results);
