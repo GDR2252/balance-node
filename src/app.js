@@ -27,6 +27,7 @@ const loginRouter = require('./routes/userlogin');
 const balanceRouter = require('./routes/balance');
 const finduserRouter = require('./routes/finduser');
 const streamRouter = require('./routes/stream');
+const scoreBoardRouter = require('./routes/scoreBoard');
 
 const app = express();
 connectDB();
@@ -74,6 +75,7 @@ app.use('/placebet', require('./routes/bet'));
 app.use('/stakes', require('./routes/stakes'));
 app.use('/support', require('./routes/support'));
 
+app.use('/scoreboard', scoreBoardRouter);
 // custom 404
 // eslint-disable-next-line no-unused-vars
 app.use((req, res, next) => {
