@@ -56,6 +56,10 @@ const task = async () => {
               corner: '',
               yellow_card: '',
               red_card: '',
+              penalty: '',
+              shots: '',
+              shots_on: '',
+              poss: '',
             };
 
             item?.scoreData?.forEach((score) => {
@@ -71,6 +75,14 @@ const task = async () => {
                 data.yellow_card = score?.value;
               } else if (score?.iconName === 'red-card') {
                 data.red_card = score?.value;
+              } else if (score?.iconName === 'penalty') {
+                data.penalty = score?.value;
+              } else if (score?.iconName === 'shots') {
+                data.shots = score?.value;
+              } else if (score?.iconName === 'shots_on') {
+                data.shots_on = score?.value;
+              } else if (score?.iconName === 'poss') {
+                data.poss = score?.value;
               }
             });
 
