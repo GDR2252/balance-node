@@ -59,7 +59,7 @@ app.use('/rules', require('./routes/rules'));
 
 app.use('/st8', require('./routes/st8'));
 
-app.use(verifyJWT);
+// app.use(verifyJWT);
 app.use('/getnavdata', fetchNavDataRouter);
 app.use('/sports', sportsRouter);
 app.use('/tournaments', tournamentsRouter);
