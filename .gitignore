@@ -139,3 +139,6 @@ dist
 .svelte-kit
 .DS_Store
 src/config/test-pro-e8d5a-2ebe09c66097.json
+
+ec.key
+ec.pub
