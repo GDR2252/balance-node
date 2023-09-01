@@ -318,7 +318,7 @@ async function history(req, res) {
     delete filter.from;
   }
   if (filter.status) {
-    if (filter.status === 'settle') { filter.IsSettle = 1; } else if (filter.status === 'unsettle') { filter.IsUnsettle = 1; } else { filter.IsVoid = 0; }
+    if (filter.status === 'settle') { filter.IsSettle = 1; } else if (filter.status === 'unsettle') { filter.IsUnsettle = 1; } else { filter.IsVoid = 1; }
     delete filter.status;
   }
   const data = await CricketBetPlace.paginate(filter, options);
