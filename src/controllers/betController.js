@@ -320,10 +320,10 @@ async function history(req, res) {
     if (filter.status === 'settled') { filter.IsSettle = 1; } else if (filter.status === 'unsettled') { filter.IsUnsettle = 1; } else { filter.IsVoid = 0; }
     delete filter.status;
   }
-  const datas = await CricketBetPlace.paginate(filter, options);
+  const data = await CricketBetPlace.paginate(filter, options);
 
   const resData = [];
-  datas?.results.forEach((item) => {
+  data?.results.forEach((item) => {
     const itemData = {
       username: item?.username,
       odds: item.odds > 0 ? parseFloat(item.odds.toString()) : 0,
@@ -343,8 +343,8 @@ async function history(req, res) {
     resData.push(itemData);
   }),
 
-  datas.results = resData;
-  res.status(200).json({ datas });
+  data.results = resData;
+  res.status(200).json({ data });
 }
 
 async function putresults(req, res) {
