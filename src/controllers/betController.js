@@ -318,10 +318,9 @@ async function history(req, res) {
     delete filter.from;
   }
   if (filter.status) {
-    if (filter.status === 'settled') { filter.IsSettle = 1; } else if (filter.status === 'unsettled') { filter.IsUnsettle = 1; } else { filter.IsVoid = 0; }
+    if (filter.status === 'settle') { filter.IsSettle = 1; } else if (filter.status === 'unsettle') { filter.IsUnsettle = 1; } else { filter.IsVoid = 0; }
     delete filter.status;
   }
-  console.log('filter', filter);
   const data = await CricketBetPlace.paginate(filter, options);
 
   const resData = [];
