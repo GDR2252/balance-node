@@ -294,14 +294,15 @@ async function history(req, res) {
     delete filter.createdAt;
     const date1 = new Date(filter?.from);
     const date2 = new Date(filter?.to);
+    date2.setHours(23, 59, 59, 999);
     const timeDifferenceMs = date2 - date1;
     const millisecondsIn30Days = 1000 * 60 * 60 * 24 * 30;
     if (timeDifferenceMs >= millisecondsIn30Days) {
       return res.status(500).json({ error: 'Please select only 30 days range only.' });
     }
     filter.createdAt = {
-      $gte: new Date(filter?.from),
-      $lte: new Date(filter?.to),
+      $gte: new Date(date1),
+      $lte: new Date(date2),
     };
     delete filter.to;
     delete filter.from;
@@ -320,6 +321,7 @@ async function history(req, res) {
     if (filter.status === 'settled') { filter.IsSettle = 1; } else if (filter.status === 'unsettled') { filter.IsUnsettle = 1; } else { filter.IsVoid = 0; }
     delete filter.status;
   }
+  console.log('filter', filter);
   const data = await CricketBetPlace.paginate(filter, options);
 
   const resData = [];
