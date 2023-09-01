@@ -80,6 +80,23 @@ async function deleteSports(req, res) {
   }
 }
 
+async function fetchSportsDropdown(req, res) {
+  try {
+    const result = await Sport.find({
+      sportId: {
+        $not: {
+          $in: ['home', 'in-play'],
+        },
+      },
+    }).select('sportName').sort({ sequence: 1 })
+      .collation({ locale: 'en_US', numericOrdering: true });
+    logger.debug(result);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
 module.exports = {
-  addSports, updateSports, fetchSports, deleteSports,
+  addSports, updateSports, fetchSports, deleteSports, fetchSportsDropdown,
 };
