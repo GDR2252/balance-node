@@ -290,16 +290,6 @@ async function history(req, res) {
   const options = pick(req?.query, ['sortBy', 'limit', 'page']);
   filter.username = req?.user;
 
-  if (filter?.to) {
-    filter.createdAt = new Date(filter.to);
-    delete filter.to;
-  }
-
-  if (filter?.from) {
-    filter.createdAt = new Date(filter.from);
-    delete filter.from;
-  }
-
   if ((filter?.from && filter?.from !== '') && (filter?.to && filter?.to !== '')) {
     delete filter.createdAt;
     const date1 = new Date(filter?.from);
@@ -307,7 +297,7 @@ async function history(req, res) {
     const timeDifferenceMs = date2 - date1;
     const millisecondsIn30Days = 1000 * 60 * 60 * 24 * 30;
     if (timeDifferenceMs >= millisecondsIn30Days) {
-      res.status(500).json({ error: 'Please select only 30 days range only.' });
+      return res.status(500).json({ error: 'Please select only 30 days range only.' });
     }
     filter.createdAt = {
       $gte: new Date(filter?.from),
@@ -317,12 +307,44 @@ async function history(req, res) {
     delete filter.from;
   }
 
+  if (filter?.to) {
+    filter.createdAt = new Date(filter.to);
+    delete filter.to;
+  }
+
+  if (filter?.from) {
+    filter.createdAt = new Date(filter.from);
+    delete filter.from;
+  }
   if (filter.status) {
     if (filter.status === 'settled') { filter.IsSettle = 1; } else if (filter.status === 'unsettled') { filter.IsUnsettle = 1; } else { filter.IsVoid = 0; }
     delete filter.status;
   }
-  const data = await CricketBetPlace.paginate(filter, options);
-  res.status(200).json({ data });
+  const datas = await CricketBetPlace.paginate(filter, options);
+
+  const resData = [];
+  datas?.results.forEach((item) => {
+    const itemData = {
+      username: item?.username,
+      odds: item.odds > 0 ? parseFloat(item.odds.toString()) : 0,
+      pl: item.pl > 0 ? parseFloat(item.pl.toString()) : 0,
+      _id: item?._id,
+      stake: item?.stake,
+      type: item?.type,
+      eventName: item?.eventName,
+      selectionName: item?.selectionName,
+      marketType: item?.marketType,
+      createdAt: item?.createdAt,
+      updatedAt: item?.updatedAt,
+      selectionId: item?.selectionId,
+      sportName: item?.sportName || '',
+    };
+
+    resData.push(itemData);
+  }),
+
+  datas.results = resData;
+  res.status(200).json({ datas });
 }
 
 async function putresults(req, res) {
