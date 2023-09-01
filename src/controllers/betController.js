@@ -286,7 +286,7 @@ async function fetchPl(req, res) {
 }
 
 async function history(req, res) {
-  const filter = pick(req?.query, ['marketType', 'sportName', 'status', 'from', 'to']);
+  const filter = pick(req?.query, ['userId', 'marketType', 'sportName', 'status', 'from', 'to']);
   const options = pick(req?.query, ['sortBy', 'limit', 'page']);
   filter.username = req?.user;
 
