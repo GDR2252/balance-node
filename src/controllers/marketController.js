@@ -156,16 +156,27 @@ async function updateMarkets(req, res) {
 
 async function deleteMarkets(req, res) {
   const { marketId } = req.query;
-  const data = await Market.findOne({ marketId }).exec();
-  if (!data) return res.status(404).json({ message: 'Cannot delete market. Market not present.' });
+  const uri = process.env.MONGO_URI;
+  const client = new MongoClient(uri);
   try {
-    const result = await Market.deleteOne({
+    await client.connect();
+    const data = await client.db(process.env.EXCH_DB).collection('markets').findOne({ marketId });
+    if (!data) return res.status(404).json({ message: 'Cannot delete market. Market not present.' });
+    const result = await client.db(process.env.EXCH_DB).collection('markets').deleteOne({
       marketId,
     });
     logger.debug(result);
+    const mrresult = await client.db(process.env.EXCH_DB).collection('marketRates').deleteOne({
+      marketId,
+    });
+    logger.debug(mrresult);
     res.status(201).json({ success: `Market ${marketId} deleted!` });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  } finally {
+    if (client) {
+      client.close();
+    }
   }
 }
 
