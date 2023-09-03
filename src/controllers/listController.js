@@ -121,7 +121,7 @@ async function getEventList(req, res) {
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
       .find({ 'state.inplay': true })
-      .sort({ marketTime: -1 });
+      .sort({ marketTime: 1 });
     results = await cursor.toArray();
     if (results.length > 0) {
       for (let i = 0; i < results.length; i += 1) {
@@ -178,7 +178,7 @@ async function getEventSportsList(req, res) {
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
       .find({ sportsId })
-      .sort({ marketTime: -1 });
+      .sort({ marketTime: 1 });
     results = await cursor.toArray();
     if (results.length > 0) {
       for (let i = 0; i < results.length; i += 1) {
