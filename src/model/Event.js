@@ -10,6 +10,9 @@ const eventSchema = new Schema({
   exEventId: {
     type: String,
   },
+  spreadexId: {
+    type: String,
+  },
   sportId: {
     type: String,
   },

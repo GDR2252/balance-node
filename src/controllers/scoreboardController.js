@@ -4,6 +4,7 @@ const { default: axios } = require('axios');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const { getFirestore } = require('firebase-admin/firestore');
 const ScoreBoard = require('../model/ScoreBoard');
+const Event = require('../model/Event');
 
 async function addScore(req, res) {
   const { spreadexId, eventId } = req.body;
@@ -16,6 +17,10 @@ async function addScore(req, res) {
       spreadexId,
       eventId,
     });
+    const filter = { exEventId: eventId };
+    const update = { spreadexId };
+    const response = await Event.findOneAndUpdate(filter, update);
+    logger.info(response);
     let respData = {};
     await axios.get(`https://www.spreadex.com/sports/model/api/SubscribeModel?modelRef=m1.s.d.match-centre.all:${spreadexId}`).then(async (response) => {
       if (response?.data?.model) {

@@ -22,6 +22,9 @@ const marketSchema = new Schema({
   exEventId: {
     type: String,
   },
+  spreadexId: {
+    type: String,
+  },
   marketName: {
     type: String,
   },

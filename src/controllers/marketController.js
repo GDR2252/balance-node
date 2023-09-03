@@ -46,6 +46,7 @@ async function addMarkets(req, res) {
       tournamentsId: body.tournamentsId,
       eventId: body.eventId,
       exEventId: events.exEventId,
+      spreadexId: events.spreadexId,
       marketName: body.marketName,
       betLimit: body.betLimit,
       marketTime,
@@ -87,6 +88,7 @@ async function addMarkets(req, res) {
     const eventdata = await Event.findOne({ eventId: update.eventId }).exec();
     update.eventName = eventdata?.eventName;
     update.exEventId = eventdata?.exEventId;
+    update.spreadexId = eventdata?.spreadexId;
     const marketdata = await Market.findOne({ marketId: update.marketId }).exec();
     update.marketName = marketdata?.marketName;
     update.exMarketId = marketdata?.exMarketId;
