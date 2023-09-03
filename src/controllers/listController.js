@@ -120,7 +120,7 @@ async function getEventList(req, res) {
   try {
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
-      .find({});
+      .find({ 'state.inplay': true });
     results = await cursor.toArray();
     if (results.length > 0) {
       for (let i = 0; i < results.length; i += 1) {
@@ -208,7 +208,9 @@ async function getEventSportsList(req, res) {
         data.isBookmakers = marketdata?.isBookmakers || false;
         data.marketTime = marketdata?.marketTime;
         const listdata = JSON.parse(JSON.stringify(data));
-        retresult.push(listdata);
+        if (!hasdata(retresult, listdata.exEventId)) {
+          retresult.push(listdata);
+        }
       }
     }
   } catch (err) {
