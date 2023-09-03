@@ -172,7 +172,6 @@ async function getEventSportsList(req, res) {
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
       .find({ sportsId });
     results = await cursor.toArray();
-    logger.info(JSON.stringify(results));
     if (results.length > 0) {
       for (let i = 0; i < results.length; i += 1) {
         data.sportsId = results[i].sportsId;
