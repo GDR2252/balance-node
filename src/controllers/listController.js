@@ -159,6 +159,61 @@ async function getEventList(req, res) {
   res.send(retresult);
 }
 
+async function getEventSportsList(req, res) {
+  const { sportsId } = req.query;
+  logger.info(`query param: ${sportsId}`);
+  const uri = process.env.MONGO_URI;
+  const client = new MongoClient(uri);
+  let results = [];
+  const retresult = [];
+  const data = { };
+  try {
+    await client.connect();
+    const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
+      .find({ sportsId });
+    results = await cursor.toArray();
+    logger.info(JSON.stringify(results));
+    if (results.length > 0) {
+      for (let i = 0; i < results.length; i += 1) {
+        data.sportsId = results[i].sportsId;
+        const sportsdata = await Sport.findOne({ sportId: data.sportsId }).exec();
+        data.sportName = sportsdata.sportName;
+        data.iconUrl = sportsdata.iconUrl;
+        data.inplay = results[i].state.inplay;
+        data.eventId = results[i].eventId;
+        data.exEventId = results[i].exEventId;
+        const { runners } = results[i];
+        const runnerdata = [];
+        runners.forEach((element) => {
+          runnerdata.push(element.exchange);
+        });
+        data.runners = runnerdata;
+        const eventdata = await Event.findOne({ eventId: results[i].eventId }).exec();
+        data.eventName = eventdata?.eventName;
+        const tournamentdata = await Tournament
+          .findOne({ tournamentId: eventdata?.tournamentsId }).exec();
+        data.tournamentName = tournamentdata?.tournamentName;
+        const marketdata = await Market.findOne({ marketId: results[i].marketId }).exec();
+        data.isVirtual = marketdata?.isVirtual || false;
+        data.isStreaming = marketdata?.isStreaming || false;
+        data.isSportsbook = marketdata?.isSportsbook || false;
+        data.isPreBet = marketdata?.isPreBet || false;
+        data.isFancy = marketdata?.isFancy || false;
+        data.isCasinoGame = marketdata?.isCasinoGame || false;
+        data.isBookmakers = marketdata?.isBookmakers || false;
+        data.marketTime = marketdata?.marketTime;
+        const listdata = JSON.parse(JSON.stringify(data));
+        retresult.push(listdata);
+      }
+    }
+  } catch (err) {
+    logger.error(err);
+  } finally {
+    await client.close();
+  }
+  res.send(retresult);
+}
+
 async function getMarketList(req, res) {
   const { eventId } = req.query;
   try {
@@ -176,5 +231,5 @@ async function getMarketList(req, res) {
 }
 
 module.exports = {
-  sportsList, sideMenuList, getEventList, getMarketList,
+  sportsList, sideMenuList, getEventList, getMarketList, getEventSportsList,
 };
