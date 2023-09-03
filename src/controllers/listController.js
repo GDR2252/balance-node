@@ -107,6 +107,10 @@ async function sideMenuList(req, res) {
   }
 }
 
+function hasdata(data, value) {
+  return data.some((el) => el.exEventId === value);
+}
+
 async function getEventList(req, res) {
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
@@ -148,7 +152,9 @@ async function getEventList(req, res) {
         data.isBookmakers = marketdata?.isBookmakers || false;
         data.marketTime = marketdata?.marketTime;
         const listdata = JSON.parse(JSON.stringify(data));
-        retresult.push(listdata);
+        if (!hasdata(retresult, listdata.exEventId)) {
+          retresult.push(listdata);
+        }
       }
     }
   } catch (err) {
