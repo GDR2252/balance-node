@@ -227,20 +227,34 @@ async function placebet(req, res) {
 }
 
 async function fetchCricket(req, res) {
-  const betData = await CricketBetPlace.aggregate([{
-    $match: {
-      username: req.user,
-      IsUnsettle: 1,
-    },
-  }]);
-  if (betData.length > 0) {
-    const retdata = betData.map((bets) => {
-      delete bets.__v;
-      return bets;
-    });
-    return res.json(retdata);
+  const { exEventId } = req.query;
+  if (exEventId) {
+    let match = {};
+    if (exEventId === 'ALL') {
+      match = {
+        username: req.user,
+        IsUnsettle: 1,
+      };
+    } else {
+      match = {
+        exEventId,
+        username: req.user,
+        IsUnsettle: 1,
+      };
+    }
+    const betData = await CricketBetPlace.aggregate([{
+      $match: match,
+    }]);
+    if (betData.length > 0) {
+      const retdata = betData.map((bets) => {
+        delete bets.__v;
+        return bets;
+      });
+      return res.json(retdata);
+    }
+    return res.status(200).json([]);
   }
-  return res.status(201).json([]);
+  return res.status(200).json([]);
 }
 
 async function fetchCricketBetMenu(req, res) {
