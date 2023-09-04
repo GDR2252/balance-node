@@ -209,7 +209,7 @@ async function fetchScoreid(req, res) {
     res.status(200).json({ spreadexId: result.spreadexId });
   } catch (err) {
     logger.error(err);
-    res.status(500).json({ message: err.message });
+    res.status(200).json({ spreadexId: '' });
   }
 }
 
