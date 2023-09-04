@@ -201,6 +201,18 @@ async function fetchScore(req, res) {
   }
 }
 
+async function fetchScoreid(req, res) {
+  const { eventId } = req.query;
+  try {
+    const result = await ScoreBoard.findOne({ eventId });
+    logger.debug(result);
+    res.status(200).json({ spreadexId: result.spreadexId });
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
 async function deleteScore(req, res) {
   const { spreadexId } = req.query;
   try {
@@ -216,5 +228,5 @@ async function deleteScore(req, res) {
 }
 
 module.exports = {
-  addScore, fetchScore, deleteScore,
+  addScore, fetchScore, deleteScore, fetchScoreid,
 };

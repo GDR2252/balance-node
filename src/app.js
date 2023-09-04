@@ -56,7 +56,6 @@ app.use('/list', listRouter);
 app.use('/finduser', finduserRouter);
 app.use('/getthemes', fetchThemesRouter);
 app.use('/rules', require('./routes/rules'));
-
 app.use('/st8', require('./routes/st8'));
 
 app.use(verifyJWT);
@@ -69,13 +68,13 @@ app.use('/betlimits', betlimitRouter);
 app.use('/changeauth', changeauthRouter);
 app.use('/getBalance', balanceRouter);
 app.use('/stream', streamRouter);
+app.use('/scoreboard', scoreBoardRouter);
 app.use('/activity', require('./routes/activity'));
 app.use('/themes', require('./routes/themes'));
 app.use('/placebet', require('./routes/bet'));
 app.use('/stakes', require('./routes/stakes'));
 app.use('/support', require('./routes/support'));
 
-app.use('/scoreboard', scoreBoardRouter);
 // custom 404
 // eslint-disable-next-line no-unused-vars
 app.use((req, res, next) => {
