@@ -4,8 +4,10 @@ const logger = require('log4js').getLogger(path.parse(__filename).name);
 const { setTimeout } = require('timers/promises');
 const CricketBetPlace = require('../model/CricketBetPlace');
 const CricketPL = require('../model/CricketPL');
+const User = require('../model/User');
 const pick = require('../utils/pick');
 const CricketResult = require('../model/CricketResult');
+const AvplaceBet = require('../model/AvplaceBet');
 
 async function placebet(req, res) {
   const transactionOptions = {
@@ -14,8 +16,7 @@ async function placebet(req, res) {
     readPreference: 'primary',
   };
   logger.info('Starting to place a bet.');
-  const uri = process.env.MONGO_URI;
-  const client = new MongoClient(uri);
+  const client = new MongoClient(process.env.MONGO_URI);
   const session = client.startSession();
   try {
     session.startTransaction(transactionOptions);
@@ -384,6 +385,72 @@ async function putresults(req, res) {
   }
 }
 
+async function aviatorPl(req, res) {
+  try {
+    const options = pick(req?.query, ['sortBy', 'limit', 'page']);
+    const data = await AvplaceBet.paginate({ user: req.user }, options);
+    return res.json(data);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
+async function casinoPl(req, res) {
+  try {
+    const foundUser = await User.findOne({ username: req.user }).exec();
+    const client = new MongoClient(process.env.MONGO_URI);
+    if (!foundUser) {
+      res.status(400).json({ message: 'User not found.' });
+    }
+    const data = await client.db(process.env.EXCH_DB).collection('auracsplacebets').aggregate([{
+      $match: { userId: foundUser._id },
+    },
+    {
+      $group: {
+        _id: '$betInfo.roundId',
+        data: { $push: '$$ROOT' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        roundId: '$_id',
+        matchName: { $first: '$data.matchName' },
+        marketName: { $first: '$data.marketName' },
+      },
+    },
+    ]);
+
+    const result = await data.toArray();
+    return res.json(result);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
+async function fetchCasinoByRound(req, res) {
+  try {
+    const client = new MongoClient(process.env.MONGO_URI);
+    const { roundId } = req.query;
+      const data = await client.db(process.env.EXCH_DB).collection('auracsresults').find({ roundId });
+    const result = await data.toArray();
+      
+    return res.json(result);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: err.message });
+  }
+}
 module.exports = {
-  placebet, fetchCricket, fetchPl, history, putresults, fetchCricketBetMenu,
+  placebet,
+  fetchCricket,
+  fetchPl,
+  history,
+  putresults,
+  fetchCricketBetMenu,
+  aviatorPl,
+  casinoPl,
+  fetchCasinoByRound,
 };
