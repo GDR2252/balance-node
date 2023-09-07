@@ -404,7 +404,7 @@ async function casinoPl(req, res) {
       res.status(400).json({ message: 'User not found.' });
     }
     const data = await client.db(process.env.EXCH_DB).collection('auracsplacebets').aggregate([{
-      $match: { userId: foundUser._id },
+      $match: { userId: foundUser._id.toString() },
     },
     {
       $group: {
