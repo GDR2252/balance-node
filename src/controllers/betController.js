@@ -435,6 +435,9 @@ async function fetchCasinoByRound(req, res) {
     const client = new MongoClient(process.env.MONGO_URI);
     const { roundId } = req.query;
     const data = await client.db(process.env.EXCH_DB).collection('auracsresults').findOne({ roundId });
+    if (!data) {
+      res.status(400).json({ message: 'result not available' });
+    }
     // const result = await data.toArray();
     const participate = data.result[0].marketRunner || [];
 
@@ -471,7 +474,7 @@ async function fetchCasinoByRound(req, res) {
       }
       finalParticipate.push(item);
     });
-      data.result[0].marketRunner = finalParticipate
+    data.result[0].marketRunner = finalParticipate;
     return res.json(data);
   } catch (err) {
     logger.error(err);
