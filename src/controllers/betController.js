@@ -434,10 +434,45 @@ async function fetchCasinoByRound(req, res) {
   try {
     const client = new MongoClient(process.env.MONGO_URI);
     const { roundId } = req.query;
-      const data = await client.db(process.env.EXCH_DB).collection('auracsresults').find({ roundId });
-    const result = await data.toArray();
-      
-    return res.json(result);
+    const data = await client.db(process.env.EXCH_DB).collection('auracsresults').findOne({ roundId });
+    // const result = await data.toArray();
+    const participate = data.result[0].marketRunner || [];
+
+    const bets = await client.db(process.env.EXCH_DB).collection('auracsplacebets').aggregate([
+      {
+        $match: { 'betInfo.roundId': roundId },
+      },
+      {
+        $unwind: '$runners', // Split the array into separate documents
+      },
+      {
+        $group: {
+          _id: '$runners.id', // Group by runner id
+          totalPl: {
+            $sum: '$runners.pl', // Sum the pl values for each runner
+          },
+        },
+      },
+    ]);
+    const result = await bets.toArray();
+
+    const resultMap = {};
+
+    // Populate the resultMap with the values from the result array
+    result.map((player) => resultMap[player._id] = player.totalPl);
+
+    // Update the participate array with the totalPl values based on id
+    const finalParticipate = [];
+    participate.map((player) => {
+      const item = player;
+      const totalPl = resultMap[player.id];
+      if (totalPl !== undefined) {
+        item.totalPl = totalPl;
+      }
+      finalParticipate.push(item);
+    });
+      data.result[0].marketRunner = finalParticipate
+    return res.json(data);
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: err.message });
