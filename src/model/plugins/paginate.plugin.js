@@ -51,6 +51,9 @@ const paginate = (schema) => {
       });
     }
 
+    if (options.path) {
+      docsPromise = docsPromise.populate(options.path);
+    }
     docsPromise = docsPromise.exec();
 
     return Promise.all([countPromise, docsPromise]).then((values) => {
