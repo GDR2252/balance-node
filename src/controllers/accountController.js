@@ -4,7 +4,7 @@ const Transcation = require('../model/Transaction');
 const User = require('../model/User');
 const pick = require('../utils/pick');
 
-async function history(req, res) {
+async function statement(req, res) {
   const options = pick(req?.query, ['sortBy', 'limit', 'page']);
 
   try {
@@ -25,4 +25,4 @@ async function history(req, res) {
   }
 }
 
-module.exports = { history };
+module.exports = { statement };
