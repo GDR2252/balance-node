@@ -1,7 +1,8 @@
 const express = require('express');
 
 const router = express.Router();
-const bankController = require('../controllers/accountController');
+const accountController = require('../controllers/accountController');
 
-router.get('/statement', bankController.statement);
+router.get('/statement', accountController.statement);
+router.get('/pl/sports', accountController.sportsPl);
 module.exports = router;

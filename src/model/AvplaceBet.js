@@ -47,6 +47,12 @@ const avplaceBetSchema = new Schema({
     type: Number,
     default: 0,
   },
+  sportId: {
+    type: String,
+  },
+  sportName: {
+    type: String,
+  },
 }, { timestamps: true });
 
 avplaceBetSchema.plugin(paginate);
