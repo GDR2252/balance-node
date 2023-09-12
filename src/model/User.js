@@ -25,7 +25,7 @@ const userSchema = new Schema({
   },
   roles: [{
     type: String,
-    enum: ['Admin', 'WhiteLabel', 'Super', 'Master', 'Agent', 'User'],
+    enum: ['Admin', 'WhiteLabel', 'Super', 'Master', 'Agent', 'User', 'FTeader', 'FManager', 'Navigation', 'STeader'],
   }],
   balance: {
     type: Schema.Types.Decimal128,
