@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const User = require('../model/User');
 const Stake = require('../model/Stake');
 const { sendSMS, verifySMS } = require('./smsapiController');
+const pick = require('../utils/pick');
 
 const getBalance = async (req, res) => {
   const profile = await User.findOne({ username: req.user }).exec();
@@ -99,6 +100,7 @@ const createUser = async (req, res) => {
   const {
     username, roles, password, mobile, ip,
   } = req.body;
+  if (!username || !password || !mobile || !roles) return res.status(400).json({ message: 'Username, mobile, role and password are required.' });
   const duplicate = await User.findOne({ username }).exec();
   if (duplicate) return res.status(409).json({ message: 'Username already exists.' });
   try {
@@ -117,11 +119,13 @@ const createUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 const updateUser = async (req, res) => {
   const {
     password, roles, mobile, ip, userId,
   } = req.body;
   try {
+    if (!userId) return res.status(400).json({ message: 'userId required.' });
     const data = await User.findOne({ _id: userId }).exec();
     if (!data) return res.status(404).json({ message: 'User not found.' });
     const upd = {
@@ -157,6 +161,33 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const listUser = async (req, res) => {
+  const options = pick(req?.query, ['sortBy', 'limit', 'page']);
+  //   const filter = pick(req?.query, ['from', 'to']);
+  const filter = { roles: { $in: ['FTeader', 'FManager', 'Navigation', 'STeader'] } };
+  const optObj = {
+    ...options,
+    sortBy: options.sortBy ? options.sortBy : 'createdAt:desc',
+  };
+  const data = await User.paginate(filter, optObj);
+  const finalData = [];
+  if (data.results.length > 0) {
+    data.results.map((item) => {
+      const res = {};
+      res.username = item.username;
+      res.roles = item.roles;
+      res.mobile = item.mobile;
+      res.ip = item.ip;
+      res._id = item._id;
+      res.status = item.status;
+      res.createdAt = item.createdAt;
+      finalData.push(res);
+    });
+    data.results = finalData;
+  }
+  res.status(200).json({ data });
+};
+
 module.exports = {
   getBalance,
   generateotp,
@@ -167,4 +198,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  listUser,
 };

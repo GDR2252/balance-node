@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
+const { paginate } = require('./plugins');
 
 function getdecimal(value) {
   if (typeof value !== 'undefined') {
@@ -81,5 +82,6 @@ const userSchema = new Schema({
     type: String,
   },
 }, { timestamps: true });
+userSchema.plugin(paginate);
 
 module.exports = mongoose.model('User', userSchema);

@@ -4,7 +4,7 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 
 router.post('/', userController.createUser);
-// router.get('/', userController.fetchTournaments);
+router.get('/', userController.listUser);
 router.post('/update', userController.updateUser);
 router.delete('/', userController.deleteUser);
 
