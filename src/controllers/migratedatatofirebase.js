@@ -21,6 +21,7 @@ function processcontent(content) {
     delete element.__v;
     delete element.isMarketDataDelayed;
     delete element.isMarketDataVirtual;
+    element.marketTime = element.marketTime.toString();
     obj[docId] = element;
   });
   return obj;
