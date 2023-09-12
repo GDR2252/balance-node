@@ -1,5 +1,6 @@
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
+const bcrypt = require('bcrypt');
 const User = require('../model/User');
 const Stake = require('../model/Stake');
 const { sendSMS, verifySMS } = require('./smsapiController');
@@ -93,6 +94,53 @@ const verifyotp = async (req, res) => {
     res.status(500).json({ message: 'Error while verifying OTP.' });
   }
 };
+
+const createUser = async (req, res) => {
+  const { username, roles, password, mobile, ip } = req.body;
+  const duplicate = await User.findOne({ username }).exec();
+  if (duplicate) return res.status(409).json({ message: 'Username already exists.' });
+  try {
+    const hashedPwd = await bcrypt.hash(password, 10);
+    await User.create({
+      username,
+      password: hashedPwd,
+      mobile,
+      roles,
+      ip,
+    });
+    // logger.debug(result);
+    res.status(201).json({ success: `New user ${username} created!` });
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: err.message });
+  }
+};
+const updateUser = async (req, res) => { };
+
+const deleteUser = async (req, res) => {
+  const { userId } = req.query;
+  try {
+    const data = await User.findOne({ _id: userId }).exec();
+    if (!data) return res.status(404).json({ message: 'Cannot delete user. User not present.' });
+
+    const result = await User.deleteOne({
+      _id: userId,
+    });
+    logger.debug(result);
+    res.status(201).json({ success: `Tournament ${userId} deleted!` });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
-  getBalance, generateotp, verifyotp, updateBalance, savestakes, fetchstakes,
+  getBalance,
+  generateotp,
+  verifyotp,
+  updateBalance,
+  savestakes,
+  fetchstakes,
+  createUser,
+  updateUser,
+  deleteUser,
 };

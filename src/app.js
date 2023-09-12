@@ -29,6 +29,7 @@ const finduserRouter = require('./routes/finduser');
 const streamRouter = require('./routes/stream');
 const scoreBoardRouter = require('./routes/scoreBoard');
 const accountRouter = require('./routes/account');
+const userRouter = require('./routes/user');
 
 const app = express();
 connectDB();
@@ -71,6 +72,7 @@ app.use('/getBalance', balanceRouter);
 app.use('/stream', streamRouter);
 app.use('/scoreboard', scoreBoardRouter);
 app.use('/account', accountRouter);
+app.use('/user', userRouter);
 app.use('/activity', require('./routes/activity'));
 app.use('/themes', require('./routes/themes'));
 app.use('/placebet', require('./routes/bet'));
