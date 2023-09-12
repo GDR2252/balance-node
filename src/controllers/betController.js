@@ -61,9 +61,8 @@ async function placebet(req, res) {
     runners.forEach((element) => {
       const selId = element.selectionId.toString();
       if (selId === selectionId) {
-        backdata = element.exchange.availableToBack[0];
-        laydata = element.exchange.availableToLay[0];
         if (type === 'back') {
+          backdata = element.exchange.availableToBack[0];
           profit = Number(Number((userOdds - 1) * numberstake).toFixed(2));
           pl = profit;
           const key = { [selId]: profit };
@@ -72,6 +71,7 @@ async function placebet(req, res) {
           fselectionIds.push({ [selId]: Math.round(profit) });
         }
         if (type === 'lay') {
+          laydata = element.exchange.availableToLay[0];
           loss = -Math.abs(Number(Number((userOdds - 1) * numberstake).toFixed(2)));
           pl = loss;
           exposures.push(loss);
