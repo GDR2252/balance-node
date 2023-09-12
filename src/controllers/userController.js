@@ -96,7 +96,9 @@ const verifyotp = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-  const { username, roles, password, mobile, ip } = req.body;
+  const {
+    username, roles, password, mobile, ip,
+  } = req.body;
   const duplicate = await User.findOne({ username }).exec();
   if (duplicate) return res.status(409).json({ message: 'Username already exists.' });
   try {
@@ -115,7 +117,29 @@ const createUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-const updateUser = async (req, res) => { };
+const updateUser = async (req, res) => {
+  const {
+    password, roles, mobile, ip, userId,
+  } = req.body;
+  try {
+    const data = await User.findOne({ _id: userId }).exec();
+    if (!data) return res.status(404).json({ message: 'User not found.' });
+    const upd = {
+      roles,
+      mobile,
+      ip,
+    };
+
+    if (password !== '') {
+      const hashedPwd = await bcrypt.hash(password, 10);
+      upd.password = hashedPwd;
+    }
+    await User.findOneAndUpdate({ _id: userId }, upd);
+    res.status(201).json({ success: `User ${userId} updated!` });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 const deleteUser = async (req, res) => {
   const { userId } = req.query;
@@ -127,7 +151,7 @@ const deleteUser = async (req, res) => {
       _id: userId,
     });
     logger.debug(result);
-    res.status(201).json({ success: `Tournament ${userId} deleted!` });
+    res.status(201).json({ success: `User ${userId} deleted!` });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
