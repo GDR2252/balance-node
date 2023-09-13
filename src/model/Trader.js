@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
+const { paginate } = require('./plugins');
 
 const traderSchema = new Schema({
   username: {
@@ -22,4 +23,5 @@ const traderSchema = new Schema({
   },
 }, { timestamps: true });
 
+traderSchema.plugin(paginate);
 module.exports = mongoose.model('Trader', traderSchema);

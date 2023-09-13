@@ -5,6 +5,7 @@ const User = require('../model/User');
 const Stake = require('../model/Stake');
 const { sendSMS, verifySMS } = require('./smsapiController');
 const pick = require('../utils/pick');
+const Trader = require('../model/Trader');
 
 const getBalance = async (req, res) => {
   const profile = await User.findOne({ username: req.user }).exec();
@@ -98,17 +99,16 @@ const verifyotp = async (req, res) => {
 
 const createUser = async (req, res) => {
   const {
-    username, roles, password, mobile
+    username, roles, password
   } = req.body;
-  if (!username || !password || !mobile || !roles) return res.status(400).json({ message: 'Username, mobile, role and password are required.' });
-  const duplicate = await User.findOne({ username }).exec();
+  if (!username || !password || !roles) return res.status(400).json({ message: 'Username, mobile, role and password are required.' });
+  const duplicate = await Trader.findOne({ username }).exec();
   if (duplicate) return res.status(409).json({ message: 'Username already exists.' });
   try {
     const hashedPwd = await bcrypt.hash(password, 10);
-    await User.create({
+    await Trader.create({
       username,
       password: hashedPwd,
-      mobile,
       roles,
     });
     // logger.debug(result);
@@ -121,22 +121,21 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const {
-    password, roles, mobile, userId,
+    password, roles, userId,
   } = req.body;
   try {
     if (!userId) return res.status(400).json({ message: 'userId required.' });
-    const data = await User.findOne({ _id: userId }).exec();
+    const data = await Trader.findOne({ _id: userId }).exec();
     if (!data) return res.status(404).json({ message: 'User not found.' });
     const upd = {
       roles,
-      mobile,
     };
 
     if (password !== '') {
       const hashedPwd = await bcrypt.hash(password, 10);
       upd.password = hashedPwd;
     }
-    await User.findOneAndUpdate({ _id: userId }, upd);
+    await Trader.findOneAndUpdate({ _id: userId }, upd);
     res.status(201).json({ success: `User ${userId} updated!` });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -146,10 +145,10 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   const { userId } = req.query;
   try {
-    const data = await User.findOne({ _id: userId }).exec();
-    if (!data) return res.status(404).json({ message: 'Cannot delete user. User not present.' });
+    const data = await Trader.findOne({ _id: userId }).exec();
+    if (!data) return res.status(404).json({ message: 'Cannot delete user. Trader not present.' });
 
-    const result = await User.deleteOne({
+    const result = await Trader.deleteOne({
       _id: userId,
     });
     logger.debug(result);
@@ -167,22 +166,20 @@ const listUser = async (req, res) => {
     ...options,
     sortBy: options.sortBy ? options.sortBy : 'createdAt:desc',
   };
-  const data = await User.paginate(filter, optObj);
-  const finalData = [];
-  if (data.results.length > 0) {
-    data.results.map((item) => {
-      const res = {};
-      res.username = item.username;
-      res.roles = item.roles;
-      res.mobile = item.mobile;
-      res.ip = item.ip;
-      res._id = item._id;
-      res.status = item.status;
-      res.createdAt = item.createdAt;
-      finalData.push(res);
-    });
-    data.results = finalData;
-  }
+  const data = await Trader.paginate(filter, optObj);
+//   const finalData = [];
+//   if (data.results.length > 0) {
+//     data.results.map((item) => {
+//       const res = {};
+//       res.username = item.username;
+//       res.roles = item.roles;
+//       res._id = item._id;
+//       res.status = item.status;
+//       res.createdAt = item.createdAt;
+//       finalData.push(res);
+//     });
+//     data.results = finalData;
+//   }
   res.status(200).json({ data });
 };
 
