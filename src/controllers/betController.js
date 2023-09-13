@@ -35,9 +35,13 @@ async function placebet(req, res) {
     const {
       runners, eventName, runnerData, sportsId, sportName,
     } = marketratesdata;
-    const betlockdata = await client.db(process.env.EXCH_DB).collection('betlocks').findOne({ userId: { $in: userdata.parentId } }, { session });
-    if (betlockdata && ((betlockdata.type === 'market' && exMarketId === betlockdata.eventId) || (betlockdata.type === 'event' && exEventId === betlockdata.eventId) || (betlockdata.type === 'sport' && sportsId === betlockdata.eventId))) {
-      return res.status(401).json({ message: 'Cannot place bet. Bet is locked.' });
+    const betlockdata = await client.db(process.env.EXCH_DB).collection('betlocks').find({ userId: { $in: userdata.parentId } }, { session }).toArray();
+    if (betlockdata.length > 0) {
+      for (let i = 0; i < betlockdata.length; i += 1) {
+        if ((betlockdata[i].type === 'market' && exMarketId === betlockdata[i].eventId) || (betlockdata[i].type === 'event' && exEventId === betlockdata[i].eventId) || (betlockdata[i].type === 'sport' && sportsId === betlockdata[i].eventId)) {
+          return res.status(401).json({ message: 'Cannot place bet. Bet is locked.' });
+        }
+      }
     }
     const marketlimit = marketratesdata.betLimit;
     const marketType = marketratesdata.marketName;
