@@ -98,7 +98,7 @@ const verifyotp = async (req, res) => {
 
 const createUser = async (req, res) => {
   const {
-    username, roles, password, mobile, ip,
+    username, roles, password, mobile
   } = req.body;
   if (!username || !password || !mobile || !roles) return res.status(400).json({ message: 'Username, mobile, role and password are required.' });
   const duplicate = await User.findOne({ username }).exec();
@@ -110,7 +110,6 @@ const createUser = async (req, res) => {
       password: hashedPwd,
       mobile,
       roles,
-      ip,
     });
     // logger.debug(result);
     res.status(201).json({ success: `New user ${username} created!` });
@@ -122,7 +121,7 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const {
-    password, roles, mobile, ip, userId,
+    password, roles, mobile, userId,
   } = req.body;
   try {
     if (!userId) return res.status(400).json({ message: 'userId required.' });
@@ -131,7 +130,6 @@ const updateUser = async (req, res) => {
     const upd = {
       roles,
       mobile,
-      ip,
     };
 
     if (password !== '') {
