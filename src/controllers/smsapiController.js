@@ -46,7 +46,7 @@ const sendSMS = async (mobile) => {
 const verifySMS = async (mobile, otp) => {
   const response = {
     return: true,
-    message: 'OTP matched successfully!',
+    message: 'OTP Matched Successfully!',
   };
   try {
     const latestRecord = await OTPManage.findOne().sort({ createdAt: -1 }).limit(1);
@@ -54,7 +54,7 @@ const verifySMS = async (mobile, otp) => {
     const match = await bcrypt.compare(otp.toString(), latestRecord.otp.toString());
     if (!match) {
       response.return = false;
-      response.message = 'OTP Mismatch!';
+      response.message = 'Wrong OTP! Please Enter Right OTP.';
     }
   } catch (err) {
     logger.error(err);
