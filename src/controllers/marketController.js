@@ -50,6 +50,7 @@ async function addMarkets(req, res) {
       marketName: body.marketName,
       betLimit: body.betLimit,
       marketTime,
+      marketType: 'match_odds',
       isFancy: body.isFancy || false,
       isBookmakers: body.isBookmakers || false,
       isStreaming: body.isStreaming || false,
@@ -132,6 +133,7 @@ async function updateMarkets(req, res) {
     const filter = { marketId };
     const update = {
       marketName: body.marketName,
+      marketType: body.marketType,
       betLimit: body.betLimit,
       isFancy: body.isFancy,
       isBookmakers: body.isBookmakers,
