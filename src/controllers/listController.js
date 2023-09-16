@@ -230,7 +230,7 @@ async function getMarketList(req, res) {
     const client = new MongoClient(uri);
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
-      .find({ exEventId: eventId });
+      .find({ exEventId: eventId, 'state.status': { $ne: 'CLOSED' } });
     const result = await cursor.toArray();
     res.status(200).json(result);
   } catch (err) {
