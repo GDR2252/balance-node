@@ -33,7 +33,6 @@ const task = async () => {
       });
       await StreamShedule.bulkWrite(bulkOps);
       await Market.updateMany({ eventId: { $in: eventIds } }, { isStreaming: true });
-        
       console.log('Bulk update/creation completed.');
     } else {
       console.log('No match data to update.');
@@ -44,4 +43,4 @@ const task = async () => {
 };
 
 // Schedule the cron job to run every 15 minutes
-cron.schedule('*/1 * * * *', task);
+cron.schedule('*/15 * * * *', task);
