@@ -19,6 +19,9 @@ const eventSchema = new Schema({
   tournamentsId: {
     type: String,
   },
+  tournamentsName: {
+    type: String,
+  },
   eventName: {
     type: String,
   },

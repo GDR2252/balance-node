@@ -116,11 +116,16 @@ async function getEventList(req, res) {
   const client = new MongoClient(uri);
   let results = [];
   const retresult = [];
-  const data = { };
+  const data = {};
+  const { type } = req.query;
   try {
+    let filter = {};
+    if (type === 'in-play') {
+      filter = { ...filter, 'state.inplay': true };
+    }
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
-      .find({ 'state.inplay': true })
+      .find(filter)
       .sort({ marketTime: 1 });
     results = await cursor.toArray();
     if (results.length > 0) {

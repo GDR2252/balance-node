@@ -16,6 +16,7 @@ async function addEvents(req, res) {
       exEventId: crypto.randomBytes(16).toString('hex'),
       sportId: body.sportId,
       tournamentsId: body.tournamentsId,
+      tournamentsName: body.tournamentsName,
       eventName: body.eventName,
       highlight: body.highlight || false,
       quicklink: body.quicklink || false,
