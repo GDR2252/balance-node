@@ -5,7 +5,9 @@ const Event = require('../model/Event');
 const Market = require('../model/Market');
 
 async function addEvents(req, res) {
-  const { eventId } = req.body;
+  const {
+    eventId, tournamentsName, sportId, tournamentsId, eventName,
+  } = req.body;
   const { body } = req;
   logger.debug(body);
   const duplicate = await Event.findOne({ eventId }).exec();
@@ -14,10 +16,10 @@ async function addEvents(req, res) {
     const result = await Event.create({
       eventId,
       exEventId: crypto.randomBytes(16).toString('hex'),
-      sportId: body.sportId,
-      tournamentsId: body.tournamentsId,
-      tournamentsName: body.tournamentsName,
-      eventName: body.eventName,
+      sportId,
+      tournamentsId,
+      tournamentsName,
+      eventName,
       highlight: body.highlight || false,
       quicklink: body.quicklink || false,
       popular: body.popular || false,
