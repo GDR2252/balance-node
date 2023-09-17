@@ -173,60 +173,127 @@ async function getEventList(req, res) {
 
 async function getEventSportsList(req, res) {
   const { sportsId } = req.query;
-  logger.info(`query param: ${sportsId}`);
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
-  let results = [];
-  const retresult = [];
-  const data = { };
-  try {
-    await client.connect();
-    const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
-      .find({ sportsId })
-      .sort({ marketTime: 1 });
-    results = await cursor.toArray();
-    if (results.length > 0) {
-      for (let i = 0; i < results.length; i += 1) {
-        data.sportsId = results[i].sportsId;
-        const sportsdata = await Sport.findOne({ sportId: data.sportsId }).exec();
-        data.sportName = sportsdata.sportName;
-        data.iconUrl = sportsdata.iconUrl;
-        data.inplay = results[i].state.inplay;
-        data.eventId = results[i].eventId;
-        data.exEventId = results[i].exEventId;
-        const { runners } = results[i];
-        const runnerdata = [];
-        runners.forEach((element) => {
-          runnerdata.push(element.exchange);
-        });
-        data.runners = runnerdata;
-        const eventdata = await Event.findOne({ eventId: results[i].eventId }).exec();
-        data.eventName = eventdata?.eventName;
-        const tournamentdata = await Tournament
-          .findOne({ tournamentId: eventdata?.tournamentsId }).exec();
-        data.tournamentName = tournamentdata?.tournamentName;
-        const marketdata = await Market.findOne({ marketId: results[i].marketId }).exec();
-        data.isVirtual = marketdata?.isVirtual || false;
-        data.isStreaming = marketdata?.isStreaming || false;
-        data.isSportsbook = marketdata?.isSportsbook || false;
-        data.isPreBet = marketdata?.isPreBet || false;
-        data.isFancy = marketdata?.isFancy || false;
-        data.isCasinoGame = marketdata?.isCasinoGame || false;
-        data.isBookmakers = marketdata?.isBookmakers || false;
-        data.marketTime = marketdata?.marketTime;
-        const listdata = JSON.parse(JSON.stringify(data));
-        if (!hasdata(retresult, listdata.exEventId)) {
-          retresult.push(listdata);
-        }
-      }
-    }
-  } catch (err) {
-    logger.error(err);
-  } finally {
-    await client.close();
-  }
-  res.send(retresult);
+  const cursor = await client.db(process.env.EXCH_DB).collection('marketRates').aggregate([
+    {
+      $match: {
+        sportsId,
+      },
+    },
+    {
+      $lookup: {
+        from: 'sports',
+        localField: 'sportsId',
+        foreignField: 'sportId',
+        as: 'sportInfo',
+      },
+    },
+    {
+      $lookup: {
+        from: 'events',
+        localField: 'eventId',
+        foreignField: 'eventId',
+        as: 'eventInfo',
+      },
+    },
+    {
+      $lookup: {
+        from: 'markets',
+        localField: 'exMarketId',
+        foreignField: 'exMarketId',
+        as: 'marketInfo',
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        exEventId: 1,
+        eventId: 1,
+        sportsId: 1,
+        sportName: 1,
+        iconUrl: { $first: '$sportInfo.iconUrl' },
+        runners: 1,
+        inplay: '$state.inplay',
+        eventName: 1,
+        tournamentName: { $first: '$eventInfo.tournamentsName' },
+        marketTime: { $first: '$marketInfo.marketTime' },
+        isVirtual: { $first: '$marketInfo.isVirtual' },
+        isStreaming: { $first: '$marketInfo.isStreaming' },
+        isSportsbook: { $first: '$marketInfo.isSportsbook' },
+        isPreBet: { $first: '$marketInfo.isPreBet' },
+        isFancy: { $first: '$marketInfo.isFancy' },
+        isCasinoGame: { $first: '$marketInfo.isCasinoGame' },
+        isBookmakers: { $first: '$marketInfo.isBookmakers' },
+      },
+    },
+    {
+      $sort: {
+        marketTime: 1,
+      },
+    },
+  ]);
+  const result = await cursor.toArray();
+  res.send(result);
 }
+
+// async function getEventSportsList(req, res) {
+//   const { sportsId } = req.query;
+
+//   logger.info(`query param: ${sportsId}`);
+//   const uri = process.env.MONGO_URI;
+//   const client = new MongoClient(uri);
+//   let results = [];
+//   const retresult = [];
+//   const data = { };
+//   try {
+//     await client.connect();
+//     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
+//       .find({ sportsId })
+//       .sort({ marketTime: 1 });
+//     results = await cursor.toArray();
+//     if (results.length > 0) {
+//       for (let i = 0; i < results.length; i += 1) {
+//         data.sportsId = results[i].sportsId;
+//         const sportsdata = await Sport.findOne({ sportId: data.sportsId }).exec();
+//         data.sportName = sportsdata.sportName;
+//         data.iconUrl = sportsdata.iconUrl;
+//         data.inplay = results[i].state.inplay;
+//         data.eventId = results[i].eventId;
+//         data.exEventId = results[i].exEventId;
+//         const { runners } = results[i];
+//         const runnerdata = [];
+//         runners.forEach((element) => {
+//           runnerdata.push(element.exchange);
+//         });
+//         data.runners = runnerdata;
+//         const eventdata = await Event.findOne({ eventId: results[i].eventId }).exec();
+//         data.eventName = eventdata?.eventName;
+//         const tournamentdata = await Tournament
+//           .findOne({ tournamentId: eventdata?.tournamentsId }).exec();
+//         data.tournamentName = tournamentdata?.tournamentName;
+//         const marketdata = await Market.findOne({ marketId: results[i].marketId }).exec();
+//         data.isVirtual = marketdata?.isVirtual || false;
+//         data.isStreaming = marketdata?.isStreaming || false;
+//         data.isSportsbook = marketdata?.isSportsbook || false;
+//         data.isPreBet = marketdata?.isPreBet || false;
+//         data.isFancy = marketdata?.isFancy || false;
+//         data.isCasinoGame = marketdata?.isCasinoGame || false;
+//         data.isBookmakers = marketdata?.isBookmakers || false;
+//         data.marketTime = marketdata?.marketTime;
+//         const listdata = JSON.parse(JSON.stringify(data));
+//         if (!hasdata(retresult, listdata.exEventId)) {
+//           retresult.push(listdata);
+//         }
+//       }
+//     }
+//   } catch (err) {
+//     logger.error(err);
+//   } finally {
+//     await client.close();
+//   }
+//   res.send(retresult);
+// }
 
 async function getMarketList(req, res) {
   const { eventId } = req.query;
