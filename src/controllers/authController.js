@@ -36,4 +36,14 @@ async function handleLogin(req, res) {
   }
 }
 
-module.exports = { handleLogin};
+async function generateToken(req, res) {
+  const accessToken = jwt.sign(
+    {
+      username: req.user,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: '1d' },
+  );
+  res.json({ accessToken });
+}
+module.exports = { handleLogin, generateToken };
