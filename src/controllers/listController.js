@@ -118,10 +118,19 @@ async function getEventList(req, res) {
   const retresult = [];
   const data = {};
   const { type } = req.query;
+  const currentDate = new Date()
   try {
     let filter = {};
     if (type === 'in-play') {
       filter = { ...filter, 'state.inplay': true };
+    }
+    if (type === 'home') {
+      filter = {
+        ...filter, 'marketTime': {
+          $gte: new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 0, 0, 0),
+          $lt: new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1, 0, 0, 0)
+        }
+      }
     }
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
@@ -228,8 +237,8 @@ async function getEventSportsList(req, res) {
       },
     },
     {
-      $group:{
-        _id: '$eventId', 
+      $group: {
+        _id: '$eventId',
         exEventId: { $first: '$exEventId' },
         eventName: { $first: '$eventName' },
         sportsId: { $first: '$sportsId' },
