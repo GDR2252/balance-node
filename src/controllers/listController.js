@@ -123,9 +123,6 @@ async function getEventList(req, res) {
     if (type === 'in-play') {
       filter = { ...filter, 'state.inplay': true };
     }
-    if (type === 'home') {
-      filter = { ...filter, 'state.home': true };
-    }
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
       .find(filter)
