@@ -148,6 +148,9 @@ async function placebet(req, res) {
         exEventId,
         exMarketId,
         selectionId: fselectionIds,
+        IsSettle: 0,
+        IsVoid: 0,
+        IsUnsettle: 1,
       }, { session });
     } else {
       const selectionData = plData[0].selectionId;
