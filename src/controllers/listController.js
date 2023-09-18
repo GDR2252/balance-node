@@ -247,8 +247,6 @@ async function getEventSportsList(req, res) {
         isFancy: { $first: '$isFancy' },
         isCasinoGame: { $first: '$isCasinoGame' },
         isBookmakers: { $first: '$isBookmakers' },
-        iconUrl: { $first: '$sportInfo.iconUrl' },
-        
       }
     },
     {
