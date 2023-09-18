@@ -95,6 +95,7 @@ async function addMarkets(req, res) {
     update.exMarketId = marketdata?.exMarketId;
     update.betLimit = marketdata?.betLimit;
     update.marketTime = marketdata?.marketTime;
+    update.isPreBet = marketdata?.isPreBet;
     for (let j = 0; j < update.runners.length; j += 1) {
       update.runnerData[update.runners[j].selectionId] = update
         .runners[j].description.runnerName;
