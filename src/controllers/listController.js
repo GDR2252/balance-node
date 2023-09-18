@@ -228,6 +228,30 @@ async function getEventSportsList(req, res) {
       },
     },
     {
+      $group:{
+        _id: '$eventId', 
+        exEventId: { $first: '$exEventId' },
+        eventName: { $first: '$eventName' },
+        sportsId: { $first: '$sportsId' },
+        sportName: { $first: '$sportName' },
+        iconUrl: { $first: '$iconUrl' },
+        runners: { $first: '$runners' },
+        inplay: { $first: '$inplay' },
+        eventName: { $first: '$eventName' },
+        tournamentName: { $first: '$tournamentName' },
+        marketTime: { $first: '$marketTime' },
+        isVirtual: { $first: '$isVirtual' },
+        isStreaming: { $first: '$isStreaming' },
+        isSportsbook: { $first: '$isSportsbook' },
+        isPreBet: { $first: '$isPreBet' },
+        isFancy: { $first: '$isFancy' },
+        isCasinoGame: { $first: '$isCasinoGame' },
+        isBookmakers: { $first: '$isBookmakers' },
+        iconUrl: { $first: '$sportInfo.iconUrl' },
+        
+      }
+    },
+    {
       $sort: {
         marketTime: 1,
       },
