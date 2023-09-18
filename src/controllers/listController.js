@@ -123,6 +123,9 @@ async function getEventList(req, res) {
     if (type === 'in-play') {
       filter = { ...filter, 'state.inplay': true };
     }
+    if (type === 'home') {
+      filter = { ...filter, 'state.home': true };
+    }
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
       .find(filter)
@@ -132,8 +135,8 @@ async function getEventList(req, res) {
       for (let i = 0; i < results.length; i += 1) {
         data.sportsId = results[i].sportsId;
         const sportsdata = await Sport.findOne({ sportId: data.sportsId }).exec();
-        data.sportName = sportsdata.sportName;
-        data.iconUrl = sportsdata.iconUrl;
+        data.sportName = sportsdata?.sportName;
+        data.iconUrl = sportsdata?.iconUrl;
         data.inplay = results[i].state.inplay;
         data.eventId = results[i].eventId;
         data.exEventId = results[i].exEventId;
