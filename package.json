@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "pm2 start ./src/bin/www --name USER_API",
+    "start:cron": "pm2 start ./src/cronjob/streamShedular.js --name LIVE_STREAM_CRON",
     "dev": "nodemon ./src/bin/www"
   },
   "dependencies": {
