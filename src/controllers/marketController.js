@@ -154,6 +154,14 @@ async function updateMarkets(req, res) {
       await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
         .findOneAndUpdate(marketratesfilter, { $set: marketratesupdate }, { upsert: true });
     }
+    if (body.isPreBet) {
+      const marketratesfilter = { marketId };
+      const marketratesupdate = {
+        isPreBet: body.isPreBet,
+      };
+      await client.db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
+        .findOneAndUpdate(marketratesfilter, { $set: marketratesupdate }, { upsert: true });
+    }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
