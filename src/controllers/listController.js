@@ -118,7 +118,7 @@ async function getEventList(req, res) {
   const retresult = [];
   const data = {};
   const { type } = req.query;
-  const currentDate = new Date()
+  const currentDate = new Date();
   try {
     let filter = {};
     if (type === 'in-play') {
@@ -126,11 +126,12 @@ async function getEventList(req, res) {
     }
     if (type === 'home') {
       filter = {
-        ...filter, 'marketTime': {
+        ...filter,
+        marketTime: {
           $gte: new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 0, 0, 0),
-          $lt: new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1, 0, 0, 0)
-        }
-      }
+          $lt: new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1, 0, 0, 0),
+        },
+      };
     }
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
@@ -222,6 +223,7 @@ async function getEventSportsList(req, res) {
         sportsId: 1,
         sportName: 1,
         iconUrl: { $first: '$sportInfo.iconUrl' },
+        runnerData: 1,
         runners: 1,
         inplay: '$state.inplay',
         eventName: 1,
@@ -245,8 +247,8 @@ async function getEventSportsList(req, res) {
         sportName: { $first: '$sportName' },
         iconUrl: { $first: '$iconUrl' },
         runners: { $first: '$runners' },
+        runnerData: { $first: '$runnerData' },
         inplay: { $first: '$inplay' },
-        eventName: { $first: '$eventName' },
         tournamentName: { $first: '$tournamentName' },
         marketTime: { $first: '$marketTime' },
         isVirtual: { $first: '$isVirtual' },
@@ -256,7 +258,7 @@ async function getEventSportsList(req, res) {
         isFancy: { $first: '$isFancy' },
         isCasinoGame: { $first: '$isCasinoGame' },
         isBookmakers: { $first: '$isBookmakers' },
-      }
+      },
     },
     {
       $sort: {
