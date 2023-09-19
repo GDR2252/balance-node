@@ -42,8 +42,8 @@ async function handleLogin(req, res) {
 
   const foundUser = await User.findOne({ username: user }).exec();
   if (!foundUser) return res.status(401).json({ message: 'The username or password is incorrect.' });
-    console.log('origin', origin);
-    console.log("foundUser.origin",foundUser.origin);
+  logger.info('origin', origin);
+  logger.info('foundUser.origin', foundUser.origin);
   if (origin !== '') {
     if (foundUser.origin !== origin) {
       const parts = foundUser.origin.split('.');
@@ -52,7 +52,7 @@ async function handleLogin(req, res) {
         parts.shift();
         result = parts.join('.');
       }
-      if (foundUser.origin !== result) return res.status(401).json({ message: 'Wron Origin.' });
+      if (foundUser.origin !== result) return res.status(401).json({ message: 'Wrong Origin.' });
     }
   }
   const match = await bcrypt.compare(pwd, foundUser.password);
