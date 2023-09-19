@@ -42,8 +42,7 @@ async function handleLogin(req, res) {
 
   const foundUser = await User.findOne({ username: user }).exec();
   if (!foundUser) return res.status(401).json({ message: 'The username or password is incorrect.' });
-  logger.info('origin', origin);
-  logger.info('foundUser.origin', foundUser.origin);
+  // origin check start.
   if (origin !== '') {
     if (foundUser.origin !== origin) {
       const parts = foundUser.origin.split('.');
@@ -52,8 +51,6 @@ async function handleLogin(req, res) {
         parts.shift();
         result += parts.join('.');
       }
-      logger.info('result', result);
-
       if (origin !== result) return res.status(401).json({ message: 'Wrong Origin.' });
     }
   }
