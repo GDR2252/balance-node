@@ -114,7 +114,7 @@ function hasdata(data, value) {
 async function getEventList(req, res) {
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
-  let results = [];
+  const results = [];
   const retresult = [];
   const data = {};
   const { type } = req.query;
@@ -134,51 +134,118 @@ async function getEventList(req, res) {
       };
     }
     await client.connect();
-    const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
-      .find(filter)
-      .sort({ marketTime: 1 });
-    results = await cursor.toArray();
-    if (results.length > 0) {
-      for (let i = 0; i < results.length; i += 1) {
-        data.sportsId = results[i].sportsId;
-        const sportsdata = await Sport.findOne({ sportId: data.sportsId }).exec();
-        data.sportName = sportsdata?.sportName;
-        data.iconUrl = sportsdata?.iconUrl;
-        data.inplay = results[i].state.inplay;
-        data.eventId = results[i].eventId;
-        data.exEventId = results[i].exEventId;
-        const { runners } = results[i];
-        const runnerdata = [];
-        runners.forEach((element) => {
-          runnerdata.push(element.exchange);
-        });
-        data.runners = runnerdata;
-        const eventdata = await Event.findOne({ eventId: results[i].eventId }).exec();
-        data.eventName = eventdata?.eventName;
-        const tournamentdata = await Tournament
-          .findOne({ tournamentId: eventdata?.tournamentsId }).exec();
-        data.tournamentName = tournamentdata?.tournamentName;
-        const marketdata = await Market.findOne({ marketId: results[i].marketId }).exec();
-        data.isVirtual = marketdata?.isVirtual || false;
-        data.isStreaming = marketdata?.isStreaming || false;
-        data.isSportsbook = marketdata?.isSportsbook || false;
-        data.isPreBet = marketdata?.isPreBet || false;
-        data.isFancy = marketdata?.isFancy || false;
-        data.isCasinoGame = marketdata?.isCasinoGame || false;
-        data.isBookmakers = marketdata?.isBookmakers || false;
-        data.marketTime = marketdata?.marketTime;
-        const listdata = JSON.parse(JSON.stringify(data));
-        if (!hasdata(retresult, listdata.exEventId)) {
-          retresult.push(listdata);
-        }
-      }
-    }
+    const cursor = await client.db(process.env.EXCH_DB).collection('marketRates').aggregate([
+      {
+        $match: filter,
+      },
+      {
+        $group: {
+          _id: '$eventId',
+          uniqueDocument: { $first: '$$ROOT' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'sports',
+          localField: 'uniqueDocument.sportsId',
+          foreignField: 'sportId',
+          as: 'sportInfo',
+        },
+      },
+      {
+        $lookup: {
+          from: 'events',
+          localField: 'uniqueDocument.eventId',
+          foreignField: 'eventId',
+          as: 'eventInfo',
+        },
+      },
+      {
+        $lookup: {
+          from: 'markets',
+          localField: 'uniqueDocument.exMarketId',
+          foreignField: 'exMarketId',
+          as: 'marketInfo',
+        },
+      },
+      {
+        $project: {
+          _id: '$uniqueDocument._id',
+          betLimit: '$uniqueDocument.betLimit',
+          eventId: '$uniqueDocument.eventId',
+          eventName: '$uniqueDocument.eventName',
+          marketTime: '$uniqueDocument.marketTime',
+          iconUrl: { $first: '$sportInfo.iconUrl' },
+          exEventId: '$uniqueDocument.exEventId',
+          sportsId: '$uniqueDocument.sportsId',
+          sportName: '$uniqueDocument.sportName',
+          runners: '$uniqueDocument.runners',
+          inplay: '$uniqueDocument.state.inplay',
+          tournamentName: { $first: '$eventInfo.tournamentsName' },
+          isVirtual: { $first: '$marketInfo.isVirtual' },
+          isStreaming: { $first: '$marketInfo.isStreaming' },
+          isSportsbook: { $first: '$marketInfo.isSportsbook' },
+          isPreBet: { $first: '$marketInfo.isPreBet' },
+          isFancy: { $first: '$marketInfo.isFancy' },
+          isCasinoGame: { $first: '$marketInfo.isCasinoGame' },
+          isBookmakers: { $first: '$marketInfo.isBookmakers' },
+        },
+      },
+      {
+        $sort: {
+          marketTime: 1,
+        },
+      },
+    ]);
+    const result = await cursor.toArray();
+    res.send(result);
+
+    // const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
+    //   .find(filter)
+    //   .sort({ marketTime: 1 });
+    // results = await cursor.toArray();
+    // if (results.length > 0) {
+    //   for (let i = 0; i < results.length; i += 1) {
+    //     data.sportsId = results[i].sportsId;
+    //     const sportsdata = await Sport.findOne({ sportId: data.sportsId }).exec();
+    //     data.sportName = sportsdata?.sportName;
+    //     data.iconUrl = sportsdata?.iconUrl;
+    //     data.inplay = results[i].state.inplay;
+    //     data.eventId = results[i].eventId;
+    //     data.exEventId = results[i].exEventId;
+    //     const { runners } = results[i];
+    //     const runnerdata = [];
+    //     runners.forEach((element) => {
+    //       runnerdata.push(element.exchange);
+    //     });
+    //     data.runners = runnerdata;
+    //     const eventdata = await Event.findOne({ eventId: results[i].eventId }).exec();
+    //     data.eventName = eventdata?.eventName;
+    //     const tournamentdata = await Tournament
+    //       .findOne({ tournamentId: eventdata?.tournamentsId }).exec();
+    //     data.tournamentName = tournamentdata?.tournamentName;
+    //     const marketdata = await Market.findOne({ marketId: results[i].marketId }).exec();
+    //     data.isVirtual = marketdata?.isVirtual || false;
+    //     data.isStreaming = marketdata?.isStreaming || false;
+    //     data.isSportsbook = marketdata?.isSportsbook || false;
+    //     data.isPreBet = marketdata?.isPreBet || false;
+    //     data.isFancy = marketdata?.isFancy || false;
+    //     data.isCasinoGame = marketdata?.isCasinoGame || false;
+    //     data.isBookmakers = marketdata?.isBookmakers || false;
+    //     data.marketTime = marketdata?.marketTime;
+    //     const listdata = JSON.parse(JSON.stringify(data));
+    //     if (!hasdata(retresult, listdata.exEventId)) {
+    //       retresult.push(listdata);
+    //     }
+    //   }
+    // }
   } catch (err) {
     logger.error(err);
-  } finally {
-    await client.close();
   }
-  res.send(retresult);
+// finally {
+//     await client.close();
+//   }
+//   res.send(retresult);
 }
 
 async function getEventSportsList(req, res) {
@@ -242,7 +309,6 @@ async function getEventSportsList(req, res) {
         isFancy: { $first: '$marketInfo.isFancy' },
         isCasinoGame: { $first: '$marketInfo.isCasinoGame' },
         isBookmakers: { $first: '$marketInfo.isBookmakers' },
-
       },
     },
 
