@@ -39,8 +39,22 @@ async function handleLogin(req, res) {
   const { user, pwd, ip } = req.body;
   if (!user || !pwd) return res.status(400).json({ message: 'Username and password are required.' });
   const { origin } = req.headers;
+
   const foundUser = await User.findOne({ username: user }).exec();
   if (!foundUser) return res.status(401).json({ message: 'The username or password is incorrect.' });
+    console.log('origin', origin);
+    console.log("foundUser.origin",foundUser.origin);
+  if (origin !== '') {
+    if (foundUser.origin !== origin) {
+      const parts = foundUser.origin.split('.');
+      let result = '';
+      if (parts.length === 3) {
+        parts.shift();
+        result = parts.join('.');
+      }
+      if (foundUser.origin !== result) return res.status(401).json({ message: 'Wron Origin.' });
+    }
+  }
   const match = await bcrypt.compare(pwd, foundUser.password);
   if (match) {
     const {
