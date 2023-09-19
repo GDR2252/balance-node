@@ -50,10 +50,10 @@ async function handleLogin(req, res) {
       let result = '';
       if (parts.length === 3) {
         parts.shift();
-        result = parts.join('.');
+        result = 'https://'.parts.join('.');
       }
-  logger.info('result', result);
-        
+      logger.info('result', result);
+
       if (origin !== result) return res.status(401).json({ message: 'Wrong Origin.' });
     }
   }
