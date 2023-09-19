@@ -118,7 +118,7 @@ async function getEventList(req, res) {
   const retresult = [];
   const data = {};
   const { type } = req.query;
-  const currentDate = new Date()
+  const currentDate = new Date();
   try {
     let filter = {};
     if (type === 'in-play') {
@@ -126,11 +126,12 @@ async function getEventList(req, res) {
     }
     if (type === 'home') {
       filter = {
-        ...filter, 'marketTime': {
+        ...filter,
+        marketTime: {
           $gte: new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 0, 0, 0),
-          $lt: new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1, 0, 0, 0)
-        }
-      }
+          $lt: new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1, 0, 0, 0),
+        },
+      };
     }
     await client.connect();
     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
@@ -191,9 +192,15 @@ async function getEventSportsList(req, res) {
       },
     },
     {
+      $group: {
+        _id: '$eventId',
+        uniqueDocument: { $first: '$$ROOT' },
+      },
+    },
+    {
       $lookup: {
         from: 'sports',
-        localField: 'sportsId',
+        localField: 'uniqueDocument.sportsId',
         foreignField: 'sportId',
         as: 'sportInfo',
       },
@@ -201,7 +208,7 @@ async function getEventSportsList(req, res) {
     {
       $lookup: {
         from: 'events',
-        localField: 'eventId',
+        localField: 'uniqueDocument.eventId',
         foreignField: 'eventId',
         as: 'eventInfo',
       },
@@ -209,24 +216,25 @@ async function getEventSportsList(req, res) {
     {
       $lookup: {
         from: 'markets',
-        localField: 'exMarketId',
+        localField: 'uniqueDocument.exMarketId',
         foreignField: 'exMarketId',
         as: 'marketInfo',
       },
     },
     {
       $project: {
-        _id: 1,
-        exEventId: 1,
-        eventId: 1,
-        sportsId: 1,
-        sportName: 1,
+        _id: '$uniqueDocument._id',
+        betLimit: '$uniqueDocument.betLimit',
+        eventId: '$uniqueDocument.eventId',
+        eventName: '$uniqueDocument.eventName',
+        marketTime: '$uniqueDocument.marketTime',
         iconUrl: { $first: '$sportInfo.iconUrl' },
-        runners: 1,
-        inplay: '$state.inplay',
-        eventName: 1,
+        exEventId: '$uniqueDocument.exEventId',
+        sportsId: '$uniqueDocument.sportsId',
+        sportName: '$uniqueDocument.sportName',
+        runners: '$uniqueDocument.runners',
+        inplay: '$uniqueDocument.state.inplay',
         tournamentName: { $first: '$eventInfo.tournamentsName' },
-        marketTime: { $first: '$marketInfo.marketTime' },
         isVirtual: { $first: '$marketInfo.isVirtual' },
         isStreaming: { $first: '$marketInfo.isStreaming' },
         isSportsbook: { $first: '$marketInfo.isSportsbook' },
@@ -234,29 +242,53 @@ async function getEventSportsList(req, res) {
         isFancy: { $first: '$marketInfo.isFancy' },
         isCasinoGame: { $first: '$marketInfo.isCasinoGame' },
         isBookmakers: { $first: '$marketInfo.isBookmakers' },
+
       },
     },
-    {
-      $group: {
-        _id: '$eventId',
-        exEventId: { $first: '$exEventId' },
-        eventName: { $first: '$eventName' },
-        sportsId: { $first: '$sportsId' },
-        sportName: { $first: '$sportName' },
-        iconUrl: { $first: '$iconUrl' },
-        runners: { $first: '$runners' },
-        inplay: { $first: '$inplay' },
-        tournamentName: { $first: '$tournamentName' },
-        marketTime: { $first: '$marketTime' },
-        isVirtual: { $first: '$isVirtual' },
-        isStreaming: { $first: '$isStreaming' },
-        isSportsbook: { $first: '$isSportsbook' },
-        isPreBet: { $first: '$isPreBet' },
-        isFancy: { $first: '$isFancy' },
-        isCasinoGame: { $first: '$isCasinoGame' },
-        isBookmakers: { $first: '$isBookmakers' },
-      }
-    },
+
+    // {
+    //   $project: {
+    //     _id: 1,
+    //     exEventId: 1,
+    //     eventId: 1,
+    //     sportsId: 1,
+    //     sportName: 1,
+    //     iconUrl: { $first: '$sportInfo.iconUrl' },
+    //     runners: 1,
+    //     inplay: '$state.inplay',
+    //     eventName: 1,
+    //     tournamentName: { $first: '$eventInfo.tournamentsName' },
+    //     marketTime: { $first: '$marketInfo.marketTime' },
+    //     isVirtual: { $first: '$marketInfo.isVirtual' },
+    //     isStreaming: { $first: '$marketInfo.isStreaming' },
+    //     isSportsbook: { $first: '$marketInfo.isSportsbook' },
+    //     isPreBet: { $first: '$marketInfo.isPreBet' },
+    //     isFancy: { $first: '$marketInfo.isFancy' },
+    //     isCasinoGame: { $first: '$marketInfo.isCasinoGame' },
+    //     isBookmakers: { $first: '$marketInfo.isBookmakers' },
+    //   },
+    // },
+    // {
+    //   $group: {
+    //     _id: '$eventId',
+    //     exEventId: { $first: '$exEventId' },
+    //     eventName: { $first: '$eventName' },
+    //     sportsId: { $first: '$sportsId' },
+    //     sportName: { $first: '$sportName' },
+    //     iconUrl: { $first: '$iconUrl' },
+    //     runners: { $first: '$runners' },
+    //     inplay: { $first: '$inplay' },
+    //     tournamentName: { $first: '$tournamentName' },
+    //     marketTime: { $first: '$marketTime' },
+    //     isVirtual: { $first: '$isVirtual' },
+    //     isStreaming: { $first: '$isStreaming' },
+    //     isSportsbook: { $first: '$isSportsbook' },
+    //     isPreBet: { $first: '$isPreBet' },
+    //     isFancy: { $first: '$isFancy' },
+    //     isCasinoGame: { $first: '$isCasinoGame' },
+    //     isBookmakers: { $first: '$isBookmakers' },
+    //   }
+    // },
     {
       $sort: {
         marketTime: 1,
