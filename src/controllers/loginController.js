@@ -51,7 +51,7 @@ async function handleLogin(req, res) {
         parts.shift();
         result += parts.join('.');
       }
-      if (origin !== result) return res.status(401).json({ message: 'Wrong Origin.' });
+      if (origin !== result) return res.status(401).json({ message: 'The username or password is incorrect.' });
     }
   }
   const match = await bcrypt.compare(pwd, foundUser.password);
