@@ -47,10 +47,10 @@ async function handleLogin(req, res) {
   if (origin !== '') {
     if (foundUser.origin !== origin) {
       const parts = foundUser.origin.split('.');
-      let result = '';
+      let result = 'https://';
       if (parts.length === 3) {
         parts.shift();
-        result = 'https://'.parts.join('.');
+        result += parts.join('.');
       }
       logger.info('result', result);
 
