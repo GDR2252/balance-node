@@ -49,7 +49,7 @@ async function placebet(req, res) {
     Object.keys(runners).map((runner) => {
       if (runner.selectionId === selectionId) { selectionStatus = runner.state.status; }
     });
-    if (!state.inplay || state.status !== 'OPEN' || selectionStatus !== 'ACTIVE') {
+    if ((!state.inplay && !isPreBet) || state.status !== 'OPEN' || selectionStatus !== 'ACTIVE') {
       return res.status(401).json({ message: 'Cannot place bet.' });
     }
     const marketlimit = marketratesdata.betLimit;
