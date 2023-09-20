@@ -9,6 +9,7 @@ const pick = require('../utils/pick');
 const CricketResult = require('../model/CricketResult');
 const AvplaceBet = require('../model/AvplaceBet');
 
+// this is for match_odds
 async function placebet(req, res) {
   const transactionOptions = {
     readConcern: { level: 'snapshot' },
@@ -33,7 +34,7 @@ async function placebet(req, res) {
       .db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
       .findOne({ exMarketId }, { session });
     const {
-      runners, eventName, runnerData, sportsId, sportName,
+      runners, eventName, runnerData, sportsId, sportName, state, isPreBet,
     } = marketratesdata;
     const betlockdata = await client.db(process.env.EXCH_DB).collection('betlocks').find({ userId: { $in: userdata.parentId } }, { session }).toArray();
     if (betlockdata.length > 0) {
@@ -42,6 +43,14 @@ async function placebet(req, res) {
           return res.status(401).json({ message: 'Cannot place bet. Bet is locked.' });
         }
       }
+    }
+
+    let selectionStatus;
+    Object.keys(runners).map((runner) => {
+      if (runner.selectionId === selectionId) { selectionStatus = runner.state.status; }
+    });
+    if (!state.inplay || state.status !== 'OPEN' || selectionStatus !== 'ACTIVE') {
+      return res.status(401).json({ message: 'Cannot place bet.' });
     }
     const marketlimit = marketratesdata.betLimit;
     const marketType = marketratesdata.marketName;
@@ -102,6 +111,9 @@ async function placebet(req, res) {
         }
       }
     });
+    await setTimeout(5000);
+    logger.info('Waited for 5 secs.');
+
     if (type === 'back') {
       const backprice = backdata.price - 1;
       odds -= 1;
@@ -112,8 +124,7 @@ async function placebet(req, res) {
       odds -= 1;
       if (odds < layprice) return res.status(401).json({ message: 'Cannot place bet. Odds is not correct.' });
     }
-    await setTimeout(5000);
-    logger.info('Waited for 5 secs.');
+
     userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user }, { session });
     await client.db(process.env.EXCH_DB).collection('cricketbetplaces').insertOne({
       username: req.user,
