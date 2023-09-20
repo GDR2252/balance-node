@@ -4,6 +4,7 @@ const router = express.Router();
 const betController = require('../controllers/betController');
 
 router.post('/', betController.placebet);
+router.post('/bookmaker', betController.bookmakerbet);
 router.get('/fetch/cricket', betController.fetchCricket);
 router.get('/fetch/cricket/menu', betController.fetchCricketBetMenu);
 router.get('/fetch/cricket/pl', betController.fetchPl);
