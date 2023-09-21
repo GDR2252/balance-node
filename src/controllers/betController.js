@@ -47,6 +47,8 @@ async function placebet(req, res) {
 
     let selectionStatus;
     Object.keys(runners).map((runner) => {
+      logger.info(runner);
+      logger.info(runner.state.status);
       if (runner.selectionId === selectionId) { selectionStatus = runner.state.status; }
     });
     logger.info(state.inplay);
