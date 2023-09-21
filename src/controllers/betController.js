@@ -520,5 +520,4 @@ module.exports = {
   aviatorPl,
   casinoPl,
   fetchCasinoByRound,
-  bookmakerbet,
 };
