@@ -51,7 +51,8 @@ async function placebet(req, res) {
       logger.info(runners[i].state.status);
       logger.info(selectionId);
       logger.info(runners[i].selectionId);
-      if (runners[i].selectionId === selectionId) { selectionStatus = runners[i].state.status; }
+      logger.info(runners[i].selectionId === selectionId);
+      if (runners[i].selectionId === selectionId) { logger.info('Updating selectionstatus'); selectionStatus = runners[i].state.status; logger.info(selectionStatus); }
     }
     logger.info(state.inplay);
     logger.info(isPreBet);
