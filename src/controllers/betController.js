@@ -49,6 +49,8 @@ async function placebet(req, res) {
     for (let i = 0; i < runners.length; i += 1) {
       logger.info(runners[i]);
       logger.info(runners[i].state.status);
+      logger.info(selectionId);
+      logger.info(runners[i].selectionId);
       if (runners[i].selectionId === selectionId) { selectionStatus = runners[i].state.status; }
     }
     logger.info(state.inplay);
