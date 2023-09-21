@@ -49,7 +49,7 @@ async function statement(req, res) {
       filter.createdAt = new Date(filter.from);
       delete filter.from;
     }
-    filter.receiver_id = userData?._id;
+    filter.receiver_id = userData?._id.toString();
     const data = await B2cBankingLog.paginate(filter, optObj);
     res.status(200).json({ data, username: req.user });
   } catch (err) {
