@@ -47,20 +47,10 @@ async function placebet(req, res) {
 
     let selectionStatus;
     for (let i = 0; i < runners.length; i += 1) {
-      logger.info(runners[i]);
-      logger.info(runners[i].state.status);
-      logger.info(selectionId);
-      logger.info(runners[i].selectionId);
-      logger.info(runners[i].selectionId.toString() === selectionId);
-      if ((runners[i].selectionId).toString() === selectionId) { logger.info('Updating selectionstatus'); selectionStatus = runners[i].state.status; logger.info(selectionStatus); }
+      if ((runners[i].selectionId).toString() === selectionId) {
+        selectionStatus = runners[i].state.status;
+      }
     }
-    logger.info(state.inplay);
-    logger.info(isPreBet);
-    logger.info((!state.inplay && !isPreBet));
-    logger.info(state.status);
-    logger.info(state.status !== 'OPEN');
-    logger.info(selectionStatus);
-    logger.info(selectionStatus !== 'ACTIVE');
     if ((!state.inplay && !isPreBet) || state.status !== 'OPEN' || selectionStatus !== 'ACTIVE') {
       return res.status(401).json({ message: 'Cannot place bet.' });
     }
