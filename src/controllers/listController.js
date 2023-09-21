@@ -281,6 +281,11 @@ async function getEventSportsList(req, res) {
       },
     },
     {
+      $match: {
+        'eventInfo.IsSettle': 0,
+      },
+    },
+    {
       $lookup: {
         from: 'markets',
         localField: 'uniqueDocument.exMarketId',
