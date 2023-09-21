@@ -161,6 +161,11 @@ async function getEventList(req, res) {
         },
       },
       {
+        $match: {
+          'eventInfo.IsSettle': 0,
+        },
+      },
+      {
         $lookup: {
           from: 'markets',
           localField: 'uniqueDocument.exMarketId',
