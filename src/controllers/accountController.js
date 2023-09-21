@@ -159,10 +159,10 @@ async function sportsPl(req, res) {
 }
 
 async function eventsPl(req, res) {
-    const options = pick(req?.query, ['sortBy', 'limit', 'page']);
-    const filter = pick(req?.query, ['from', 'to']);
-    try {
-        if ((filter?.from && filter?.from !== '') && (filter?.to && filter?.to !== '')) {
+  const options = pick(req?.query, ['sortBy', 'limit', 'page']);
+  const filter = pick(req?.query, ['from', 'to']);
+  try {
+    if ((filter?.from && filter?.from !== '') && (filter?.to && filter?.to !== '')) {
       delete filter.createdAt;
       const date1 = new Date(filter?.from);
       const date2 = new Date(filter?.to);
@@ -184,7 +184,6 @@ async function eventsPl(req, res) {
       filter.createdAt = new Date(filter.from);
       delete filter.from;
     }
-
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: 'Error fetching event pl.' });

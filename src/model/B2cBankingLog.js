@@ -47,4 +47,4 @@ b2cBankSchema.statics.POPULATED_FIELDS = [
   },
 ];
 
-module.exports = mongoose.model('b2cBankLog', b2cBankSchema);
+module.exports = mongoose.model('B2cBankingLog', b2cBankSchema);
