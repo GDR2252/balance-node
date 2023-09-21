@@ -46,11 +46,11 @@ async function placebet(req, res) {
     }
 
     let selectionStatus;
-    Object.keys(runners).map((runner) => {
-      logger.info(runner);
-      logger.info(runner.state.status);
-      if (runner.selectionId === selectionId) { selectionStatus = runner.state.status; }
-    });
+    for (let i = 0; i < runners.length; i += 1) {
+      logger.info(runners[i]);
+      logger.info(runners[i][i].state.status);
+      if (runners[i].selectionId === selectionId) { selectionStatus = runners[i].state.status; }
+    }
     logger.info(state.inplay);
     logger.info(isPreBet);
     logger.info((!state.inplay && !isPreBet));
