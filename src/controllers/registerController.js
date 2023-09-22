@@ -238,7 +238,7 @@ const resendOtp = async (req, res) => {
 async function forgotpassword(req, res) {
   const { mobile, ip, countryCode } = req.body;
   if (!mobile) return res.status(400).json({ message: 'Mobile number required.' });
-  const data = await User.findOne({ mobile }).exec();
+  const data = await User.findOne({ mobile, countryCode }).exec();
   if (!data) return res.status(404).json({ message: 'Mobile number does not exist.' });
   try {
     let response = {
