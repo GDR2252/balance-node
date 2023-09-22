@@ -400,8 +400,8 @@ async function getEventSportsList(req, res) {
 //   const retresult = [];
 //   const data = { };
 //   try {
-//     await client.connect();
-//     const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
+// await client.connect();
+// const cursor = await client.db(process.env.EXCH_DB).collection('marketRates')
 //       .find({ sportsId })
 //       .sort({ marketTime: 1 });
 //     results = await cursor.toArray();
@@ -467,19 +467,92 @@ async function getMarketList(req, res) {
 async function getSearchEventList(req, res) {
   const { search } = req.query;
 
-  if (!search) return res.status(404).json({ message: 'Search Parameter required.' });
+  //   if (!search) return res.status(404).json({ message: 'Search Parameter required.' });
   try {
-    let data = [];
-    let result = [];
-    data = await Event.find({ eventName: { $regex: `^${search}`, $options: 'i' }, IsSettle: 0 }).limit(6).sort({ createdAt: 1 });
-    if (data.length < 6) {
-      const ids = [];
-      data.map((item) => ids.push(item._id));
+    if (!search) {
+      const data = await Event.find({})
+        .sort({ createdAt: -1 })
+        .limit(6);
 
-      result = await Event.find({ eventName: { $regex: search, $options: 'i' }, IsSettle: 0, _id: { $nin: ids } }).limit(6 - data.length).sort({ createdAt: 1 });
+      return res.status(200).json(data);
     }
-    const results = [...data, ...result];
-    res.status(200).json(results);
+
+    const uri = process.env.MONGO_URI;
+    const client = new MongoClient(uri, { useUnifiedTopology: true });
+    await client.connect();
+
+    const pipeline = [
+      {
+        $lookup: {
+          from: 'marketRates',
+          localField: 'exEventId',
+          foreignField: 'exEventId',
+          as: 'marketRatesInfo',
+        },
+      },
+      {
+        $match: {
+          eventName: { $regex: `^${search}`, $options: 'i' },
+          IsSettle: 0,
+          $or: [
+            { 'marketRatesInfo.state.status': 'OPEN' },
+            { 'marketRatesInfo.state.status': 'ACTIVE' },
+          ],
+        },
+      },
+      {
+        $project: {
+          eventId: 1,
+          exEventId: 1,
+          sportId: 1,
+          tournamentsId: 1,
+          tournamentsName: 1,
+          eventName: 1,
+          highlight: 1,
+          quicklink: 1,
+          popular: 1,
+          IsSettle: 1,
+          IsVoid: 1,
+          IsUnsettle: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      {
+        $sort: {
+          createdAt: 1,
+        },
+      },
+      { $limit: 6 },
+    ];
+
+    const data = await Event.aggregate(pipeline);
+
+    if (data.length < 6) {
+      const ids = data.map((item) => item._id);
+      const remainingLimit = 6 - data.length;
+
+      const remainingPipeline = [
+        ...pipeline.slice(0, 1), // Reuse the first two stages
+        {
+          $match: {
+            eventName: { $regex: search, $options: 'i' },
+            IsSettle: 0,
+            _id: { $nin: ids },
+            $or: [
+              { 'marketRatesInfo.state.status': 'OPEN' },
+              { 'marketRatesInfo.state.status': 'ACTIVE' },
+            ],
+          },
+        },
+        ...pipeline.slice(2, 4),
+        { $limit: remainingLimit },
+      ];
+      const result = await Event.aggregate(remainingPipeline);
+      data.push(...result);
+    }
+
+    res.status(200).json(data);
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: err.message });
