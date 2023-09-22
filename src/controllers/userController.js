@@ -64,16 +64,19 @@ const fetchstakes = async (req, res) => {
 const generateotp = async (req, res) => {
   const { mobile, ip, countryCode } = req.body;
   if (!mobile) return res.status(400).json({ message: 'Mobile number is required.' });
-  const data = await User.findOne({ mobile }).exec();
+  const data = await User.findOne({ mobile, countryCode }).exec();
   if (!data) return res.status(404).json({ message: 'Mobile number does not exists.' });
-    try {
-         let response = {
-    return: true,
-    message: 'sucess',
-  };
-  if (countryCode === '+91') {
-    response = await sendSMS(mobile);
-  }
+  try {
+    let response = {
+      return: true,
+      message: 'sucess',
+    };
+    if (countryCode !== '+91') {
+      return res.status(200).json({ message: data.username });
+    }
+    if (countryCode === '+91') {
+      response = await sendSMS(mobile);
+    }
     if (response.return) {
       res.status(200).json({ message: response.message });
     } else {
