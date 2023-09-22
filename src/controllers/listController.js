@@ -77,18 +77,35 @@ async function sideMenuList(req, res) {
       const { tournaments } = sportscopy[key];
       if (tournaments?.length > 0) {
         for (let i = 0; i < tournaments.length; i += 1) {
-          const events = await Event.aggregate([{
-            $match: {
-              tournamentsId: tournaments[i].tournamentId,
+          const events = await Event.aggregate([
+            {
+              $lookup: {
+                from: 'marketRates',
+                localField: 'exEventId',
+                foreignField: 'exEventId',
+                as: 'marketRatesInfo',
+              },
             },
-          }, {
-            $project: {
-              exEventId: 1,
-              eventName: 1,
-            },
-          }]);
+            {
+              $match: {
+                tournamentsId: tournaments[i].tournamentId,
+                IsSettle: 0,
+                'marketRatesInfo.state.status': { $in: ['OPEN', 'ACTIVE'] },
+              },
+            }, {
+              $project: {
+                exEventId: 1,
+                eventName: 1,
+              },
+              }]);
+            console.log("events",events);
+          if (events?.length === 0) {
+            sportscopy[key].tournaments.splice(i, 1);
+            
+          }
           if (events?.length > 0) {
             sportscopy[key].tournaments[i].events = events;
+              
           }
         }
       }
