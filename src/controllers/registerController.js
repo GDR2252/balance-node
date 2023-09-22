@@ -63,7 +63,7 @@ const handleNewUser = async (req, res) => {
 
 const generateotp = async (req, res) => {
   const {
-    user, mobile, ip, referral_code, countryCode,
+    user, mobile, ip, referral_code, countryCode, pwd,
   } = req.body;
   if (!user || !mobile) return res.status(400).json({ message: 'Username and mobile number are required.' });
   const duplicate = await User.aggregate([{
@@ -86,6 +86,51 @@ const generateotp = async (req, res) => {
   };
   if (countryCode === '+91') {
     response = await sendSMS(mobile);
+  }
+  if (countryCode !== '+91') {
+    if (!pwd) return res.status(400).json({ message: 'Password is required.' });
+    const hashedPwd = await bcrypt.hash(pwd, 10);
+    const { origin } = req.headers;
+    const selfcode = referralCodes.generate({
+      length: 8,
+      charset: referralCodes.charset('alphanumeric'),
+    });
+    let branch = '';
+    if (referral_code) {
+      branch = await User.findOne({ selfReferral: referral_code });
+      branch = branch?.branch;
+    } else {
+      branch = await B2cUser.findOne({ roles: ['Manager'], isActive: true, origin });
+      branch = branch?._id;
+    }
+    await User.create({
+      username: user,
+      password: hashedPwd,
+      mobile,
+      origin,
+      roles: ['User'],
+      countryCode,
+      selfReferral: selfcode[0].toUpperCase(),
+      registeredReferral: referral_code,
+      branch,
+    });
+
+    const stake = await Stake.create({
+      username: user,
+      stakes: [100, 500, 1000, 5000, 10000, 50000, 100000, 200000],
+    });
+    const accessToken = jwt.sign(
+      {
+        username: user,
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: '1d' },
+    );
+    await addActivity(user, ip, 'success');
+    return res.json({
+      roles: ['User'], username: user, mobile, accessToken, referralCode: selfcode, stakes: stake.stakes,
+    });
+       
   }
   if (response.return) {
     res.status(200).json({ message: response.message });
