@@ -92,10 +92,18 @@ async function sideMenuList(req, res) {
                 IsSettle: 0,
                 'marketRatesInfo.state.status': { $in: ['OPEN', 'ACTIVE'] },
               },
-            }, {
+            },
+            {
+              $addFields: {
+                // Add a static field with a value
+                type: 'event',
+              },
+            },
+            {
               $project: {
                 exEventId: 1,
                 eventName: 1,
+                type: 1,
               },
             }]);
 
