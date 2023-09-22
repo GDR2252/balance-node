@@ -38,7 +38,7 @@ const addActivity = async (foundUser, activity, status) => {
 
 const handleNewUser = async (req, res) => {
   const {
-    user, pwd, mobile, ip,
+    user, pwd, mobile, ip, countryCode,
   } = req.body;
   if (!user || !pwd || !mobile) return res.status(400).json({ message: 'Username, mobile and password are required.' });
   const duplicate = await User.findOne({ username: user }).exec();
@@ -49,6 +49,7 @@ const handleNewUser = async (req, res) => {
       username: user,
       password: hashedPwd,
       mobile,
+      countryCode,
       ip,
       origin: req.headers.origin,
     });
@@ -62,7 +63,7 @@ const handleNewUser = async (req, res) => {
 
 const generateotp = async (req, res) => {
   const {
-    user, mobile, ip, referral_code,
+    user, mobile, ip, referral_code, countryCode,
   } = req.body;
   if (!user || !mobile) return res.status(400).json({ message: 'Username and mobile number are required.' });
   const duplicate = await User.aggregate([{
@@ -79,7 +80,13 @@ const generateotp = async (req, res) => {
     const validreferralCode = await User.findOne({ selfReferral: referral_code });
     if (!validreferralCode) return res.status(404).json({ message: 'Referral Code is not valid.' });
   }
-  const response = await sendSMS(mobile);
+  let response = {
+    return: true,
+    message: 'sucess',
+  };
+  if (countryCode === '+91') {
+    response = await sendSMS(mobile);
+  }
   if (response.return) {
     res.status(200).json({ message: response.message });
   } else {
@@ -89,7 +96,7 @@ const generateotp = async (req, res) => {
 
 const verifyotp = async (req, res) => {
   const {
-    user, pwd, mobile, ip, otp, referral_code,
+    user, pwd, mobile, ip, otp, referral_code, countryCode,
   } = req.body;
   if (!user || !pwd || !mobile || !otp) return res.status(400).json({ message: 'Username, Password, Mobile number and OTP is required.' });
   const duplicate = await User.aggregate([{
@@ -103,7 +110,13 @@ const verifyotp = async (req, res) => {
   }]);
   if (duplicate.length > 0) return res.status(409).json({ message: 'Username or mobile number already exists.' });
   try {
-    const response = await verifySMS(mobile, otp);
+    let response = {
+      return: true,
+      message: 'sucess',
+    };
+    if (countryCode === '+91') {
+      response = await verifySMS(mobile, otp);
+    }
     if (!response.return) {
       res.status(400).json({ message: response.message });
     } else {
@@ -156,10 +169,16 @@ const verifyotp = async (req, res) => {
 };
 
 const resendOtp = async (req, res) => {
-  const { mobile, ip } = req.body;
+  const { mobile, ip, countryCode } = req.body;
   if (!mobile) return res.status(400).json({ message: 'mobile number required.' });
   try {
-    const response = await sendSMS(mobile);
+    let response = {
+      return: true,
+      message: 'sucess',
+    };
+    if (countryCode === '+91') {
+      response = await sendSMS(mobile);
+    }
     if (response.return) {
       res.status(200).json({ message: response.message });
     } else {
@@ -172,12 +191,18 @@ const resendOtp = async (req, res) => {
 };
 
 async function forgotpassword(req, res) {
-  const { mobile, ip } = req.body;
+  const { mobile, ip, countryCode } = req.body;
   if (!mobile) return res.status(400).json({ message: 'Mobile number required.' });
   const data = await User.findOne({ mobile }).exec();
   if (!data) return res.status(404).json({ message: 'Mobile number does not exist.' });
   try {
-    const response = await sendSMS(mobile);
+    let response = {
+      return: true,
+      message: 'sucess',
+    };
+    if (countryCode === '+91') {
+      response = await sendSMS(mobile);
+    }
     if (response.return) {
       res.status(200).json({ message: response.message });
     } else {
@@ -191,11 +216,17 @@ async function forgotpassword(req, res) {
 
 async function verifyforgotpassword(req, res) {
   const {
-    mobile, ip, otp,
+    mobile, ip, otp, countryCode,
   } = req.body;
   if (!mobile || !otp) return res.status(400).json({ message: 'Password, Mobile number and OTP is required.' });
   try {
-    const response = await verifySMS(mobile, otp);
+    let response = {
+      return: true,
+      message: 'sucess',
+    };
+    if (countryCode === '+91') {
+      response = await verifySMS(mobile, otp);
+    }
     if (response.return) {
       res.status(200).json({ message: response.message });
     } else {

@@ -70,6 +70,9 @@ const userSchema = new Schema({
   origin: {
     type: String,
   },
+  countryCode: {
+    type: String,
+  },
   status: {
     type: String,
     enum: ['Active', 'Suspend', 'Lock'],

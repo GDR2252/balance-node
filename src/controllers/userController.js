@@ -62,12 +62,18 @@ const fetchstakes = async (req, res) => {
 };
 
 const generateotp = async (req, res) => {
-  const { mobile, ip } = req.body;
+  const { mobile, ip, countryCode } = req.body;
   if (!mobile) return res.status(400).json({ message: 'Mobile number is required.' });
   const data = await User.findOne({ mobile }).exec();
   if (!data) return res.status(404).json({ message: 'Mobile number does not exists.' });
-  try {
-    const response = await sendSMS(mobile);
+    try {
+         let response = {
+    return: true,
+    message: 'sucess',
+  };
+  if (countryCode === '+91') {
+    response = await sendSMS(mobile);
+  }
     if (response.return) {
       res.status(200).json({ message: response.message });
     } else {
@@ -80,10 +86,18 @@ const generateotp = async (req, res) => {
 };
 
 const verifyotp = async (req, res) => {
-  const { mobile, ip, otp } = req.body;
+  const {
+    mobile, ip, otp, countryCode,
+  } = req.body;
   if (!mobile || !otp) return res.status(400).json({ message: 'Mobile number and OTP is required.' });
   try {
-    const response = await verifySMS(mobile, otp);
+    let response = {
+      return: true,
+      message: 'sucess',
+    };
+    if (countryCode === '+91') {
+      response = await verifySMS(mobile, otp);
+    }
     if (!response.return) {
       res.status(400).json({ message: response.message });
     } else {
@@ -99,7 +113,7 @@ const verifyotp = async (req, res) => {
 
 const createUser = async (req, res) => {
   const {
-    username, roles, password
+    username, roles, password,
   } = req.body;
   if (!username || !password || !roles) return res.status(400).json({ message: 'Username, mobile, role and password are required.' });
   const duplicate = await Trader.findOne({ username }).exec();
@@ -167,19 +181,19 @@ const listUser = async (req, res) => {
     sortBy: options.sortBy ? options.sortBy : 'createdAt:desc',
   };
   const data = await Trader.paginate(filter, optObj);
-//   const finalData = [];
-//   if (data.results.length > 0) {
-//     data.results.map((item) => {
-//       const res = {};
-//       res.username = item.username;
-//       res.roles = item.roles;
-//       res._id = item._id;
-//       res.status = item.status;
-//       res.createdAt = item.createdAt;
-//       finalData.push(res);
-//     });
-//     data.results = finalData;
-//   }
+  //   const finalData = [];
+  //   if (data.results.length > 0) {
+  //     data.results.map((item) => {
+  //       const res = {};
+  //       res.username = item.username;
+  //       res.roles = item.roles;
+  //       res._id = item._id;
+  //       res.status = item.status;
+  //       res.createdAt = item.createdAt;
+  //       finalData.push(res);
+  //     });
+  //     data.results = finalData;
+  //   }
   res.status(200).json({ data });
 };
 
