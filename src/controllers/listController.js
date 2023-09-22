@@ -97,15 +97,13 @@ async function sideMenuList(req, res) {
                 exEventId: 1,
                 eventName: 1,
               },
-              }]);
-            console.log("events",events);
+            }]);
+
           if (events?.length === 0) {
             sportscopy[key].tournaments.splice(i, 1);
-            
           }
           if (events?.length > 0) {
             sportscopy[key].tournaments[i].events = events;
-              
           }
         }
       }
@@ -466,6 +464,27 @@ async function getMarketList(req, res) {
   }
 }
 
+async function getSearchEventList(req, res) {
+  const { search } = req.query;
+
+  if (!search) return res.status(404).json({ message: 'Search Parameter required.' });
+  try {
+    let data = [];
+    let result = [];
+    data = await Event.find({ eventName: { $regex: `^${search}`, $options: 'i' }, IsSettle: 0 }).limit(6).sort({ createdAt: 1 });
+    if (data.length < 6) {
+      const ids = [];
+      data.map((item) => ids.push(item._id));
+
+      result = await Event.find({ eventName: { $regex: search, $options: 'i' }, IsSettle: 0, _id: { $nin: ids } }).limit(6 - data.length).sort({ createdAt: 1 });
+    }
+    const results = [...data, ...result];
+    res.status(200).json(results);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: err.message });
+  }
+}
 module.exports = {
-  sportsList, sideMenuList, getEventList, getMarketList, getEventSportsList,
+  sportsList, sideMenuList, getEventList, getMarketList, getEventSportsList, getSearchEventList,
 };
