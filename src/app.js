@@ -60,10 +60,11 @@ app.use('/getthemes', fetchThemesRouter);
 app.use('/rules', require('./routes/rules'));
 app.use('/st8', require('./routes/st8'));
 
-app.use('/info', userInfoRouter);
+// app.use('/info', userInfoRouter);
 
 app.use(verifyJWT);
 app.use('/st8', require('./routes/st8'));
+
 app.use('/getnavdata', fetchNavDataRouter);
 app.use('/sports', sportsRouter);
 app.use('/tournaments', tournamentsRouter);
