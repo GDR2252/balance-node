@@ -130,7 +130,6 @@ const generateotp = async (req, res) => {
     return res.json({
       roles: ['User'], username: user, mobile, accessToken, referralCode: selfcode, stakes: stake.stakes,
     });
-       
   }
   if (response.return) {
     res.status(200).json({ message: response.message });
@@ -187,6 +186,7 @@ const verifyotp = async (req, res) => {
         mobile,
         origin,
         roles,
+        countryCode,
         selfReferral: selfcode[0].toUpperCase(),
         registeredReferral: referral_code,
         branch,
