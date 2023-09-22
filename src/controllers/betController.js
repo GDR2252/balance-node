@@ -56,7 +56,7 @@ async function placebet(req, res) {
         return res.status(401).json({ message: 'Cannot place bet.' });
       }
     } else if (mrktType === 'fancy') {
-      if (!state.inplay || state.status !== 'OPEN' || selectionStatus !== 'ACTIVE') {
+      if (state.status !== 'ACTIVE') {
         return res.status(401).json({ message: 'Cannot place bet.' });
       }
     }
