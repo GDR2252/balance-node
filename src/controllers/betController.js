@@ -35,6 +35,7 @@ async function placebet(req, res) {
     const {
       runners, eventName, runnerData, sportsId, sportName, state, isPreBet,
     } = marketratesdata;
+    const mrktType = marketratesdata.type;
     const betlockdata = await client.db(process.env.EXCH_DB).collection('betlocks').find({ userId: { $in: userdata.parentId } }, { session }).toArray();
     if (betlockdata.length > 0) {
       for (let i = 0; i < betlockdata.length; i += 1) {
@@ -112,10 +113,10 @@ async function placebet(req, res) {
         }
       }
     });
-    if (marketratesdata.type === 'match_odds') {
+    if (mrktType === 'match_odds') {
       await setTimeout(5000);
       logger.info('Waited for 5 secs.');
-    } else if (marketratesdata.type === 'bookmaker') {
+    } else if (mrktType === 'bookmaker') {
       await setTimeout(state.betDelay * 1000);
       logger.info(`Waited for ${state.betDelay} secs.`);
     }
@@ -236,7 +237,7 @@ async function placebet(req, res) {
       { $set: { exposure, balance } },
       { session },
     );
-    if (marketratesdata.type === 'bookmaker') {
+    if (mrktType === 'bookmaker') {
       const totalMatched = state.totalMatched + numberstake;
       await client
         .db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
