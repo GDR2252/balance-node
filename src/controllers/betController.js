@@ -1,3 +1,4 @@
+/* eslint-disable operator-assignment */
 const { MongoClient } = require('mongodb');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
@@ -367,11 +368,11 @@ async function placebet(req, res) {
           exposure,
         }, { session });
       } else {
-        balance = exposureData.exposure + balance;
-        exposure -= exposureData.exposure;
+        balance = exposureData[0].exposure + balance;
+        exposure = exposure - exposureData[0].exposure;
         const newExposure = Math.max(...negativeResultPl);
-        balance -= newExposure;
-        exposure += newExposure;
+        balance = balance - newExposure;
+        exposure = exposure + newExposure;
         const filter = { _id: exposureData[0]._id };
         const update = { exposure };
         await client.db(process.env.EXCH_DB).collection('exposuremanages').updateOne(
