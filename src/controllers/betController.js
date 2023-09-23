@@ -80,6 +80,7 @@ async function placebet(req, res) {
     const fselectionIds = [];
     const exposures = [];
     if (mrktType === 'match_odds' || mrktType === 'bookmaker') {
+      if (Number.isNaN(balance) || (balance < Number(stake))) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
       runners.forEach((element) => {
         const selId = element.selectionId.toString();
         if (selId === selectionId) {
@@ -252,6 +253,11 @@ async function placebet(req, res) {
           .updateOne({ exMarketId }, { $set: { 'state.totalMatched': totalMatched } }, { session });
       }
     } else if (mrktType === 'fancy') {
+      if (type === 'yes') {
+        if (Number.isNaN(balance) || balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+      } else if (type === 'no') {
+        if (Number.isNaN(balance) || balance < pl) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+      }
       let fancyOdds;
       if (type === 'yes') {
         backdata = runners[0].exchange.availableToBack[0];
