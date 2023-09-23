@@ -310,13 +310,13 @@ async function placebet(req, res) {
       for (let arr = 0; arr <= 1000; arr += 1) {
         if (type === 'yes') {
           if (arr < fancyOdds) {
-            fselectionIds[arr] = -pl;
+            fselectionIds[arr] = -numberstake;
           } else if (arr >= fancyOdds) {
             fselectionIds[arr] = pl;
           }
         } else if (type === 'no') {
           if (arr < fancyOdds) {
-            fselectionIds[arr] = pl;
+            fselectionIds[arr] = numberstake;
           } else if (arr >= fancyOdds) {
             fselectionIds[arr] = -pl;
           }
