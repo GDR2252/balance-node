@@ -52,11 +52,11 @@ async function placebet(req, res) {
         selectionStatus = runners[i].state.status;
       }
     }
-    if (mrktType === 'match_odds' || mrktType === 'bookmaker') {
+    if (mrktType === 'match_odds') {
       if ((!state.inplay && !isPreBet) || state.status !== 'OPEN' || selectionStatus !== 'ACTIVE') {
         return res.status(401).json({ message: 'Cannot place bet.' });
       }
-    } else if (mrktType === 'fancy') {
+    } else if (mrktType === 'fancy' || mrktType === 'bookmaker') {
       if (state.status !== 'ACTIVE') {
         return res.status(401).json({ message: 'Cannot place bet.' });
       }
