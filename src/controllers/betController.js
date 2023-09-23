@@ -371,8 +371,8 @@ async function placebet(req, res) {
         balance = exposureData[0].exposure + balance;
         exposure = exposure - exposureData[0].exposure;
         const newExposure = Math.max(...negativeResultPl);
-        balance = balance - newExposure;
-        exposure = exposure + newExposure;
+        balance = balance + newExposure;
+        exposure = exposure - newExposure;
         const filter = { _id: exposureData[0]._id };
         const update = { exposure };
         await client.db(process.env.EXCH_DB).collection('exposuremanages').updateOne(
