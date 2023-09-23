@@ -369,8 +369,8 @@ async function placebet(req, res) {
           exposure,
         }, { session });
       } else {
-        balance = exposureData[0].exposure + balance;
-        exposure = exposure - exposureData[0].exposure;
+        balance = exposureData[0].exposure + userdata.balance;
+        exposure = userdata.exposure - exposureData[0].exposure;
         const newExposure = Math.max(...negativeResultPl);
         logger.info(newExposure);
         balance = balance + newExposure;
