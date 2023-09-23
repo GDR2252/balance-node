@@ -340,6 +340,7 @@ async function placebet(req, res) {
         resultPl = oldPl.map((num, idx) => num + fselectionIds[idx]);
         const negNum = (values) => values < 0;
         negativeResultPl = resultPl.filter(negNum);
+        logger.info(negativeResultPl);
         const filter = { _id: plData[0]._id };
         const update = { selectionId: resultPl };
         await client.db(process.env.EXCH_DB).collection('cricketpls').updateOne(
@@ -371,8 +372,14 @@ async function placebet(req, res) {
       } else {
         balance = exposureData[0].exposure + userdata.balance;
         exposure = userdata.exposure - exposureData[0].exposure;
-        const newExposure = Math.max(...negativeResultPl);
-        logger.info(newExposure);
+        let newExposure;
+        if (negativeResultPl.length > 0) {
+          newExposure = Math.max(...negativeResultPl);
+          logger.info(newExposure);
+        } else {
+          newExposure = 0;
+          logger.info(newExposure);
+        }
         balance = balance + newExposure;
         exposure = exposure - newExposure;
         const filter = { _id: exposureData[0]._id };
