@@ -175,6 +175,7 @@ async function placebet(req, res) {
           IsSettle: 0,
           IsVoid: 0,
           IsUnsettle: 1,
+          type: mrktType,
         }, { session });
       } else {
         const selectionData = plData[0].selectionId;
@@ -325,6 +326,7 @@ async function placebet(req, res) {
           IsSettle: 0,
           IsVoid: 0,
           IsUnsettle: 1,
+          type: mrktType,
         }, { session });
       } else {
         const oldPl = plData[0].selectionId;
