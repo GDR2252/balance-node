@@ -349,18 +349,19 @@ async function placebet(req, res) {
         );
       }
       let exposure;
-      if (type === 'yes') {
-        balance = userdata.balance - numberstake;
-        exposure = userdata.exposure + numberstake;
-      } else if (type === 'no') {
-        balance = userdata.balance - pl;
-        exposure = userdata.exposure + pl;
-      }
+
       const exposureData = await client.db(process.env.EXCH_DB).collection('exposuremanages').find({
         exMarketId,
         username: req.user,
       }, { session }).toArray();
       if (!exposureData.length > 0) {
+        if (type === 'yes') {
+          balance = userdata.balance - numberstake;
+          exposure = userdata.exposure + numberstake;
+        } else if (type === 'no') {
+          balance = userdata.balance - pl;
+          exposure = userdata.exposure + pl;
+        }
         await client.db(process.env.EXCH_DB).collection('exposuremanages').insertOne({
           exEventId,
           exMarketId,
