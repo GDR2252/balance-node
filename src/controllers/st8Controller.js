@@ -3,11 +3,11 @@ const logger = require('log4js').getLogger(path.parse(__filename).name);
 const User = require('../model/User');
 const { uuid } = require('uuidv4');
 const { MongoClient, ObjectId } = require('mongodb');
-
 // Sign body 
 var rs = require('jsrsasign');
 var rsu = require('jsrsasign-util');
 const { default: axios } = require('axios');
+const St8Games = require('../model/St8Games');
 
 var priv_pem = rsu.readFile('./ec.key');
 var priv_key = rs.KEYUTIL.getKey(priv_pem);
@@ -41,29 +41,43 @@ async function signBody(req) {
     }
 }
 
+// const getGames = async (req, res) => {
+//   console.log('Cron job running at:', new Date());
+//     const profile = await User.findOne({ username: req.user }).exec();
+//     if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+//     let config = {
+//         method: 'get',
+//         maxBodyLength: Infinity,
+//         url: "https://cbt001.o.p8d.xyz/api/operator/v1/games?site=cbtf",
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'x-st8-sign': process.env.PRV_KEY
+//         },
+//     };
+
+//     axios.request(config)
+//         .then(async (response) => {
+//             console.log(JSON.stringify(response.data));
+//             await St8Games.deleteMany();
+//             await St8Games.create({
+//               games: response.data
+//             })
+//             return res.send({ st8Response: response.data })
+//         })
+//         .catch((error) => {
+//             // console.log(error);
+//             return res.send({ st8Error: error })
+//         });
+// }
+
 const getGames = async (req, res) => {
+  console.log('Cron job running at:', new Date());
     const profile = await User.findOne({ username: req.user }).exec();
     if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
-    let config = {
-        method: 'post',
-        maxBodyLength: Infinity,
-        url: "https://cbt001.o.p8d.xyz/api/operator/v1/games?site=cbtf",
-        headers: {
-            'Content-Type': 'application/json',
-            'x-st8-sign': process.env.PRV_KEY
-        },
-    };
-
-    axios.request(config)
-        .then((response) => {
-            console.log(JSON.stringify(response.data));
-            return res.send({ st8Response: response.data })
-        })
-        .catch((error) => {
-            console.log(error);
-            return res.send({ st8Error: error })
-        });
+    const response = await St8Games.findOne({})
+    return res.send( response )
 }
+
 
 const launchGame = async (req, res) => {
     const { game_code } = req.body
