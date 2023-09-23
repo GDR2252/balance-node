@@ -213,7 +213,7 @@ async function placebet(req, res) {
       logger.info(`newVal: ${newVal}`);
       logger.info(placebetcondition);
       balance = userdata.balance;
-      if (balance < Number(stake) && !placebetcondition) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+      if (Number.isNaN(balance) || (balance < Number(stake) && !placebetcondition)) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
       if (!exposureData.length > 0) {
         await client.db(process.env.EXCH_DB).collection('exposuremanages').insertOne({
           exEventId,
@@ -269,9 +269,9 @@ async function placebet(req, res) {
 
       userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user }, { session });
       if (type === 'yes') {
-        if (balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+        if (Number.isNaN(balance) || balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
       } else if (type === 'no') {
-        if (balance < pl) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+        if (Number.isNaN(balance) || balance < pl) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
       }
 
       await client.db(process.env.EXCH_DB).collection('cricketbetplaces').insertOne({
