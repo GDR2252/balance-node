@@ -371,6 +371,7 @@ async function placebet(req, res) {
         balance = exposureData[0].exposure + balance;
         exposure = exposure - exposureData[0].exposure;
         const newExposure = Math.max(...negativeResultPl);
+        logger.info(newExposure);
         balance = balance + newExposure;
         exposure = exposure - newExposure;
         const filter = { _id: exposureData[0]._id };
