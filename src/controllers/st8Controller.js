@@ -71,7 +71,6 @@ async function signBody(req) {
 // }
 
 const getGames = async (req, res) => {
-  console.log('Cron job running at:', new Date());
     const profile = await User.findOne({ username: req.user }).exec();
     if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
     const response = await St8Games.findOne({})
@@ -190,21 +189,21 @@ const getBalance = async (req, res) => {
 }
 
 const deposit = async (req, res) => {
-
-    const uri = process.env.MONGO_URL;
-    const client = new MongoClient(uri);
-
-    const transactionOptions = {
-        readConcern: { level: 'snapshot' },
-        writeConcern: { w: 'majority' },
-        readPreference: 'primary',
-    };
     const { amount } = req.body
-    const session = client.startSession();
+    console.log(req.user, amount);
+    // const uri = process.env.MONGO_URL;
+    // const client = new MongoClient(uri);
+
+    // const transactionOptions = {
+    //     readConcern: { level: 'snapshot' },
+    //     writeConcern: { w: 'majority' },
+    //     readPreference: 'primary',
+    // };
+    // const session = client.startSession();
     try {
-        session.startTransaction(transactionOptions);
-        await client.connect();
-        await client.db(process.env.EXCH_DB).collection('auracsresults').insertOne(body, { session });
+        // session.startTransaction(transactionOptions);
+        // await client.connect();
+        // await client.db(process.env.EXCH_DB).collection('auracsresults').insertOne(body, { session });
         
         const profile = await User.findOne({ username: req.user }).exec();
         if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
@@ -245,13 +244,13 @@ const deposit = async (req, res) => {
         }
     } catch (err) {
         logger.error(err);
-        await session.abortTransaction();
-        logger.error('Transaction rolled back.');
+        // await session.abortTransaction();
+        // logger.error('Transaction rolled back.');
     } finally {
-        if (client) {
-            await session.endSession();
-            await client.close();
-        }
+        // if (client) {
+        //     await session.endSession();
+        //     await client.close();
+        // }
     }
 }
 
@@ -298,11 +297,23 @@ const withdraw = async (req, res) => {
     }
 }
 
+const transfer = async (req, res) => {
+    const {type} = req?.query
+    if(type === "deposit"){
+        deposit(req, res)
+    }
+    if(type === "withdraw"){
+        withdraw(req, res)
+    }
+   
+}
+
 module.exports = {
     signBody,
     getGames,
     launchGame,
     getBalance,
     deposit,
-    withdraw
+    withdraw,
+    transfer
 };

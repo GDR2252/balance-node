@@ -9,6 +9,7 @@ router.post('/launch', st8Controller.launchGame);
 router.post('/balance', st8Controller.getBalance);
 router.post('/deposit', st8Controller.deposit);
 router.post('/withdraw', st8Controller.withdraw);
+router.post('/transfer', st8Controller.transfer);
 
 
 module.exports = router;
