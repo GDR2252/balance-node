@@ -122,6 +122,7 @@ async function placebet(req, res) {
           }
         }
       });
+      const created = new Date();
       if (mrktType === 'match_odds') {
         await setTimeout(5000);
         logger.info('Waited for 5 secs.');
@@ -158,8 +159,9 @@ async function placebet(req, res) {
         IsSettle: 0,
         IsVoid: 0,
         IsUnsettle: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: created,
+        updatedAt: created,
+        matchedTime: new Date(),
       }, { session });
       logger.info(`Placed bet for user: ${req.user}`);
       const balanceexposures = [];

@@ -1,4 +1,5 @@
 const path = require('path');
+const { MongoClient } = require('mongodb');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const bcrypt = require('bcrypt');
 const User = require('../model/User');
@@ -31,6 +32,43 @@ const updateBalance = async (req, res) => {
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: 'Error while updating balance.' });
+  }
+};
+
+const getUserBetList = async (req, res) => {
+  const profile = await User.findOne({ username: req.user }).exec();
+  if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+  const resultArr = [];
+  const uri = process.env.MONGO_URI;
+  const client = new MongoClient(uri);
+  try {
+    const results = await client.db(process.env.EXCH_DB).collection('cricketbetplaces')
+      .find({}).toArray();
+    if (results.length > 0) {
+      results.map((data) => {
+        const result = {
+          betPl: `${data.pl}(-${data.stake})`,
+          type: data.type,
+          sportName: data.sportName,
+          eventName: data.eventName,
+          marketName: data.marketType,
+          oddsPrice: data.odds,
+          selectionName: data.selectionName,
+          stake: data.stake,
+          matchedTime: data.matchedTime,
+          createdAt: data.createdAt,
+        };
+        resultArr.push(result);
+      });
+    }
+    res.json(resultArr);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while fetching Bet List' });
+  } finally {
+    if (client) {
+      client.close();
+    }
   }
 };
 
@@ -211,4 +249,5 @@ module.exports = {
   updateUser,
   deleteUser,
   listUser,
+  getUserBetList,
 };
