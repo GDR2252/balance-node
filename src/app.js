@@ -30,6 +30,7 @@ const streamRouter = require('./routes/stream');
 const scoreBoardRouter = require('./routes/scoreBoard');
 const accountRouter = require('./routes/account');
 const userRouter = require('./routes/user');
+const st8Router = require('./routes/st8');
 
 const app = express();
 connectDB();
@@ -62,7 +63,7 @@ app.use('/rules', require('./routes/rules'));
 // app.use('/info', userInfoRouter);
 
 app.use(verifyJWT);
-app.use('/st8', require('./routes/st8'));
+app.use('/st8', st8Router);
 app.use('/getnavdata', fetchNavDataRouter);
 app.use('/sports', sportsRouter);
 app.use('/tournaments', tournamentsRouter);

@@ -71,8 +71,6 @@ async function signBody(req) {
 // }
 
 const getGames = async (req, res) => {
-    const profile = await User.findOne({ username: req.user }).exec();
-    if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
     const response = await St8Games.findOne({})
     return res.send( response )
 }
