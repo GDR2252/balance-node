@@ -1,13 +1,14 @@
 const express = require('express');
 
 const router = express.Router();
+const { auth } = require('../middleware/authentication');
 const listController = require('../controllers/listController');
 
-router.get('/sportsList', listController.sportsList);
-router.get('/sideMenuList', listController.sideMenuList);
-router.get('/getEventList', listController.getEventList);
-router.get('/getEventSportsList', listController.getEventSportsList);
-router.get('/getMarketList', listController.getMarketList);
-router.get('/getSearchEvent', listController.getSearchEventList);
+router.get('/sportsList', auth, listController.sportsList);
+router.get('/sideMenuList', auth, listController.sideMenuList);
+router.get('/getEventList', auth, listController.getEventList);
+router.get('/getEventSportsList', auth, listController.getEventSportsList);
+router.get('/getMarketList', auth, listController.getMarketList);
+router.get('/getSearchEvent', auth, listController.getSearchEventList);
 
 module.exports = router;

@@ -54,6 +54,7 @@ app.use('/login', loginRouter);
 app.use('/refresh', refreshRouter);
 app.use('/logout', logoutRouter);
 app.use('/navigation', navigationRouter);
+app.use('/list', listRouter);
 app.use('/finduser', finduserRouter);
 app.use('/getthemes', fetchThemesRouter);
 app.use('/rules', require('./routes/rules'));
@@ -61,7 +62,6 @@ app.use('/rules', require('./routes/rules'));
 // app.use('/info', userInfoRouter);
 
 app.use(verifyJWT);
-app.use('/list', listRouter);
 app.use('/st8', require('./routes/st8'));
 app.use('/getnavdata', fetchNavDataRouter);
 app.use('/sports', sportsRouter);
