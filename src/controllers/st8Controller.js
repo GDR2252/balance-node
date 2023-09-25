@@ -298,7 +298,7 @@ const withdraw = async (req, res) => {
 }
 
 const transfer = async (req, res) => {
-    const {type} = req?.query
+    const {type} = req?.body
     if(type === "deposit"){
         deposit(req, res)
     }
