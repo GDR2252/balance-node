@@ -8,5 +8,6 @@ router.get('/', userController.listUser);
 router.post('/update', userController.updateUser);
 router.delete('/', userController.deleteUser);
 router.post('/betlist/getUserBetList', userController.getUserBetList);
+router.post('/profitloss/userMarketsProfitloss', userController.userMarketsProfitloss);
 
 module.exports = router;

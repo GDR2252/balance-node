@@ -35,6 +35,26 @@ const updateBalance = async (req, res) => {
   }
 };
 
+const userMarketsProfitloss = async (req, res) => {
+  const profile = await User.findOne({ username: req.user }).exec();
+  if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+  const { eventId } = req.body;
+  const uri = process.env.MONGO_URI;
+  const client = new MongoClient(uri);
+  try {
+    const results = await client.db(process.env.EXCH_DB).collection('reportings')
+      .find({ username: req.user, exEventId: eventId }).toArray();
+    res.json(results);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while fetching Bet List' });
+  } finally {
+    if (client) {
+      client.close();
+    }
+  }
+};
+
 const getUserBetList = async (req, res) => {
   const profile = await User.findOne({ username: req.user }).exec();
   if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
@@ -250,4 +270,5 @@ module.exports = {
   deleteUser,
   listUser,
   getUserBetList,
+  userMarketsProfitloss,
 };
