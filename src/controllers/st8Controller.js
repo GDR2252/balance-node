@@ -72,7 +72,7 @@ async function signBody(req) {
 
 const getGames = async (req, res) => {
     const response = await St8Games.findOne({})
-    return res.send( response )
+    return res.send(response)
 }
 
 
@@ -202,10 +202,10 @@ const deposit = async (req, res) => {
         // session.startTransaction(transactionOptions);
         // await client.connect();
         // await client.db(process.env.EXCH_DB).collection('auracsresults').insertOne(body, { session });
-        
+
         const profile = await User.findOne({ username: req.user }).exec();
         if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
-        if(profile.balance  >= amount){
+        if (profile.balance >= amount) {
 
             const data = {
                 "transaction_id": uuid().toString().replaceAll("-", ""),
@@ -214,7 +214,7 @@ const deposit = async (req, res) => {
                 "currency": "INR",
                 "site": "cbtf"
             }
-    
+
             const { is_valid, sign_b64 } = await signBody(data)
             if (is_valid) {
                 let finalData = JSON.stringify(data);
@@ -228,21 +228,22 @@ const deposit = async (req, res) => {
                     },
                     data: finalData
                 };
-    
+
                 axios.request(config)
-                    .then((response) => {
+                    .then(async (response) => {
                         console.log(response.data);
+                        const deposit = profile.balance - amount
+                        await User.updateOne({ username: req.user }, { $set: { 'balance': deposit } }).exec();
                         return res.send({ is_valid, data: response.data })
                     })
                     .catch((error) => {
-                        console.log(error);
                         return res.send({ is_valid, data: error.response.data })
                     });
             } else {
                 return res.send({ message: "Something went wrong!" })
             }
-        }else{
-            return res.status(500).send({  message: "User having insufficient balance!" })
+        } else {
+            return res.status(500).send({ message: "User having insufficient balance!" })
         }
     } catch (err) {
         logger.error(err);
@@ -257,15 +258,12 @@ const deposit = async (req, res) => {
     }
 }
 
-const withdraw = async (req, res) => {
-
-    const profile = await User.findOne({ username: req.user }).exec();
+const getBalanceUser = async (username) => {
+    const profile = await User.findOne({ username: username }).exec();
     if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
 
     const data = {
-        "transaction_id": uuid().toString().replaceAll("-", ""),
-        "player": profile.username,
-        "amount": profile.balance,
+        "player": profile?.username,
         "currency": "INR",
         "site": "cbtf",
         "developer_code": "btsl"
@@ -273,11 +271,12 @@ const withdraw = async (req, res) => {
 
     const { is_valid, sign_b64 } = await signBody(data)
     if (is_valid) {
+        console.log(is_valid);
         let finalData = JSON.stringify(data);
         let config = {
             method: 'post',
             maxBodyLength: Infinity,
-            url: "https://cbt001.o.p8d.xyz/api/operator/v1/cashier/withdraw",
+            url: "https://cbt001.o.p8d.xyz/api/operator/v1/cashier/balance",
             headers: {
                 'Content-Type': 'application/json',
                 'x-st8-sign': sign_b64
@@ -285,29 +284,78 @@ const withdraw = async (req, res) => {
             data: finalData
         };
 
-        axios.request(config)
+        return axios.request(config)
             .then((response) => {
-                console.log(response.data);
-                return res.send({ is_valid, data: response.data })
+                console.log("res",response.data);
+                return (response.data)
             })
             .catch((error) => {
-                console.log("error", error);
-                return res.status(500).send({ message: error?.response?.data })
+                console.log(error.response);
+                return ({ is_valid, st8Error: error.response })
             });
-    } else {
+    }
+}
+
+const withdraw = async (req, res) => {
+    try {
+        const casinoBalance = await getBalanceUser(req.user)
+        console.log("sdccsd" , casinoBalance);
+        const profile = await User.findOne({ username: req.user }).exec();
+        if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+
+
+        const data = {
+            "transaction_id": uuid().toString().replaceAll("-", ""),
+            "player": profile.username,
+            "amount": Number(casinoBalance.balance),
+            "currency": "INR",
+            "site": "cbtf",
+            "developer_code": "btsl"
+        }
+
+        const { is_valid, sign_b64 } = await signBody(data)
+        if (is_valid) {
+            let finalData = JSON.stringify(data);
+            let config = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: "https://cbt001.o.p8d.xyz/api/operator/v1/cashier/withdraw",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-st8-sign': sign_b64
+                },
+                data: finalData
+            };
+
+            await axios.request(config)
+                .then(async (response) => {
+                    console.log("zsds", response.data);
+                    const withdraw = profile.balance + Number(casinoBalance.balance)
+                    console.log(withdraw);
+                    await User.updateOne({ username: req.user }, { $set: { 'balance': withdraw } }).exec();
+                    return res.send({ is_valid, data: response.data })
+                })
+                .catch((error) => {
+                    return res.status(500).send({ message: error?.response?.data })
+                });
+        } else {
+            return res.send({ message: "Something went wrong!" })
+        }
+    } catch (error) {
+        console.log(error);
         return res.send({ message: "Something went wrong!" })
     }
 }
 
 const transfer = async (req, res) => {
-    const {type} = req?.body
-    if(type === "deposit"){
+    const { type } = req?.body
+    if (type === "deposit") {
         deposit(req, res)
     }
-    if(type === "withdraw"){
+    if (type === "withdraw") {
         withdraw(req, res)
     }
-   
+
 }
 
 module.exports = {
