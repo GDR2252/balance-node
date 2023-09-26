@@ -7,5 +7,6 @@ router.post('/', userController.createUser);
 router.get('/', userController.listUser);
 router.post('/update', userController.updateUser);
 router.delete('/', userController.deleteUser);
+router.post('/betlist/getUserBetList', userController.getUserBetList);
 
 module.exports = router;
