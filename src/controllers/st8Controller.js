@@ -205,43 +205,48 @@ const deposit = async (req, res) => {
         
         const profile = await User.findOne({ username: req.user }).exec();
         if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+        if(profile.balance  >= amount){
 
-        const data = {
-            "transaction_id": uuid().toString().replaceAll("-", ""),
-            "player": profile.username,
-            "amount": amount,
-            "currency": "INR",
-            "site": "cbtf"
-        }
-
-        const { is_valid, sign_b64 } = await signBody(data)
-        if (is_valid) {
-            let finalData = JSON.stringify(data);
-            let config = {
-                method: 'post',
-                maxBodyLength: Infinity,
-                url: "https://cbt001.o.p8d.xyz/api/operator/v1/cashier/deposit",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-st8-sign': sign_b64
-                },
-                data: finalData
-            };
-
-            axios.request(config)
-                .then((response) => {
-                    console.log(response.data);
-                    return res.send({ is_valid, data: response.data })
-                })
-                .catch((error) => {
-                    console.log(error);
-                    return res.send({ is_valid, st8Error: error.response })
-                });
-        } else {
-            return res.send({ message: "Something went wrong!" })
+            const data = {
+                "transaction_id": uuid().toString().replaceAll("-", ""),
+                "player": profile.username,
+                "amount": amount,
+                "currency": "INR",
+                "site": "cbtf"
+            }
+    
+            const { is_valid, sign_b64 } = await signBody(data)
+            if (is_valid) {
+                let finalData = JSON.stringify(data);
+                let config = {
+                    method: 'post',
+                    maxBodyLength: Infinity,
+                    url: "https://cbt001.o.p8d.xyz/api/operator/v1/cashier/deposit",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-st8-sign': sign_b64
+                    },
+                    data: finalData
+                };
+    
+                axios.request(config)
+                    .then((response) => {
+                        console.log(response.data);
+                        return res.send({ is_valid, data: response.data })
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        return res.send({ is_valid, data: error.response.data })
+                    });
+            } else {
+                return res.send({ message: "Something went wrong!" })
+            }
+        }else{
+            return res.status(500).send({  message: "User having insufficient balance!" })
         }
     } catch (err) {
         logger.error(err);
+        return res.send({ message: "Something went wrong!" })
         // await session.abortTransaction();
         // logger.error('Transaction rolled back.');
     } finally {
@@ -253,7 +258,6 @@ const deposit = async (req, res) => {
 }
 
 const withdraw = async (req, res) => {
-    const { amount } = req.body
 
     const profile = await User.findOne({ username: req.user }).exec();
     if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
@@ -261,7 +265,7 @@ const withdraw = async (req, res) => {
     const data = {
         "transaction_id": uuid().toString().replaceAll("-", ""),
         "player": profile.username,
-        "amount": amount,
+        "amount": profile.balance,
         "currency": "INR",
         "site": "cbtf",
         "developer_code": "btsl"
@@ -287,8 +291,8 @@ const withdraw = async (req, res) => {
                 return res.send({ is_valid, data: response.data })
             })
             .catch((error) => {
-                console.log(error);
-                return res.send({ is_valid, st8Error: error.response })
+                console.log("error", error);
+                return res.status(500).send({ message: error?.response?.data })
             });
     } else {
         return res.send({ message: "Something went wrong!" })
