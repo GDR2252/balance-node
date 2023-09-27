@@ -41,7 +41,7 @@ async function placebet(req, res) {
     if (betlockdata.length > 0) {
       for (let i = 0; i < betlockdata.length; i += 1) {
         if ((betlockdata[i].type === 'market' && exMarketId === betlockdata[i].eventId) || (betlockdata[i].type === 'event' && exEventId === betlockdata[i].eventId) || (betlockdata[i].type === 'sport' && sportsId === betlockdata[i].eventId)) {
-          return res.status(401).json({ message: 'Cannot place bet. Bet is locked.' });
+          return res.status(400).json({ message: 'Cannot place bet. Bet is locked.' });
         }
       }
     }
@@ -54,11 +54,11 @@ async function placebet(req, res) {
     }
     if (mrktType === 'match_odds') {
       if ((!state.inplay && !isPreBet) || state.status !== 'OPEN' || selectionStatus !== 'ACTIVE') {
-        return res.status(401).json({ message: 'Cannot place bet.' });
+        return res.status(400).json({ message: 'Cannot place bet.' });
       }
     } else if (mrktType === 'fancy' || mrktType === 'bookmaker') {
       if (state.status !== 'ACTIVE') {
-        return res.status(401).json({ message: 'Cannot place bet.' });
+        return res.status(400).json({ message: 'Cannot place bet.' });
       }
     }
     const marketlimit = marketratesdata.betLimit;
@@ -69,7 +69,7 @@ async function placebet(req, res) {
     });
     const min = marketlimit.split('-')[0].trim();
     const max = marketlimit.split('-')[1].trim();
-    if (numberstake < Number(min) || numberstake > Number(max)) return res.status(401).json({ message: 'Cannot place bet. Stake is not within the limits.' });
+    if (numberstake < Number(min) || numberstake > Number(max)) return res.status(400).json({ message: 'Cannot place bet. Stake is not within the limits.' });
     let laydata;
     let backdata;
     let profit;
@@ -81,7 +81,7 @@ async function placebet(req, res) {
     const fselectionIds = [];
     const exposures = [];
     if (mrktType === 'match_odds' || mrktType === 'bookmaker') {
-      if (Number.isNaN(balance) || (balance < Number(stake))) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+      if (Number.isNaN(balance) || (balance < Number(stake))) return res.status(400).json({ message: 'Cannot place bet. Balance is insufficient.' });
       runners.forEach((element) => {
         const selId = element.selectionId.toString();
         if (selId === selectionId) {
@@ -133,12 +133,12 @@ async function placebet(req, res) {
       if (type === 'back') {
         const backprice = backdata.price - 1;
         odds -= 1;
-        if (odds > backprice) return res.status(401).json({ message: 'Cannot place bet. Odds is not correct.' });
+        if (odds > backprice) return res.status(400).json({ message: 'Cannot place bet. Odds is not correct.' });
       }
       if (type === 'lay') {
         const layprice = laydata.price - 1;
         odds -= 1;
-        if (odds < layprice) return res.status(401).json({ message: 'Cannot place bet. Odds is not correct.' });
+        if (odds < layprice) return res.status(400).json({ message: 'Cannot place bet. Odds is not correct.' });
       }
 
       userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user }, { session });
@@ -217,7 +217,7 @@ async function placebet(req, res) {
       logger.info(`newVal: ${newVal}`);
       logger.info(placebetcondition);
       balance = userdata.balance;
-      if (Number.isNaN(balance) || (balance < Number(stake) && !placebetcondition)) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+      if (Number.isNaN(balance) || (balance < Number(stake) && !placebetcondition)) return res.status(400).json({ message: 'Cannot place bet. Balance is insufficient.' });
       if (!exposureData.length > 0) {
         await client.db(process.env.EXCH_DB).collection('exposuremanages').insertOne({
           exEventId,
@@ -243,7 +243,7 @@ async function placebet(req, res) {
         exposure = userdata.exposure + Math.abs(newVal);
         balance = userdata.balance - Math.abs(newVal);
       }
-      if (exposure > userdata.exposureLimit) return res.status(401).json({ message: 'Cannot place bet. Please check Exposure Limit.' });
+      if (exposure > userdata.exposureLimit) return res.status(400).json({ message: 'Cannot place bet. Please check Exposure Limit.' });
       await client.db(process.env.EXCH_DB).collection('users').updateOne(
         { username: req.user },
         { $set: { exposure, balance } },
@@ -257,9 +257,9 @@ async function placebet(req, res) {
       }
     } else if (mrktType === 'fancy') {
       if (type === 'yes') {
-        if (Number.isNaN(balance) || balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+        if (Number.isNaN(balance) || balance < numberstake) return res.status(400).json({ message: 'Cannot place bet. Balance is insufficient.' });
       } else if (type === 'no') {
-        if (Number.isNaN(balance) || balance < pl) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+        if (Number.isNaN(balance) || balance < pl) return res.status(400).json({ message: 'Cannot place bet. Balance is insufficient.' });
       }
       let fancyOdds;
       if (type === 'yes') {
@@ -278,9 +278,9 @@ async function placebet(req, res) {
 
       userdata = await client.db(process.env.EXCH_DB).collection('users').findOne({ username: req.user }, { session });
       if (type === 'yes') {
-        if (Number.isNaN(balance) || balance < numberstake) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+        if (Number.isNaN(balance) || balance < numberstake) return res.status(400).json({ message: 'Cannot place bet. Balance is insufficient.' });
       } else if (type === 'no') {
-        if (Number.isNaN(balance) || balance < pl) return res.status(401).json({ message: 'Cannot place bet. Balance is insufficient.' });
+        if (Number.isNaN(balance) || balance < pl) return res.status(400).json({ message: 'Cannot place bet. Balance is insufficient.' });
       }
 
       await client.db(process.env.EXCH_DB).collection('cricketbetplaces').insertOne({
@@ -392,7 +392,7 @@ async function placebet(req, res) {
           { session },
         );
       }
-      if (exposure > userdata.exposureLimit) return res.status(401).json({ message: 'Cannot place bet. Please check Exposure Limit.' });
+      if (exposure > userdata.exposureLimit) return res.status(400).json({ message: 'Cannot place bet. Please check Exposure Limit.' });
       await client.db(process.env.EXCH_DB).collection('users').updateOne(
         { username: req.user },
         { $set: { exposure, balance } },
