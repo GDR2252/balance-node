@@ -10,5 +10,6 @@ router.delete('/', userController.deleteUser);
 router.post('/betlist/getUserBetList', userController.getUserBetList);
 router.post('/profitloss/userMarketsProfitloss', userController.userMarketsProfitloss);
 router.post('/profitloss/userEventsProfitloss', userController.userEventsProfitloss);
+router.post('/profitloss/userSportsProfitloss', userController.userSportsProfitloss);
 
 module.exports = router;

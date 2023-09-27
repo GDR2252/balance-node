@@ -42,9 +42,17 @@ const userMarketsProfitloss = async (req, res) => {
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   try {
+    let retdata = [];
     const results = await client.db(process.env.EXCH_DB).collection('reportings')
-      .find({ username: req.user, exEventId: eventId }, { username: 0, _id: 0 }).toArray();
-    res.json(results);
+      .find({ username: req.user, exEventId: eventId }).toArray();
+    if (results.length > 0) {
+      retdata = results.map((result) => {
+        delete result._id;
+        delete result.username;
+        return result;
+      });
+    }
+    res.json(retdata);
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: 'Error while fetching Bet List' });
@@ -89,6 +97,50 @@ const userEventsProfitloss = async (req, res) => {
       data.pl = result.pl;
       data.eventId = result._id.eventId;
       data.eventName = result._id.eventName;
+      data.sportName = result._id.sportName;
+      retresult.push(data);
+    });
+    res.json(retresult);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while fetching Bet List' });
+  } finally {
+    if (client) {
+      client.close();
+    }
+  }
+};
+
+const userSportsProfitloss = async (req, res) => {
+  const profile = await User.findOne({ username: req.user }).exec();
+  if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+  const uri = process.env.MONGO_URI;
+  const client = new MongoClient(uri);
+  const retresult = [];
+  try {
+    const results = await client.db(process.env.EXCH_DB).collection('reportings')
+      .aggregate([
+        {
+          $match: {
+            username: req.user,
+          },
+        },
+        {
+          $group: {
+            _id: {
+              sportId: '$sportId',
+              sportName: '$sportName',
+            },
+            pl: {
+              $sum: '$pl',
+            },
+          },
+        },
+      ]).toArray();
+    results.map((result) => {
+      const data = {};
+      data.pl = result.pl;
+      data.sportId = result._id.sportId;
       data.sportName = result._id.sportName;
       retresult.push(data);
     });
@@ -321,4 +373,5 @@ module.exports = {
   getUserBetList,
   userMarketsProfitloss,
   userEventsProfitloss,
+  userSportsProfitloss,
 };
