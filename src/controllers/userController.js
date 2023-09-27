@@ -55,6 +55,54 @@ const userMarketsProfitloss = async (req, res) => {
   }
 };
 
+const userEventsProfitloss = async (req, res) => {
+  const profile = await User.findOne({ username: req.user }).exec();
+  if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+  const { sportId } = req.body;
+  const uri = process.env.MONGO_URI;
+  const client = new MongoClient(uri);
+  const retresult = [];
+  try {
+    const results = await client.db(process.env.EXCH_DB).collection('reportings')
+      .aggregate([
+        {
+          $match: {
+            username: req.user,
+            sportId,
+          },
+        },
+        {
+          $group: {
+            _id: {
+              eventName: '$eventName',
+              sportName: '$sportName',
+              eventId: '$exEventId',
+            },
+            pl: {
+              $sum: '$pl',
+            },
+          },
+        },
+      ]).toArray();
+    results.map((result) => {
+      const data = {};
+      data.pl = result.pl;
+      data.eventId = result._id.eventId;
+      data.eventName = result._id.eventName;
+      data.sportName = result._id.sportName;
+      retresult.push(data);
+    });
+    res.json(retresult);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: 'Error while fetching Bet List' });
+  } finally {
+    if (client) {
+      client.close();
+    }
+  }
+};
+
 const getUserBetList = async (req, res) => {
   const profile = await User.findOne({ username: req.user }).exec();
   if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
@@ -272,4 +320,5 @@ module.exports = {
   listUser,
   getUserBetList,
   userMarketsProfitloss,
+  userEventsProfitloss,
 };
