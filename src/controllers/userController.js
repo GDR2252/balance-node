@@ -43,7 +43,7 @@ const userMarketsProfitloss = async (req, res) => {
   const client = new MongoClient(uri);
   try {
     const results = await client.db(process.env.EXCH_DB).collection('reportings')
-      .find({ username: req.user, exEventId: eventId }).toArray();
+      .find({ username: req.user, exEventId: eventId }, { username: 0, _id: 0 }).toArray();
     res.json(results);
   } catch (err) {
     logger.error(err);
@@ -59,11 +59,12 @@ const getUserBetList = async (req, res) => {
   const profile = await User.findOne({ username: req.user }).exec();
   if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
   const resultArr = [];
+  const { marketId, sportId } = req.body;
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   try {
     const results = await client.db(process.env.EXCH_DB).collection('cricketbetplaces')
-      .find({}).toArray();
+      .find({ username: profile.username, sportId, exMarketId: marketId }).toArray();
     if (results.length > 0) {
       results.map((data) => {
         const result = {
