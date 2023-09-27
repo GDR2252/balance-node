@@ -6,6 +6,7 @@
     "start": "pm2 start ./src/bin/www --name USER_API",
     "start:cron": "pm2 start ./src/cronjob/streamShedular.js --name LIVE_STREAM_CRON",
     "start:cronSt8": "pm2 start ./src/cronjob/st8Games.js --name ST8_GAMES",
+    "start:cronSt8Transaction": "pm2 start ./src/cronjob/st8Transaction.js --name ST8_TRANSACTION_LOGS",
     "dev": "nodemon ./src/bin/www"
   },
   "dependencies": {
