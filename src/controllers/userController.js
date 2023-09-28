@@ -151,7 +151,7 @@ const userEventsProfitloss = async (req, res) => {
         },
         {
           $sort: {
-            _id: -1,
+            createdAt: -1,
           },
         },
       ]);
@@ -248,7 +248,7 @@ const userSportsProfitloss = async (req, res) => {
         },
         {
           $sort: {
-            _id: -1,
+            createdAt: -1,
           },
         },
       ]);
