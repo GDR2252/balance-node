@@ -3,6 +3,7 @@ const { MongoClient } = require('mongodb');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const { setTimeout } = require('timers/promises');
+const moment = require('moment-timezone');
 const CricketBetPlace = require('../model/CricketBetPlace');
 const CricketPL = require('../model/CricketPL');
 const User = require('../model/User');
@@ -573,8 +574,33 @@ async function putresults(req, res) {
 
 async function aviatorPl(req, res) {
   try {
+    const profile = await User.findOne({ username: req.user }).exec();
+    if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+
     const options = pick(req?.query, ['sortBy', 'limit', 'page']);
-    const data = await AvplaceBet.paginate({ user: req.user }, options);
+    const filter = pick(req?.query, ['from', 'to', 'timeZone']);
+
+    if ((filter?.from && filter?.from !== '') && (filter?.to && filter?.to !== '')) {
+      const timeZone = filter.timeZone || 'Asia/Calcutta';
+      const startDate = moment.tz(filter?.from, timeZone);
+      const endDate = moment.tz(filter?.to, timeZone);
+
+      const date1 = startDate.clone().startOf('day');
+      const date2 = endDate.clone().endOf('day');
+      const timeDifferenceMs = date2.diff(date1, 'days');
+      if (timeDifferenceMs > 30) {
+        return res.status(400).json({ error: 'Please select only 30 days range only.' });
+      }
+      filter.createdAt = {
+        $gte: date1.toDate(),
+        $lt: date2.toDate(),
+      };
+      delete filter.from;
+      delete filter.to;
+      delete filter.timeZone;
+    }
+    filter.user = req.user;
+    const data = await AvplaceBet.paginate(filter, options);
     return res.json(data);
   } catch (err) {
     logger.error(err);
