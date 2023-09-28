@@ -47,11 +47,14 @@ const getTransaction = async (req, res) => {
         const profile = await User.findOne({ username: req.user }).exec();
         if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
 
+        console.log(new Date(start_time));
+        console.log(new Date(new Date(end_time).getTime() + 24 * 60 * 60 * 1000));
+
         let query = start_time !== "" && end_time !== "" ?
                 {
                     createdAt: {
                         $gte: new Date(start_time),
-                        $lt: new Date(new Date(end_time).getTime() + 24 * 60 * 60 * 1000)
+                        $lte: new Date(new Date(end_time).getTime() + 24 * 60 * 60 * 1000)
                     },
                     username: profile.username
                 } : {};
@@ -61,7 +64,7 @@ const getTransaction = async (req, res) => {
        
     } catch (error) {
         console.log("🚀 ~ file: st8Controller.js:106 ~ getTransaction ~ error:", error)
-        return res.send(500)({ error })
+        return res.status(500).json( error )
     }
 }
 
