@@ -2,11 +2,14 @@ const path = require('path');
 const { MongoClient } = require('mongodb');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 const bcrypt = require('bcrypt');
+const moment = require('moment-timezone');
 const User = require('../model/User');
 const Stake = require('../model/Stake');
 const { sendSMS, verifySMS } = require('./smsapiController');
 const pick = require('../utils/pick');
 const Trader = require('../model/Trader');
+const CricketBetPlace = require('../model/CricketBetPlace');
+const Reporting = require('../model/Reporting');
 
 const getBalance = async (req, res) => {
   const profile = await User.findOne({ username: req.user }).exec();
@@ -35,49 +38,98 @@ const updateBalance = async (req, res) => {
   }
 };
 
+const getFilterProfitLoss = (filter) => {
+  const filteredData = {};
+  let error = 0;
+  if ((filter?.from && filter?.from !== '') && (filter?.to && filter?.to !== '')) {
+    const timeZone = filter.timeZone || 'Asia/Kolkata';
+    const startDate = moment.tz(filter?.from, timeZone);
+    const endDate = moment.tz(filter?.to, timeZone);
+
+    const date1 = startDate.clone().startOf('day');
+    const date2 = endDate.clone().startOf('day');
+    const timeDifferenceMs = date2.diff(date1, 'days');
+    if (timeDifferenceMs > 30) {
+      error = 1;
+    }
+    filteredData.createdAt = {
+      $gte: date1.toDate(),
+      $lt: date2.toDate(),
+    };
+  }
+  return { filteredData, error };
+};
+
 const userMarketsProfitloss = async (req, res) => {
   const profile = await User.findOne({ username: req.user }).exec();
   if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
-  const { eventId } = req.body;
-  const uri = process.env.MONGO_URI;
-  const client = new MongoClient(uri);
+  const { eventId } = req.query;
+  //   const uri = process.env.MONGO_URI;
+  //   const client = new MongoClient(uri);
   try {
+    const options = pick(req?.query, ['sortBy', 'limit', 'page']);
+    const filters = pick(req?.query, ['from', 'to', 'timeZone']);
+    const dateData = getFilterProfitLoss(filters);
+    if (dateData.error === 1) {
+      return res.status(400).json({ error: 'Please select only 30 days range only.' });
+    }
+    let filter = { username: req.user, exEventId: eventId };
     let retdata = [];
-    const results = await client.db(process.env.EXCH_DB).collection('reportings')
-      .find({ username: req.user, exEventId: eventId }).toArray();
-    if (results.length > 0) {
-      retdata = results.map((result) => {
+    if (dateData.filteredData) {
+      const filterData = dateData.filteredData;
+      filter = { ...filter, ...filterData };
+    }
+    const resData = await Reporting.paginate(filter, options);
+
+    // const results = await client.db(process.env.EXCH_DB).collection('reportings')
+    //   .find().toArray();
+    if (resData.results.length > 0) {
+      retdata = resData.results.map((result) => {
         delete result._id;
         delete result.username;
         return result;
       });
     }
-    res.json(retdata);
+    resData.results = retdata;
+    res.json(resData);
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: 'Error while fetching Bet List' });
-  } finally {
-    if (client) {
-      client.close();
-    }
   }
+//   finally {
+//     if (client) {
+//       client.close();
+//     }
+//   }
 };
 
 const userEventsProfitloss = async (req, res) => {
   const profile = await User.findOne({ username: req.user }).exec();
   if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
-  const { sportId } = req.body;
+  const { sportId } = req.query;
   const uri = process.env.MONGO_URI;
   const client = new MongoClient(uri);
   const retresult = [];
   try {
-    const results = await client.db(process.env.EXCH_DB).collection('reportings')
+    const options = pick(req?.query, ['sortBy', 'limit', 'page']);
+    const filters = pick(req?.query, ['from', 'to', 'timeZone']);
+    const dateData = getFilterProfitLoss(filters);
+    if (dateData.error === 1) {
+      return res.status(400).json({ error: 'Please select only 30 days range only.' });
+    }
+    let filter = { username: req.user, sportId };
+    const retdata = [];
+    if (dateData.filteredData) {
+      const filterData = dateData.filteredData;
+      filter = { ...filter, ...filterData };
+    }
+    const { limit = 10, page = 1 } = options;
+    const skip = (page - 1) * limit;
+
+    let results = await client.db(process.env.EXCH_DB).collection('reportings')
       .aggregate([
         {
-          $match: {
-            username: req.user,
-            sportId,
-          },
+          $match: filter,
         },
         {
           $group: {
@@ -91,7 +143,39 @@ const userEventsProfitloss = async (req, res) => {
             },
           },
         },
-      ]).toArray();
+        {
+          $skip: skip,
+        },
+        {
+          $limit: parseInt(limit),
+        },
+        {
+          $sort: {
+            _id: -1,
+          },
+        },
+      ]);
+    results = await results.toArray();
+    let totalResults = await client.db(process.env.EXCH_DB).collection('reportings')
+      .aggregate([
+        {
+          $match: filter,
+        },
+        {
+          $group: {
+            _id: {
+              eventName: '$eventName',
+              sportName: '$sportName',
+              eventId: '$exEventId',
+            },
+            pl: {
+              $sum: '$pl',
+            },
+          },
+        },
+      ]);
+    totalResults = await totalResults.toArray();
+
     results.map((result) => {
       const data = {};
       data.pl = result.pl;
@@ -100,7 +184,14 @@ const userEventsProfitloss = async (req, res) => {
       data.sportName = result._id.sportName;
       retresult.push(data);
     });
-    res.json(retresult);
+    const resData = {
+      page,
+      limit,
+      totalPages: Math.ceil(totalResults.length / limit),
+      totalResults: totalResults.length,
+      results: retresult,
+    };
+    res.json(resData);
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: 'Error while fetching Bet List' });
@@ -118,12 +209,25 @@ const userSportsProfitloss = async (req, res) => {
   const client = new MongoClient(uri);
   const retresult = [];
   try {
-    const results = await client.db(process.env.EXCH_DB).collection('reportings')
+    const options = pick(req?.query, ['sortBy', 'limit', 'page']);
+    const filters = pick(req?.query, ['from', 'to', 'timeZone']);
+    const dateData = getFilterProfitLoss(filters);
+    if (dateData.error === 1) {
+      return res.status(400).json({ error: 'Please select only 30 days range only.' });
+    }
+    let filter = { username: req.user };
+
+    if (dateData.filteredData) {
+      const filterData = dateData.filteredData;
+      filter = { ...filter, ...filterData };
+    }
+    const { limit = 10, page = 1 } = options;
+    const skip = (page - 1) * limit;
+
+    let results = await client.db(process.env.EXCH_DB).collection('reportings')
       .aggregate([
         {
-          $match: {
-            username: req.user,
-          },
+          $match: filter,
         },
         {
           $group: {
@@ -136,7 +240,38 @@ const userSportsProfitloss = async (req, res) => {
             },
           },
         },
-      ]).toArray();
+        {
+          $skip: skip,
+        },
+        {
+          $limit: parseInt(limit),
+        },
+        {
+          $sort: {
+            _id: -1,
+          },
+        },
+      ]);
+    results = await results.toArray();
+    let totalResults = await client.db(process.env.EXCH_DB).collection('reportings')
+      .aggregate([
+        {
+          $match: filter,
+        },
+        {
+          $group: {
+            _id: {
+              sportId: '$sportId',
+              sportName: '$sportName',
+            },
+            pl: {
+              $sum: '$pl',
+            },
+          },
+        },
+
+      ]);
+    totalResults = await totalResults.toArray();
     results.map((result) => {
       const data = {};
       data.pl = result.pl;
@@ -144,7 +279,14 @@ const userSportsProfitloss = async (req, res) => {
       data.sportName = result._id.sportName;
       retresult.push(data);
     });
-    res.json(retresult);
+    const resData = {
+      page,
+      limit,
+      totalPages: Math.ceil(totalResults.length / limit),
+      totalResults: totalResults.length,
+      results: retresult,
+    };
+    res.json(resData);
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: 'Error while fetching Bet List' });
@@ -159,14 +301,27 @@ const getUserBetList = async (req, res) => {
   const profile = await User.findOne({ username: req.user }).exec();
   if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
   const resultArr = [];
-  const { marketId, sportId } = req.body;
-  const uri = process.env.MONGO_URI;
-  const client = new MongoClient(uri);
+  const { marketId, sportId } = req.query;
   try {
-    const results = await client.db(process.env.EXCH_DB).collection('cricketbetplaces')
-      .find({ username: profile.username, sportId, exMarketId: marketId }).toArray();
-    if (results.length > 0) {
-      results.map((data) => {
+    const options = pick(req?.query, ['sortBy', 'limit', 'page']);
+    const filters = pick(req?.query, ['from', 'to', 'timeZone']);
+    const dateData = getFilterProfitLoss(filters);
+    if (dateData.error === 1) {
+      return res.status(400).json({ error: 'Please select only 30 days range only.' });
+    }
+    let filter = {
+      username: profile.username, sportId, exMarketId: marketId,
+    };
+
+    if (dateData.filteredData) {
+      const filterData = dateData.filteredData;
+      filter = { ...filter, ...filterData };
+    }
+    console.log('filter', filter);
+    const resultData = await CricketBetPlace.paginate(filter, options);
+
+    if (resultData.results.length > 0) {
+      resultData.results.map((data) => {
         const result = {
           pl1: Number(data.pl),
           pl2: Number(-data.stake),
@@ -183,14 +338,11 @@ const getUserBetList = async (req, res) => {
         resultArr.push(result);
       });
     }
-    res.json(resultArr);
+    resultData.results = resultArr;
+    res.json(resultData);
   } catch (err) {
     logger.error(err);
     res.status(500).json({ message: 'Error while fetching Bet List' });
-  } finally {
-    if (client) {
-      client.close();
-    }
   }
 };
 
