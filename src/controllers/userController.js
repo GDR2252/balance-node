@@ -168,7 +168,8 @@ const getUserBetList = async (req, res) => {
     if (results.length > 0) {
       results.map((data) => {
         const result = {
-          betPl: `${data.pl}(-${data.stake})`,
+          pl1: Number(data.pl),
+          pl2: Number(-data.stake),
           type: data.type,
           sportName: data.sportName,
           eventName: data.eventName,
