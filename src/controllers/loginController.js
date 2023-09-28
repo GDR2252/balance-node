@@ -41,7 +41,7 @@ async function handleLogin(req, res) {
   const { origin } = req.headers;
 
   const foundUser = await User.findOne({ username: user }).exec();
-  if (!foundUser) return res.status(401).json({ message: 'The username or password is incorrect.' });
+  if (!foundUser) return res.status(400).json({ message: 'The username or password is incorrect.' });
   // origin check start.
   if (origin !== '') {
     if (foundUser.origin !== origin) {
@@ -51,7 +51,7 @@ async function handleLogin(req, res) {
         parts.shift();
         result += parts.join('.');
       }
-      if (origin !== result) return res.status(401).json({ message: 'The username or password is incorrect.' });
+      if (origin !== result) return res.status(400).json({ message: 'The username or password is incorrect.' });
     }
   }
   const match = await bcrypt.compare(pwd, foundUser.password);
@@ -80,7 +80,7 @@ async function handleLogin(req, res) {
     });
   } else {
     await addActivity(foundUser, ip, 'failed');
-    res.status(401).json({ message: 'The username or password is incorrect.' });
+    res.status(400).json({ message: 'The username or password is incorrect.' });
   }
 }
 
