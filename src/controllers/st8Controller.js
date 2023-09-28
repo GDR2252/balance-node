@@ -57,7 +57,6 @@ const getTransaction = async (req, res) => {
                 } : {};
 
         const transactions = await St8Transactions.find(query)
-        console.log("Transaction",transactions);
         res.send({result : transactions})
        
     } catch (error) {
@@ -231,7 +230,7 @@ const deposit = async (req, res) => {
                 axios.request(config)
                     .then(async (response) => {
                         console.log(response.data);
-                        const deposit = profile.balance - amount
+                        const deposit = (profile.balance - amount).toFixed(2);
                         await User.updateOne({ username: req.user }, { $set: { 'balance': deposit } }).exec();
                         return res.send({ is_valid, data: response.data })
                     })
@@ -326,7 +325,7 @@ const withdraw = async (req, res) => {
 
             await axios.request(config)
                 .then(async (response) => {
-                    const withdraw = profile.balance + Number(casinoBalance.balance)
+                    const withdraw = (profile.balance + Number(casinoBalance.balance)).toFixed(2);
                     await User.updateOne({ username: req.user }, { $set: { 'balance': withdraw } }).exec();
                     return res.send({ is_valid, data: response.data })
                 })

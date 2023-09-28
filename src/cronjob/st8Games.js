@@ -2,8 +2,10 @@ const cron = require('node-cron');
 const { default: axios } = require('axios');
 const User = require('../model/User');
 const St8Games = require('../model/St8Games');
+const connectDB = require('../config/dbConn');
 
 const getGames = async (req, res) => {
+  connectDB();
   console.log('Cron job running at:', new Date());
   const config = {
     method: 'get',
