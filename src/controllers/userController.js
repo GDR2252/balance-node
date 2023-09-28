@@ -42,7 +42,7 @@ const getFilterProfitLoss = (filter) => {
   const filteredData = {};
   let error = 0;
   if ((filter?.from && filter?.from !== '') && (filter?.to && filter?.to !== '')) {
-    const timeZone = filter.timeZone || 'Asia/Kolkata';
+    const timeZone = filter.timeZone || 'Asia/Calcutta';
     const startDate = moment.tz(filter?.from, timeZone);
     const endDate = moment.tz(filter?.to, timeZone);
 
