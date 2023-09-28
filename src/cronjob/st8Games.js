@@ -5,8 +5,6 @@ const St8Games = require('../model/St8Games');
 
 const getGames = async (req, res) => {
   console.log('Cron job running at:', new Date());
-  const profile = await User.findOne({ username: req.user }).exec();
-  if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
   const config = {
     method: 'get',
     maxBodyLength: Infinity,
@@ -17,7 +15,7 @@ const getGames = async (req, res) => {
     },
   };
 
-  axios.request(config)
+  await axios.request(config)
     .then(async (response) => {
       console.log(JSON.stringify(response.data));
       await St8Games.deleteMany();
@@ -31,5 +29,5 @@ const getGames = async (req, res) => {
       res.send({ st8Error: error }));
 };
 
-// Schedule the cron job to run every 15 minutes
+// Schedule the cron job to run every 6 hours
 cron.schedule('0 */6 * * *', getGames);

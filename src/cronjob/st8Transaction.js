@@ -6,14 +6,11 @@ const St8Transactions = require("../model/St8Transactions");
 const getTransaction = async (req, res) => {
     try {
         // const { start_time, end_time } = req.query
-        const start_time = new Date(Date.now() - 10 * 60 * 1000); // Set start time 10 minutes ago
+        const start_time = new Date(Date.now() - 50 * 60 * 1000).toJSON().split(".")[0]; // Set start time 10 minutes ago
         console.log("🚀 ~ file: st8Transaction.js:6 ~ getTransaction ~ start_time:", start_time)
-        const end_time = new Date(); // Set end time as current time
+        const end_time = new Date().toJSON().split(".")[0]; // Set end time as current time
         console.log("🚀 ~ file: st8Transaction.js:8 ~ getTransaction ~ end_time:", end_time)
         const params = `start_time=${start_time}&end_time=${end_time}&currency=INR&site=cbtf`
-
-        const profile = await User.findOne({ username: req.user }).exec();
-        if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
 
         const { is_valid, sign_b64 } = await signBody(params)
         if (is_valid) {
@@ -25,36 +22,39 @@ const getTransaction = async (req, res) => {
                     'x-st8-sign': sign_b64
                 },
             };
-
-            axios.request(config)
+            await axios.request(config)
                 .then(async (response) => {
-                    for (let i = 0; i < response?.data?.transactions.length; i++) {
-                        console.log('i', i);
-                        const element = response?.data?.transactions[i];
-                        const getRounds = await St8Transactions.findOne({ round: element.round });
-                        const payload = {
-                            username: profile.username,
-                            amount: element.amount,
-                            developer_code: element.developer_code,
-                            game_code: element.game_code,
-                            round: element.round,
-                            player: element.player,
-                            bonus: element.bonus,
-                            processed_at: element.processed_at,
-                        }
-                        let list;
-                        if (!getRounds && element.kind === "debit") {
-                            list = {
-                                ...payload,
-                                pl: 0,
+                    console.log(response?.data);
+                    if (response.data.length) {
+                        for (let i = 0; i <= response?.data?.transactions.length; i++) {
+                            console.log('i', i);
+                            const element = response?.data?.transactions[i];
+                            console.log(element);
+                            const getRounds = await St8Transactions.findOne({ round: element?.round });
+                            const payload = {
+                                username: profile.username,
+                                amount: element.amount,
+                                developer_code: element.developer_code,
+                                game_code: element.game_code,
+                                round: element.round,
+                                player: element.player,
+                                bonus: element.bonus,
+                                processed_at: element.processed_at,
                             }
-                            await St8Transactions.create(list);
-                        } else {
-                            await St8Transactions.findOneAndUpdate({ round: element.round }, { pl: element.amount }, { new: true });
+                            let list;
+                            if (!getRounds && element.kind === "debit") {
+                                list = {
+                                    ...payload,
+                                    pl: 0,
+                                }
+                                console.log(list);
+                                await St8Transactions.create(list);
+                            } else {
+                                await St8Transactions.findOneAndUpdate({ round: element.round }, { pl: element.amount }, { new: true });
+                            }
                         }
+                        return res.send({ is_valid, data: response.data })
                     }
-
-                    return res.send({ is_valid, data: response.data })
                 }).catch((error) => {
                     console.log("-----------", error);
                     return res.send({ is_valid, st8Error: error.response })
