@@ -47,7 +47,7 @@ const getFilterProfitLoss = (filter) => {
     const endDate = moment.tz(filter?.to, timeZone);
 
     const date1 = startDate.clone().startOf('day');
-    const date2 = endDate.clone().startOf('day');
+    const date2 = endDate.clone().endOf('day');
     const timeDifferenceMs = date2.diff(date1, 'days');
     if (timeDifferenceMs > 30) {
       error = 1;
