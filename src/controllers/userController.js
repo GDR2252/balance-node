@@ -542,7 +542,9 @@ const getExposureList = async (req, res) => {
           marketName: { $first: '$marketRatesInfo.marketName' },
         },
       },
-
+      {
+        $sort: { _id: -1 },
+      },
     ]);
     res.status(200).json(result);
   } catch (err) {
