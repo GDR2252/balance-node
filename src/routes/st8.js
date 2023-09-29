@@ -5,6 +5,7 @@ const st8Controller = require('../controllers/st8Controller');
 
 router.get('/transactions', st8Controller.getTransaction);
 router.get('/balance', st8Controller.getBalance);
+router.get('/getCategories', st8Controller.getCategoryList);
 
 router.post('/', st8Controller.signBody);
 router.post('/launch', st8Controller.launchGame);

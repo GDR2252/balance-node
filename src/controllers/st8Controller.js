@@ -68,6 +68,20 @@ const getTransaction = async (req, res) => {
     }
 }
 
+const getCategoryList = async (req,res) => {
+    try {
+        const profile = await User.findOne({ username: req.user }).exec();
+        if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+
+        const categories = await St8Transactions.find()
+        console.log();
+        res.send({result : categories})
+    } catch (error) {
+        console.log("🚀 ~ file: st8Controller.js:106 ~ getTransaction ~ error:", error)
+        return res.status(500).json( error )
+    }
+}
+
 const getGames = async (req, res) => {
     const response = await St8Games.findOne({})
     return res.send(response)
@@ -390,5 +404,6 @@ module.exports = {
     deposit,
     withdraw,
     transfer,
-    getTransaction
+    getTransaction,
+    getCategoryList
 };
