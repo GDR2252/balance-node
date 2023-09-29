@@ -51,34 +51,114 @@ const getTransaction = async (req, res) => {
         console.log(new Date(new Date(end_time).getTime() + 24 * 60 * 60 * 1000));
 
         let query = start_time !== "" && end_time !== "" ?
-                {
-                    createdAt: {
-                        $gte: new Date(start_time),
-                        $lte: new Date(new Date(end_time).getTime() + 24 * 60 * 60 * 1000)
-                    },
-                    username: profile.username
-                } : {};
+            {
+                createdAt: {
+                    $gte: new Date(start_time),
+                    $lte: new Date(new Date(end_time).getTime() + 24 * 60 * 60 * 1000)
+                },
+                username: profile.username
+            } : {};
 
         const transactions = await St8Transactions.find(query)
-        res.send({result : transactions})
-       
+        res.send({ result: transactions })
+
     } catch (error) {
-        console.log("🚀 ~ file: st8Controller.js:106 ~ getTransaction ~ error:", error)
-        return res.status(500).json( error )
+        return res.status(500).json(error)
     }
 }
 
-const getCategoryList = async (req,res) => {
+const getCategoryTotalPL = async (req, res) => {
     try {
         const profile = await User.findOne({ username: req.user }).exec();
         if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
 
-        const categories = await St8Transactions.find()
-        console.log();
-        res.send({result : categories})
+        const categories = await St8Transactions.aggregate([
+            { $match: { username: profile.username } },
+            {
+                $group: {
+                    _id: '$username',
+                    totalPL: {
+                        $sum: {
+                            $cond: [
+                                { $eq: ["$pl", 0] },
+                                { $subtract: ["$pl", "$amount"] },
+                                "$pl"
+                            ]
+                        }
+                    }
+                }
+            }
+        ])
+        res.send({ result: categories })
     } catch (error) {
-        console.log("🚀 ~ file: st8Controller.js:106 ~ getTransaction ~ error:", error)
-        return res.status(500).json( error )
+        return res.status(500).json(error)
+    }
+}
+
+const getCategoryList = async (req, res) => {
+    try {
+        const profile = await User.findOne({ username: req.user }).exec();
+        if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+
+        const categories = await St8Transactions.aggregate([
+            {
+                $match: {
+                    username: profile.username,
+                }
+            },
+            {
+                $group: {
+                    _id: "$developer_code",
+                    totalPL: {
+                        $sum: {
+                            $cond: {
+                                if: { $eq: ["$pl", 0] },
+                                then: { $subtract: ["$pl", "$amount"] },
+                                else: "$pl"
+                            }
+                        }
+                    }
+                }
+            }
+        ])
+        res.send({ result: categories })
+    } catch (error) {
+        return res.status(500).json(error)
+    }
+}
+
+const getGameList = async (req, res) => {
+    try {
+        const profile = await User.findOne({ username: req.user }).exec();
+        if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+
+        const { category } = req.query;
+
+        const categories = await St8Transactions.aggregate([
+            {
+                $match: {
+                    username: profile.username,
+                    developer_code: category
+                }
+            },
+            {
+                $group: {
+                    _id: "$game_code",
+                    totalPL: {
+                        $sum: {
+                            $cond: {
+                                if: { $eq: ["$pl", 0] },
+                                then: { $subtract: ["$pl", "$amount"] },
+                                else: "$pl"
+                            }
+                        }
+                    }
+                }
+            }
+        ])
+        res.send({ result: categories })
+    } catch (error) {
+        return res.status(500).json(error)
     }
 }
 
@@ -405,5 +485,7 @@ module.exports = {
     withdraw,
     transfer,
     getTransaction,
-    getCategoryList
+    getCategoryList,
+    getCategoryTotalPL,
+    getGameList
 };
