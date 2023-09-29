@@ -85,12 +85,22 @@ const getCategoryTotalPL = async (req, res) => {
                                 "$pl"
                             ]
                         }
-                    }
+                    },
+                    data: { $push: '$$ROOT' },
+                },
+            },
+            {
+                $project : {
+                    _id: 0,
+                    username : '$_id',
+                    totalPL : '$totalPL',
+                    createdAt: {$first : "$data.createdAt"},
+                    sportName: "St8"
                 }
             },
-            { $sort: { updatedAt: -1 } }
+            { $sort: { updatedAt: -1 } },
         ])
-        res.send({ result: categories })
+        res.send({ result: categories[0] })
     } catch (error) {
         return res.status(500).json(error)
     }
@@ -119,6 +129,16 @@ const getCategoryList = async (req, res) => {
                             }
                         }
                     },
+                    data: { $push: '$$ROOT' },
+                }
+            },
+            {
+                $project : {
+                    _id: 0,
+                    categoryName : '$_id',
+                    totalPL : '$totalPL',
+                    createdAt: {$first : "$data.createdAt"},
+                    sportName: "St8"
                 }
             },
             { $sort: { updatedAt: -1 } }
@@ -136,7 +156,7 @@ const getGameList = async (req, res) => {
 
         const { category } = req.query;
 
-        const categories = await St8Transactions.aggregate([
+        let categories = await St8Transactions.aggregate([
             {
                 $match: {
                     username: profile.username,
@@ -154,10 +174,22 @@ const getGameList = async (req, res) => {
                                 else: "$pl"
                             }
                         }
-                    }
+                    },
+                    data: { $push: '$$ROOT' },
                 }
             },
-            { $sort: { updatedAt: -1 } }
+            {
+                $project : {
+                    _id: 0,
+                    game_code : '$_id',
+                    totalPL : '$totalPL',
+                    createdAt: {$first : "$data.createdAt"},
+                    categoryName: {$first : "$data.developer_code"},
+                    sportName: "St8"
+                }
+            },
+            { $sort: { updatedAt: -1 } },
+
         ])
         res.send({ result: categories })
     } catch (error) {
