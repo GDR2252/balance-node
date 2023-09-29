@@ -59,7 +59,7 @@ const getTransaction = async (req, res) => {
                 username: profile.username
             } : {};
 
-        const transactions = await St8Transactions.find(query)
+        const transactions = await St8Transactions.find(query).sort({ updatedAt: -1 });
         res.send({ result: transactions })
 
     } catch (error) {
