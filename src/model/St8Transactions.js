@@ -33,6 +33,12 @@ const st8TransactionSchema = new Schema({
   processed_at: {
     type: String,
   },
+  gameName: {
+    type: String
+  },
+  categoryName: {
+    type: String,
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('St8Transaction', st8TransactionSchema);

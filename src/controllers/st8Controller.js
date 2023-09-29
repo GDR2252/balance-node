@@ -95,7 +95,7 @@ const getCategoryTotalPL = async (req, res) => {
                     username : '$_id',
                     totalPL : '$totalPL',
                     createdAt: {$first : "$data.createdAt"},
-                    sportName: "St8"
+                    sportName: "St8", 
                 }
             },
             { $sort: { updatedAt: -1 } },
@@ -135,14 +135,16 @@ const getCategoryList = async (req, res) => {
             {
                 $project : {
                     _id: 0,
-                    categoryName : '$_id',
+                    developerCode : '$_id',
                     totalPL : '$totalPL',
                     createdAt: {$first : "$data.createdAt"},
+                    categoryName : {$first : "$data.categoryName"},
                     sportName: "St8"
                 }
             },
             { $sort: { updatedAt: -1 } }
         ])
+       
         res.send({ result: categories })
     } catch (error) {
         return res.status(500).json(error)
@@ -156,7 +158,7 @@ const getGameList = async (req, res) => {
 
         const { category } = req.query;
 
-        let categories = await St8Transactions.aggregate([
+        const categories = await St8Transactions.aggregate([
             {
                 $match: {
                     username: profile.username,
@@ -184,7 +186,8 @@ const getGameList = async (req, res) => {
                     game_code : '$_id',
                     totalPL : '$totalPL',
                     createdAt: {$first : "$data.createdAt"},
-                    categoryName: {$first : "$data.developer_code"},
+                    categoryName : {$first : "$data.categoryName"},
+                    gameName : {$first : "$data.gameName"},
                     sportName: "St8"
                 }
             },

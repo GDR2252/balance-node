@@ -2,6 +2,7 @@ const { default: axios } = require("axios");
 const { signBody } = require("../controllers/st8Controller");
 const cron = require('node-cron');
 const St8Transactions = require("../model/St8Transactions");
+const St8Games = require("../model/St8Games");
 const connectDB = require('../config/dbConn');
 
 const getTransaction = async (req, res) => {
@@ -29,9 +30,10 @@ const getTransaction = async (req, res) => {
                     console.log(response.data.transactions.length);
                     if (response.data.transactions.length) {
                         for (let i = 0; i < response?.data?.transactions.length; i++) {
-                            const element = response?.data?.transactions[i];
+                            let element = response?.data?.transactions[i];
+                            const getGames = await St8Games.findOne()
                             const getRounds = await St8Transactions.findOne({ round: element?.round });
-                            console.log(getRounds);
+
                             const payload = {
                                 username: element?.player,
                                 amount: element?.amount,
@@ -42,12 +44,21 @@ const getTransaction = async (req, res) => {
                                 bonus: element?.bonus,
                                 processed_at: element?.processed_at,
                             }
+                            payload["categoryName"] = getGames.games.developers.find((category) => {
+                                return element.developer_code ===  category.code
+                            }).name;
+
+                            payload["gameName"] = getGames.games.games.find((game) => {
+                                return element.game_code ===  game.code
+                            }).name;
+                            console.log(payload);
                             let list;
                             if (!getRounds && element?.kind === "debit") {
                                 list = {
                                     ...payload,
                                     pl: 0,
                                 }
+                                console.log("list",list);
                                 await St8Transactions.create(list);
                             } else {
                                 await St8Transactions.findOneAndUpdate({ round: element.round }, { pl: element.amount }, { new: true });
@@ -66,6 +77,6 @@ const getTransaction = async (req, res) => {
 }
 
 // Schedule the function to run every minute
-cron.schedule('* * * * *', async () => {
+cron.schedule('*/10 * * * * *', async () => {
     await getTransaction();
 });
