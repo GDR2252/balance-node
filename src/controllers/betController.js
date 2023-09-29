@@ -10,6 +10,7 @@ const User = require('../model/User');
 const pick = require('../utils/pick');
 const CricketResult = require('../model/CricketResult');
 const AvplaceBet = require('../model/AvplaceBet');
+const { getFilterProfitLoss } = require('./userController');
 
 async function placebet(req, res) {
   const transactionOptions = {
@@ -698,16 +699,26 @@ async function aviatorSumOfPl(req, res) {
   try {
     const profile = await User.findOne({ username: req.user }).exec();
     if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+    const filters = pick(req?.query, ['from', 'to', 'timeZone']);
+    const dateData = getFilterProfitLoss(filters);
+    if (dateData.error === 1) {
+      return res.status(400).json({ error: 'Please select only 30 days range only.' });
+    }
+    let filter = {
+      user: req.user,
+    };
 
+    if (dateData.filteredData) {
+      const filterData = dateData.filteredData;
+      filter = { ...filter, ...filterData };
+    }
     const result = await AvplaceBet.aggregate([
       {
-        $match: {
-          user: req.user,
-        },
+        $match: filter,
       },
       {
         $group: {
-          _id: req.user, // Group all documents together
+          _id: req.user,
           total: {
             $sum: { $subtract: ['$pl', '$stack'] },
           },

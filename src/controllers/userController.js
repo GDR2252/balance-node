@@ -527,4 +527,5 @@ module.exports = {
   userMarketsProfitloss,
   userEventsProfitloss,
   userSportsProfitloss,
+  getFilterProfitLoss,
 };
