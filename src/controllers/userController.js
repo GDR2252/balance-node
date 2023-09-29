@@ -10,6 +10,7 @@ const pick = require('../utils/pick');
 const Trader = require('../model/Trader');
 const CricketBetPlace = require('../model/CricketBetPlace');
 const Reporting = require('../model/Reporting');
+const ExposureManage = require('../model/ExposureManage');
 
 const getBalance = async (req, res) => {
   const profile = await User.findOne({ username: req.user }).exec();
@@ -512,6 +513,43 @@ const listUser = async (req, res) => {
   res.status(200).json({ data });
 };
 
+const getExposureList = async (req, res) => {
+  try {
+    const profile = await User.findOne({ username: req.user }).exec();
+    if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+
+    const result = await ExposureManage.aggregate([
+      {
+        $match: {
+          username: req.user,
+        },
+      },
+      {
+        $lookup: {
+          from: 'marketRates',
+          localField: 'exMarketId',
+          foreignField: 'exMarketId',
+          as: 'marketRatesInfo',
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          exposure: 1,
+          exEventId: 1,
+          exMarketId: 1,
+          eventName: { $first: '$marketRatesInfo.eventName' },
+          marketName: { $first: '$marketRatesInfo.marketName' },
+        },
+      },
+
+    ]);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   getBalance,
   generateotp,
@@ -528,4 +566,5 @@ module.exports = {
   userEventsProfitloss,
   userSportsProfitloss,
   getFilterProfitLoss,
+  getExposureList,
 };

@@ -11,5 +11,6 @@ router.get('/betlist/getUserBetList', userController.getUserBetList);
 router.get('/profitloss/userMarketsProfitloss', userController.userMarketsProfitloss);
 router.get('/profitloss/userEventsProfitloss', userController.userEventsProfitloss);
 router.get('/profitloss/userSportsProfitloss', userController.userSportsProfitloss);
+router.get('/exposureList', userController.getExposureList);
 
 module.exports = router;
