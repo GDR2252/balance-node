@@ -87,7 +87,8 @@ const getCategoryTotalPL = async (req, res) => {
                         }
                     }
                 }
-            }
+            },
+            { $sort: { updatedAt: -1 } }
         ])
         res.send({ result: categories })
     } catch (error) {
@@ -117,9 +118,10 @@ const getCategoryList = async (req, res) => {
                                 else: "$pl"
                             }
                         }
-                    }
+                    },
                 }
-            }
+            },
+            { $sort: { updatedAt: -1 } }
         ])
         res.send({ result: categories })
     } catch (error) {
@@ -154,7 +156,8 @@ const getGameList = async (req, res) => {
                         }
                     }
                 }
-            }
+            },
+            { $sort: { updatedAt: -1 } }
         ])
         res.send({ result: categories })
     } catch (error) {
