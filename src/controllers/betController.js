@@ -693,6 +693,36 @@ async function fetchCasinoByRound(req, res) {
     res.status(500).json({ message: err.message });
   }
 }
+
+async function aviatorSumOfPl(req, res) {
+  try {
+    const profile = await User.findOne({ username: req.user }).exec();
+    if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+
+    const result = await AvplaceBet.aggregate([
+      {
+        $match: {
+          user: req.user,
+        },
+      },
+      {
+        $group: {
+          _id: req.user, // Group all documents together
+          total: {
+            $sum: { $subtract: ['$pl', '$stack'] },
+          },
+        },
+      },
+    ]);
+    const data = result[0];
+    data.total = data.total.toFixed(2);
+    return res.json(data);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
 module.exports = {
   placebet,
   fetchCricket,
@@ -703,4 +733,5 @@ module.exports = {
   aviatorPl,
   casinoPl,
   fetchCasinoByRound,
+  aviatorSumOfPl,
 };
