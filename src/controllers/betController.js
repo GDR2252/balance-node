@@ -712,7 +712,7 @@ async function aviatorSumOfPl(req, res) {
       const filterData = dateData.filteredData;
       filter = { ...filter, ...filterData };
     }
-    let result = await AvplaceBet.aggregate([
+    const result = await AvplaceBet.aggregate([
       {
         $match: filter,
       },
@@ -725,9 +725,10 @@ async function aviatorSumOfPl(req, res) {
         },
       },
     ]);
-    result = await result.toArray();
-    const data = result[0];
-    data.total = data.total.toFixed(2);
+    let data = { total: 0, _id: req.user };
+    if (result.length > 0) {
+      data = { ...result[0], total: (result[0]?.total || 0).toFixed(2) };
+    }
     return res.json(data);
   } catch (err) {
     logger.error(err);
