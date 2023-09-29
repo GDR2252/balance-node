@@ -77,6 +77,6 @@ const getTransaction = async (req, res) => {
 }
 
 // Schedule the function to run every minute
-cron.schedule('*/10 * * * * *', async () => {
+cron.schedule('* * * * *', async () => {
     await getTransaction();
 });
