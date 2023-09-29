@@ -58,7 +58,7 @@ async function placebet(req, res) {
       if ((!state.inplay && !isPreBet) || state.status !== 'OPEN' || selectionStatus !== 'ACTIVE') {
         return res.status(400).json({ message: 'Cannot place bet.' });
       }
-    } else if (mrktType === 'fancy' || mrktType === 'bookmaker') {
+    } else if (mrktType === 'fancy' || mrktType === 'bookmaker' || mrktType === 'line_market') {
       if (state.status !== 'ACTIVE') {
         return res.status(400).json({ message: 'Cannot place bet.' });
       }
@@ -257,7 +257,7 @@ async function placebet(req, res) {
           .db(process.env.EXCH_DB).collection(process.env.MR_COLLECTION)
           .updateOne({ exMarketId }, { $set: { 'state.totalMatched': totalMatched } }, { session });
       }
-    } else if (mrktType === 'fancy') {
+    } else if (mrktType === 'fancy' || mrktType === 'line_market') {
       if (type === 'yes') {
         if (Number.isNaN(balance) || balance < numberstake) return res.status(400).json({ message: 'Cannot place bet. Balance is insufficient.' });
       } else if (type === 'no') {
