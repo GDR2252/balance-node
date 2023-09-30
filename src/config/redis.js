@@ -8,6 +8,10 @@ const redisWrite = redis.createClient({
 redisWrite.connect().then(() => {
   console.log('redis is connected');
 });
+// Handle errors
+redisWrite.on('error', (err) => {
+  console.log(`Error: ${err}`);
+});
 
 const redisRead = redis.createClient({
   host: process.env.REDIS_READ_URL,
@@ -16,6 +20,11 @@ const redisRead = redis.createClient({
 
 redisRead.connect().then(() => {
   console.log('redis is connected');
+});
+
+// Handle errors
+redisRead.on('error', (err) => {
+  console.log(`Error: ${err}`);
 });
 
 module.exports = { redisWrite, redisRead };

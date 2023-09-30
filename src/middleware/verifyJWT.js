@@ -15,9 +15,11 @@ const verifyJWT = (req, res, next) => {
     async (err, decoded) => {
       if (err) return res.status(401).json({ message: 'This token is invalid.' });
       req.user = decoded.username;
-      const cacheToken = await redisRead.get(decoded.username);
-      if (cacheToken !== token) {
-        return res.status(401).json({ message: 'This token is invalid test.' });
+      if (process.env.SERVER_TYPE) {
+        const cacheToken = await redisRead.get(decoded.username);
+        if (cacheToken !== token) {
+          return res.status(401).json({ message: 'This token is invalid test.' });
+        }
       }
       next();
     },

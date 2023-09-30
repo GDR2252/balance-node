@@ -69,7 +69,7 @@ async function handleLogin(req, res) {
     await addActivity(foundUser, ip, 'success');
     const contact = await Support.findOne({ origin }).exec();
     const stakes = await Stake.findOne({ username }).exec();
-    await redisWrite.set(username, accessToken);
+    if (process.env.SERVER_TYPE) await redisWrite.set(username, accessToken);
     res.json({
       roles,
       username,
