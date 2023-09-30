@@ -98,15 +98,27 @@ const getCategoryTotalPL = async (req, res) => {
 
 const getCategoryList = async (req, res) => {
     try {
+        const { start_time, end_time, page, count } = req.query
         const profile = await User.findOne({ username: req.user }).exec();
         if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
 
-        const categories = await St8Transactions.aggregate([
+        const currentPage = parseInt(page) || 1;
+        const perPage = parseInt(count) || 10;
+        const skip = (currentPage - 1) * perPage;
+
+        let query = start_time !== "" && end_time !== "" ?
             {
-                $match: {
-                    username: profile.username,
-                }
-            },
+                createdAt: {
+                    $gte: new Date(start_time),
+                    $lte: new Date(new Date(end_time).getTime() + 24 * 60 * 60 * 1000)
+                },
+                username: profile.username
+            } : { username: profile.username };
+
+        const total = await St8Transactions.find(query).countDocuments().lean();
+
+        const categories = await St8Transactions.aggregate([
+            { $match: query },
             {
                 $group: {
                     _id: "$developer_code",
@@ -121,10 +133,13 @@ const getCategoryList = async (req, res) => {
                     },
                 }
             },
-            { $sort: { updatedAt: -1 } }
+            { $sort: { updatedAt: -1 } },
+            { $skip: skip },
+            { $limit: perPage }
         ])
-        res.send({ result: categories })
+        res.send({ result: categories, total })
     } catch (error) {
+        console.log('error', error);
         return res.status(500).json(error)
     }
 }
@@ -133,13 +148,26 @@ const getGameList = async (req, res) => {
     try {
         const profile = await User.findOne({ username: req.user }).exec();
         if (!profile) return res.status(401).json({ message: 'User id is incorrect.' });
+        const { category, start_time, end_time, page, count } = req.query;
 
-        const { category } = req.query;
+        const currentPage = parseInt(page) || 1;
+        const perPage = parseInt(count) || 10;
+        const skip = (currentPage - 1) * perPage;
 
+        let query = start_time !== "" && end_time !== "" ?
+            {
+                createdAt: {
+                    $gte: new Date(start_time),
+                    $lte: new Date(new Date(end_time).getTime() + 24 * 60 * 60 * 1000)
+                },
+                username: profile.username
+            } : { username: profile.username };
+
+        const total = await St8Transactions.find(query).countDocuments().lean();
         const categories = await St8Transactions.aggregate([
             {
                 $match: {
-                    username: profile.username,
+                    ...query,
                     developer_code: category
                 }
             },
@@ -157,9 +185,11 @@ const getGameList = async (req, res) => {
                     }
                 }
             },
-            { $sort: { updatedAt: -1 } }
+            { $sort: { updatedAt: -1 } },
+            { $skip: skip },
+            { $limit: perPage }
         ])
-        res.send({ result: categories })
+        res.send({ result: categories, total })
     } catch (error) {
         return res.status(500).json(error)
     }
