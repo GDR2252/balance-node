@@ -1,7 +1,7 @@
 const redis = require('redis');
 
 const redisWrite = redis.createClient({
-  host: 'https://sf-rc-prod-001.g1ewrj.ng.0001.apse1.cache.amazonaws.com',
+  host: process.env.REDIS_WRITE_URL,
   port: 6379,
 });
 
@@ -10,7 +10,7 @@ redisWrite.connect().then(() => {
 });
 
 const redisRead = redis.createClient({
-  host: 'https://sf-rc-prod-001-ro.g1ewrj.ng.0001.apse1.cache.amazonaws.com',
+  host: process.env.REDIS_READ_URL,
   port: 6379,
 });
 
