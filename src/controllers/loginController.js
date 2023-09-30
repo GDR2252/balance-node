@@ -6,7 +6,7 @@ const User = require('../model/User');
 const ActivityLog = require('../model/ActivityLog');
 const Support = require('../model/Support');
 const Stake = require('../model/Stake');
-
+const { redisWrite } = require('../config/redis');
 require('dotenv').config();
 
 const addActivity = async (foundUser, activity, status) => {
@@ -69,6 +69,7 @@ async function handleLogin(req, res) {
     await addActivity(foundUser, ip, 'success');
     const contact = await Support.findOne({ origin }).exec();
     const stakes = await Stake.findOne({ username }).exec();
+    await redisWrite.set(username, accessToken);
     res.json({
       roles,
       username,
