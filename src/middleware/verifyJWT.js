@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const logger = require('log4js').getLogger(path.parse(__filename).name);
 require('dotenv').config();
-const { redisRead } = require('../config/redis');
+const { redisRead } = require('./redis');
 
 const verifyJWT = (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers.Authorization;
@@ -15,7 +15,7 @@ const verifyJWT = (req, res, next) => {
     async (err, decoded) => {
       if (err) return res.status(401).json({ message: 'This token is invalid.' });
       req.user = decoded.username;
-      if (process.env.SERVER_TYPE) {
+      if (process.env.SERVER_TYPE !== 'stage') {
         const cacheToken = await redisRead.get(decoded.username);
         if (cacheToken !== token) {
           return res.status(401).json({ message: 'This token is invalid test.' });
