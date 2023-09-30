@@ -85,12 +85,22 @@ const getCategoryTotalPL = async (req, res) => {
                                 "$pl"
                             ]
                         }
-                    }
+                    },
+                    data: { $push: '$$ROOT' },
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    username: '$_id',
+                    totalPL: '$totalPL',
+                    createdAt: { $first: "$data.createdAt" },
+                    sportName: "St8",
                 }
             },
-            { $sort: { updatedAt: -1 } }
+            { $sort: { updatedAt: -1 } },
         ])
-        res.send({ result: categories })
+        res.send({ result: categories[0] })
     } catch (error) {
         return res.status(500).json(error)
     }
@@ -131,6 +141,17 @@ const getCategoryList = async (req, res) => {
                             }
                         }
                     },
+                    data: { $push: '$$ROOT' },
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    developerCode: '$_id',
+                    totalPL: '$totalPL',
+                    createdAt: { $first: "$data.createdAt" },
+                    categoryName: { $first: "$data.categoryName" },
+                    sportName: "St8"
                 }
             },
             { $sort: { updatedAt: -1 } },
@@ -182,7 +203,19 @@ const getGameList = async (req, res) => {
                                 else: "$pl"
                             }
                         }
-                    }
+                    },
+                    data: { $push: '$$ROOT' },
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    game_code: '$_id',
+                    totalPL: '$totalPL',
+                    createdAt: { $first: "$data.createdAt" },
+                    categoryName: { $first: "$data.categoryName" },
+                    gameName: { $first: "$data.gameName" },
+                    sportName: "St8"
                 }
             },
             { $sort: { updatedAt: -1 } },
